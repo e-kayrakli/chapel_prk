@@ -19,11 +19,11 @@ vector_length = length;
 // Domains
 DomA = {0..#length};
 
+
 var N : int;
 var timer: Timer,
-    V    : [DomA] int,
-    /*aux  : [DomA] int,*/
-    Idx  : [DomA] int;
+    V    : [DomA] dataType,
+    Idx  : [DomA] dataType;
 
 //
 // Print information before main loop
@@ -39,9 +39,9 @@ nfunc = 40;
 rank  = 5;
 
 for i in 0.. vector_length-1 {
-  V[i]  = 3 - (i&7);
+  V[i]  = (3 - (i&7)):dataType;
   /*aux[i] = 0;*/
-  Idx[i]= i;
+  Idx[i]= i:dataType;
 }
 
 //set branchType int
@@ -61,18 +61,18 @@ timer.start();
 
 select branchTypeInt {
 
-  when 1 {
+  when 1 { //vector_stop
     /*condition vector[idx[i]]>0 inhibits vectorization*/
     for t in 0..#iterations by 2 {
       forall i in DomA {
-        var aux = -(3 - (i&7));
+        var aux = (-(3 - (i&7))):dataType;
         if V[Idx[i]]>0 then
           V[i] -= 2*V[i];
         else
           V[i] -= 2*aux;
       }
       forall i in DomA {
-        var aux = (3 - (i&7));
+        var aux = (3 - (i&7)):dataType;
         if V[Idx[i]]>0 then
           V[i] -= 2*V[i];
         else
@@ -81,18 +81,18 @@ select branchTypeInt {
     }
   }
 
-  when 2 {
+  when 2 { //vector_go
     /* condition aux>0 allows vectorization */
     for t in 0..#iterations by 2 {
       forall i in DomA {
-        var aux = -(3 - (i&7));
+        var aux = -(3 - (i&7)):dataType;
         if aux>0 then
           V[i] -= 2*V[i];
         else
           V[i] -= 2*aux;
       }
       forall i in DomA {
-        var aux = (3 - (i&7));
+        var aux = (3 - (i&7)):dataType;
         if aux>0 then
           V[i] -= 2*V[i];
         else
@@ -101,19 +101,19 @@ select branchTypeInt {
     }
   }
 
-  when 3 {
+  when 3 { //no_vector
     /*condition aux>0 allows vectorization*/
     /*but indirect idxing inbibits it */
     for t in 0..#iterations by 2 {
       forall i in DomA {
-        var aux = -(3 - (i&7));
+        var aux = -(3 - (i&7)):dataType;
         if aux>0 then
           V[i] -= 2*V[Idx[i]];
         else
           V[i] -= 2*aux;
       }
       forall i in DomA {
-        var aux = (3 - (i&7));
+        var aux = (3 - (i&7)):dataType;
         if aux>0 then
           V[i] -= 2*V[Idx[i]];
         else
@@ -122,7 +122,7 @@ select branchTypeInt {
     }
   }
 
-  when 4 {
+  when 4 { //ins_heavy
     fill_vec(V, vector_length, iterations, WITH_BRANCHES, nfunc, rank);
   }
 }
@@ -144,12 +144,12 @@ select branchTypeInt {
     /* condition vector[idx[i]]>0 inhibits vectorization */
     for t in 0..#iterations by 2 {
       forall i in DomA {
-        var aux = -(3 - (i&7));
+        var aux = -(3 - (i&7)):dataType;
         V[i] -= V[i] + aux;
       }
       forall i in DomA {
-        var aux = (3 - (i&7));
-        V[i] -= (V[i] + aux);
+        var aux = (3 - (i&7)):dataType;
+        V[i] -= V[i] + aux;
       }
     }
   }
@@ -158,11 +158,11 @@ select branchTypeInt {
     /* condition vector[idx[i]]>0 inhibits vectorization*/
     for t in 0..#iterations by 2 {
       forall i in DomA {
-        var aux = -(3 - (i&7));
+        var aux = -(3 - (i&7)):dataType;
         V[i] -= (V[i] + aux);
       }
       forall i in DomA {
-        var aux = (3 - (i&7));
+        var aux = (3 - (i&7)):dataType;
         V[i] -= (V[i] + aux);
       }
     }
@@ -171,11 +171,11 @@ select branchTypeInt {
   when 3 { //no_vector
     for t in 0..#iterations by 2 {
       forall i in DomA {
-        var aux = -(3 - (i&7));
+        var aux = -(3 - (i&7)):dataType;
         V[i] -= (V[Idx[i]] + aux);
       }
       forall i in DomA {
-        var aux = (3 - (i&7));
+        var aux = (3 - (i&7)):dataType;
         V[i] -= (V[Idx[i]] + aux);
       }
     }
@@ -223,18 +223,18 @@ if total == total_ref {
 }
 
 proc fill_vec(vector, length, iterations, branch, nfunc, rank) {
-  var a, b: [Dom2] int;
-  var zero, one: [Dom1] int;
-  var aux, aux2, i, t: int;
+  var a, b: [Dom2] dataType;
+  var zero, one: [Dom1] dataType;
+  var aux, aux2, i, t: dataType;
 
   if (!branch) {
     do {
       for i in 0.. vector_length -1 {
-        aux2 = -(3-(func0(i,a,b)&7));
+        aux2 = -(3-(func0(i:dataType,a,b)&7)):dataType;
         V[i] -= (V[i]+aux2);
       }
       for i in 0.. vector_length -1 {
-        aux2 = (3-(func0(i,a,b)&7));
+        aux2 = (3-(func0(i:dataType,a,b)&7)):dataType;
         V[i] -= (V[i]+aux2);
       }
       t +=2;
@@ -247,49 +247,50 @@ proc fill_vec(vector, length, iterations, branch, nfunc, rank) {
     a[0,0] = 4; 
     do {
       //forall (i) in DomA {
-      for i in 0.. vector_length -1 {
-        aux = i%40;
+      for i in 0.. vector_length-1 {
+        const ii = i:dataType;
+        aux = ii%40;
         select aux {
-          when 0 do { aux2 = -(3-(func0(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 1 do { aux2 = -(3-(func1(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 2 do { aux2 = -(3-(func2(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 3 do { aux2 = -(3-(func3(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 4 do { aux2 = -(3-(func4(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 5 do { aux2 = -(3-(func5(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 6 do { aux2 = -(3-(func6(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 7 do { aux2 = -(3-(func7(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 8 do { aux2 = -(3-(func8(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 9 do { aux2 = -(3-(func9(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 10 do { aux2 = -(3-(func10(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 11 do { aux2 = -(3-(func11(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 12 do { aux2 = -(3-(func12(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 13 do { aux2 = -(3-(func13(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 14 do { aux2 = -(3-(func14(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 15 do { aux2 = -(3-(func15(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 16 do { aux2 = -(3-(func16(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 17 do { aux2 = -(3-(func17(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 18 do { aux2 = -(3-(func18(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 19 do { aux2 = -(3-(func19(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 20 do { aux2 = -(3-(func20(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 21 do { aux2 = -(3-(func21(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 22 do { aux2 = -(3-(func22(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 23 do { aux2 = -(3-(func23(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 24 do { aux2 = -(3-(func24(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 25 do { aux2 = -(3-(func25(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 26 do { aux2 = -(3-(func26(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 27 do { aux2 = -(3-(func27(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 28 do { aux2 = -(3-(func28(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 29 do { aux2 = -(3-(func29(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 30 do { aux2 = -(3-(func30(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 31 do { aux2 = -(3-(func31(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 32 do { aux2 = -(3-(func32(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 33 do { aux2 = -(3-(func33(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 34 do { aux2 = -(3-(func34(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 35 do { aux2 = -(3-(func35(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 36 do { aux2 = -(3-(func36(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 37 do { aux2 = -(3-(func37(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 38 do { aux2 = -(3-(func38(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 39 do { aux2 = -(3-(func39(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
+          when 0 do { aux2 = -(3-(func0(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 1 do { aux2 = -(3-(func1(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 2 do { aux2 = -(3-(func2(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 3 do { aux2 = -(3-(func3(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 4 do { aux2 = -(3-(func4(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 5 do { aux2 = -(3-(func5(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 6 do { aux2 = -(3-(func6(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 7 do { aux2 = -(3-(func7(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 8 do { aux2 = -(3-(func8(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 9 do { aux2 = -(3-(func9(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 10 do { aux2 = -(3-(func10(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 11 do { aux2 = -(3-(func11(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 12 do { aux2 = -(3-(func12(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 13 do { aux2 = -(3-(func13(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 14 do { aux2 = -(3-(func14(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 15 do { aux2 = -(3-(func15(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 16 do { aux2 = -(3-(func16(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 17 do { aux2 = -(3-(func17(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 18 do { aux2 = -(3-(func18(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 19 do { aux2 = -(3-(func19(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 20 do { aux2 = -(3-(func20(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 21 do { aux2 = -(3-(func21(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 22 do { aux2 = -(3-(func22(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 23 do { aux2 = -(3-(func23(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 24 do { aux2 = -(3-(func24(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 25 do { aux2 = -(3-(func25(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 26 do { aux2 = -(3-(func26(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 27 do { aux2 = -(3-(func27(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 28 do { aux2 = -(3-(func28(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 29 do { aux2 = -(3-(func29(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 30 do { aux2 = -(3-(func30(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 31 do { aux2 = -(3-(func31(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 32 do { aux2 = -(3-(func32(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 33 do { aux2 = -(3-(func33(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 34 do { aux2 = -(3-(func34(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 35 do { aux2 = -(3-(func35(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 36 do { aux2 = -(3-(func36(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 37 do { aux2 = -(3-(func37(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 38 do { aux2 = -(3-(func38(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
+          when 39 do { aux2 = -(3-(func39(ii,a,b)&7):dataType); vector[ii] -= (vector[ii]+aux2); }
           // default: vector[i] = 0;
         } // end of select
       } // end of forall
@@ -297,48 +298,49 @@ proc fill_vec(vector, length, iterations, branch, nfunc, rank) {
       //forall (i) in DomA {
       //for (i=0; i<length; i++) {
       for i in 0.. vector_length -1 {
-        aux = i%40;
+        const ii = i:dataType;
+        aux = ii%40;
         select aux {
-          when 0 do { aux2 = (3-(func0(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 1 do { aux2 = (3-(func1(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 2 do { aux2 = (3-(func2(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 3 do { aux2 = (3-(func3(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 4 do { aux2 = (3-(func4(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 5 do { aux2 = (3-(func5(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 6 do { aux2 = (3-(func6(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 7 do { aux2 = (3-(func7(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 8 do { aux2 = (3-(func8(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 9 do { aux2 = (3-(func9(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 10 do { aux2 = (3-(func10(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 11 do { aux2 = (3-(func11(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 12 do { aux2 = (3-(func12(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 13 do { aux2 = (3-(func13(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 14 do { aux2 = (3-(func14(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 15 do { aux2 = (3-(func15(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 16 do { aux2 = (3-(func16(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 17 do { aux2 = (3-(func17(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 18 do { aux2 = (3-(func18(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 19 do { aux2 = (3-(func19(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 20 do { aux2 = (3-(func20(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 21 do { aux2 = (3-(func21(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 22 do { aux2 = (3-(func22(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 23 do { aux2 = (3-(func23(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 24 do { aux2 = (3-(func24(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 25 do { aux2 = (3-(func25(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 26 do { aux2 = (3-(func26(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 27 do { aux2 = (3-(func27(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 28 do { aux2 = (3-(func28(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 29 do { aux2 = (3-(func29(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 30 do { aux2 = (3-(func30(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 31 do { aux2 = (3-(func31(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 32 do { aux2 = (3-(func32(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 33 do { aux2 = (3-(func33(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 34 do { aux2 = (3-(func34(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 35 do { aux2 = (3-(func35(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 36 do { aux2 = (3-(func36(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 37 do { aux2 = (3-(func37(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 38 do { aux2 = (3-(func38(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
-          when 39 do { aux2 = (3-(func39(i,a,b)&7)); vector[i] -= (vector[i]+aux2); }
+          when 0 do { aux2 = (3-(func0(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 1 do { aux2 = (3-(func1(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 2 do { aux2 = (3-(func2(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 3 do { aux2 = (3-(func3(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 4 do { aux2 = (3-(func4(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 5 do { aux2 = (3-(func5(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 6 do { aux2 = (3-(func6(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 7 do { aux2 = (3-(func7(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 8 do { aux2 = (3-(func8(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 9 do { aux2 = (3-(func9(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 10 do { aux2 = (3-(func10(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 11 do { aux2 = (3-(func11(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 12 do { aux2 = (3-(func12(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 13 do { aux2 = (3-(func13(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 14 do { aux2 = (3-(func14(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 15 do { aux2 = (3-(func15(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 16 do { aux2 = (3-(func16(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 17 do { aux2 = (3-(func17(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 18 do { aux2 = (3-(func18(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 19 do { aux2 = (3-(func19(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 20 do { aux2 = (3-(func20(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 21 do { aux2 = (3-(func21(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 22 do { aux2 = (3-(func22(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 23 do { aux2 = (3-(func23(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 24 do { aux2 = (3-(func24(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 25 do { aux2 = (3-(func25(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 26 do { aux2 = (3-(func26(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 27 do { aux2 = (3-(func27(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 28 do { aux2 = (3-(func28(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 29 do { aux2 = (3-(func29(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 30 do { aux2 = (3-(func30(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 31 do { aux2 = (3-(func31(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 32 do { aux2 = (3-(func32(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 33 do { aux2 = (3-(func33(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 34 do { aux2 = (3-(func34(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 35 do { aux2 = (3-(func35(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 36 do { aux2 = (3-(func36(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 37 do { aux2 = (3-(func37(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 38 do { aux2 = (3-(func38(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
+          when 39 do { aux2 = (3-(func39(ii,a,b)&7)):dataType; vector[ii] -= (vector[ii]+aux2); }
           // default: vector[i] = 0;
         } // end of select
       } // end of forall
@@ -346,4 +348,5 @@ proc fill_vec(vector, length, iterations, branch, nfunc, rank) {
     } while (t < iterations);
   } // end of else
 } // end of proc fill_vec
+
 

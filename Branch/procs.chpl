@@ -1,14 +1,14 @@
 use configs;
 
-//proc func0(idx: int, a: [5][5] int, b: [5][5] int) {
-//proc func0(idx: int, a: [{0..#4,0..#4}] int, b: [{0..#4,0..#4}] int) {
-proc func0(idx: int, a, b) {
-  var i, j, x1, x2, x3, err: int;
-  var zero, one: [Dom1] int;
+//proc func0(idx, a: [5][5] dataType, b: [5][5] dataType) {
+//proc func0(idx, a: [{0..#4,0..#4}] dataType, b: [{0..#4,0..#4}] dataType) {
+proc func0(idx, a, b) {
+  var i, j, x1, x2, x3, err: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   err = 0;
-  x1 = 0 + idx;  
+  x1 = 0:dataType + idx;
   x2 = 38357;
   x3 = (x1 + (0+1)*x2) % 5;
   x1 += (x2 - x3 + 5 ) % 5;
@@ -234,9 +234,9 @@ writeln (" a[0,0] = ",a[0,0]);
   else return(idx);
 }
  
-proc func20(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func20(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;  
@@ -453,9 +453,9 @@ proc func20(idx: int, a, b) {
     return(idx);
 }
 
-proc func1(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func1(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -671,9 +671,9 @@ proc func1(idx: int, a, b) {
     return(idx);
 }
 
-proc func21(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func21(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -890,9 +890,9 @@ proc func21(idx: int, a, b) {
 
 }
 
-proc func2(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func2(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -1108,9 +1108,9 @@ proc func2(idx: int, a, b) {
     return(idx);
 }
 
-proc func22(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func22(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -1326,9 +1326,9 @@ proc func22(idx: int, a, b) {
     return(idx);
 }
 
-proc func3(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func3(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -1544,9 +1544,9 @@ proc func3(idx: int, a, b) {
     return(idx);
 }
 
-proc func23(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func23(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -1762,9 +1762,9 @@ proc func23(idx: int, a, b) {
     return(idx);
 }
 
-proc func4(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func4(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -1980,9 +1980,9 @@ proc func4(idx: int, a, b) {
     return(idx);
 }
 
-proc func24(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func24(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -2198,9 +2198,9 @@ proc func24(idx: int, a, b) {
     return(idx);
 }
 
-proc func5(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func5(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -2416,9 +2416,9 @@ proc func5(idx: int, a, b) {
     return(idx);
 }
 
-proc func25(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func25(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -2634,9 +2634,9 @@ proc func25(idx: int, a, b) {
     return(idx);
 }
 
-proc func6(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func6(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -2852,9 +2852,9 @@ proc func6(idx: int, a, b) {
     return(idx);
 }
 
-proc func26(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func26(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -3070,9 +3070,9 @@ proc func26(idx: int, a, b) {
     return(idx);
 }
 
-proc func7(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func7(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -3288,9 +3288,9 @@ proc func7(idx: int, a, b) {
     return(idx);
 }
 
-proc func27(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func27(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -3506,9 +3506,9 @@ proc func27(idx: int, a, b) {
     return(idx);
 }
 
-proc func8(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func8(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -3724,9 +3724,9 @@ proc func8(idx: int, a, b) {
     return(idx);
 }
 
-proc func28(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func28(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -3942,9 +3942,9 @@ proc func28(idx: int, a, b) {
     return(idx);
 }
 
-proc func9(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func9(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -4160,9 +4160,9 @@ proc func9(idx: int, a, b) {
     return(idx);
 }
 
-proc func29(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func29(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -4378,9 +4378,9 @@ proc func29(idx: int, a, b) {
     return(idx);
 }
 
-proc func10(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func10(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -4596,9 +4596,9 @@ proc func10(idx: int, a, b) {
     return(idx);
 }
 
-proc func30(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func30(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -4814,9 +4814,9 @@ proc func30(idx: int, a, b) {
     return(idx);
 }
 
-proc func11(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func11(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -5032,9 +5032,9 @@ proc func11(idx: int, a, b) {
     return(idx);
 }
 
-proc func31(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func31(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -5250,9 +5250,9 @@ proc func31(idx: int, a, b) {
     return(idx);
 }
 
-proc func12(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func12(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -5468,9 +5468,9 @@ proc func12(idx: int, a, b) {
     return(idx);
 }
 
-proc func32(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func32(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -5686,9 +5686,9 @@ proc func32(idx: int, a, b) {
     return(idx);
 }
 
-proc func13(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func13(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -5904,9 +5904,9 @@ proc func13(idx: int, a, b) {
     return(idx);
 }
 
-proc func33(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func33(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -6122,9 +6122,9 @@ proc func33(idx: int, a, b) {
     return(idx);
 }
 
-proc func14(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func14(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -6340,9 +6340,9 @@ proc func14(idx: int, a, b) {
     return(idx);
 }
 
-proc func34(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func34(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -6558,9 +6558,9 @@ proc func34(idx: int, a, b) {
     return(idx);
 }
 
-proc func15(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func15(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -6776,9 +6776,9 @@ proc func15(idx: int, a, b) {
     return(idx);
 }
 
-proc func35(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func35(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -6994,9 +6994,9 @@ proc func35(idx: int, a, b) {
     return(idx);
 }
 
-proc func16(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func16(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -7212,9 +7212,9 @@ proc func16(idx: int, a, b) {
     return(idx);
 }
 
-proc func36(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func36(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -7430,9 +7430,9 @@ proc func36(idx: int, a, b) {
     return(idx);
 }
 
-proc func17(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func17(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -7648,9 +7648,9 @@ proc func17(idx: int, a, b) {
     return(idx);
 }
 
-proc func37(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func37(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -7866,9 +7866,9 @@ proc func37(idx: int, a, b) {
     return(idx);
 }
 
-proc func18(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func18(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -8084,9 +8084,9 @@ proc func18(idx: int, a, b) {
     return(idx);
 }
 
-proc func38(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func38(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -8302,9 +8302,9 @@ proc func38(idx: int, a, b) {
     return(idx);
 }
 
-proc func19(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func19(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;
@@ -8520,9 +8520,9 @@ proc func19(idx: int, a, b) {
     return(idx);
 }
 
-proc func39(idx: int, a, b) {
-  var i, j, x1, x2, x3, err=0: int;
-  var zero, one: [Dom1] int;
+proc func39(idx, a, b) {
+  var i, j, x1, x2, x3, err=0: dataType;
+  var zero, one: [Dom1] dataType;
   zero = 0; one = 1;
 
   x1 = 0 + idx;

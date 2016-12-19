@@ -7,7 +7,7 @@ config const iterations : int = 100,
              debug: bool = false,
              validate: bool = false;
 
-// config const offset : int = 0; // do we really need offset?? Let's skip it for now.
+type dataType = int(32);
 config var tileSize: int = 0;
 
 /* the following values are only used as labels */
