@@ -17,12 +17,12 @@ halt("ERROR: vector length must be >= 1: ", length);
 vector_length = length;
 
 // Domains
-DomA = {0.. # length};
+DomA = {0..#length};
 
 var N : int;
 var timer: Timer,
     V    : [DomA] int,
-    aux  : [DomA] int,
+    /*aux  : [DomA] int,*/
     Idx  : [DomA] int;
 
 //
@@ -40,7 +40,7 @@ rank  = 5;
 
 for i in 0.. vector_length-1 {
   V[i]  = 3 - (i&7);
-  aux[i] = 0;
+  /*aux[i] = 0;*/
   Idx[i]= i;
 }
 
@@ -63,69 +63,63 @@ select branchTypeInt {
 
   when 1 {
     /*condition vector[idx[i]]>0 inhibits vectorization*/
-    var t = 0;
-    do {
+    for t in 0..#iterations by 2 {
       forall i in DomA {
-        aux[i] = -(3 - (i&7));
+        var aux = -(3 - (i&7));
         if V[Idx[i]]>0 then
           V[i] -= 2*V[i];
         else
-          V[i] -= 2*aux[i];
+          V[i] -= 2*aux;
       }
       forall i in DomA {
-        aux[i] = (3 - (i&7));
+        var aux = (3 - (i&7));
         if V[Idx[i]]>0 then
           V[i] -= 2*V[i];
         else
-          V[i] -= 2*aux[i];
+          V[i] -= 2*aux;
       }
-      t +=2;
-    } while (t < iterations);
+    }
   }
 
   when 2 {
     /* condition aux>0 allows vectorization */
-    var t = 0;
-    do {
+    for t in 0..#iterations by 2 {
       forall i in DomA {
-        aux[i] = -(3 - (i&7));
-        if aux[i]>0 then
+        var aux = -(3 - (i&7));
+        if aux>0 then
           V[i] -= 2*V[i];
         else
-          V[i] -= 2*aux[i];
+          V[i] -= 2*aux;
       }
       forall i in DomA {
-        aux[i] = (3 - (i&7));
-        if aux[i]>0 then
+        var aux = (3 - (i&7));
+        if aux>0 then
           V[i] -= 2*V[i];
         else
-          V[i] -= 2*aux[i];
+          V[i] -= 2*aux;
       }
-      t +=2;
-    } while (t < iterations);
+    }
   }
 
   when 3 {
     /*condition aux>0 allows vectorization*/
     /*but indirect idxing inbibits it */
-    var t = 0;
-    do {
+    for t in 0..#iterations by 2 {
       forall i in DomA {
-        aux[i] = -(3 - (i&7));
-        if aux[i]>0 then
+        var aux = -(3 - (i&7));
+        if aux>0 then
           V[i] -= 2*V[Idx[i]];
         else
-          V[i] -= 2*aux[i];
+          V[i] -= 2*aux;
       }
       forall i in DomA {
-        aux[i] = (3 - (i&7));
-        if aux[i]>0 then
+        var aux = (3 - (i&7));
+        if aux>0 then
           V[i] -= 2*V[Idx[i]];
         else
-          V[i] -= 2*aux[i];
+          V[i] -= 2*aux;
       }
-      t +=2;
-    } while (t < iterations);
+    }
   }
 
   when 4 {
@@ -146,54 +140,48 @@ timer.start();
 /* do the whole thing one more time but now without branches */
 select branchTypeInt {
 
-  when 1 {
-    /* condition vector[idx[i]]>0 inhibits vectorization                     */
-    var t = 0;
-    do {
+  when 1 { //vector_stop
+    /* condition vector[idx[i]]>0 inhibits vectorization */
+    for t in 0..#iterations by 2 {
       forall i in DomA {
-        aux[i] = -(3 - (i&7));
-        V[i] -= (V[i] + aux[i]);
+        var aux = -(3 - (i&7));
+        V[i] -= V[i] + aux;
       }
-      forall (i) in DomA {
-        aux[i] = (3 - (i&7));
-        V[i] -= (V[i] + aux[i]);
+      forall i in DomA {
+        var aux = (3 - (i&7));
+        V[i] -= (V[i] + aux);
       }
-      t +=2;
-    } while (t < iterations);
+    }
   }
 
-  when 2 {
+  when 2 { //vector_go
     /* condition vector[idx[i]]>0 inhibits vectorization*/
-    var t = 0;
-    do {
+    for t in 0..#iterations by 2 {
       forall i in DomA {
-        aux[i] = -(3 - (i&7));
-        V[i] -= (V[i] + aux[i]);
+        var aux = -(3 - (i&7));
+        V[i] -= (V[i] + aux);
       }
       forall i in DomA {
-        aux[i] = (3 - (i&7));
-        V[i] -= (V[i] + aux[i]);
+        var aux = (3 - (i&7));
+        V[i] -= (V[i] + aux);
       }
-      t +=2;
-    } while (t < iterations);
+    }
   }
 
-  when 3 {
-    var t = 0;
-    do {
+  when 3 { //no_vector
+    for t in 0..#iterations by 2 {
       forall i in DomA {
-        aux[i] = -(3 - (i&7));
-        V[i] -= (V[Idx[i]] + aux[i]);
+        var aux = -(3 - (i&7));
+        V[i] -= (V[Idx[i]] + aux);
       }
       forall i in DomA {
-        aux[i] = (3 - (i&7));
-        V[i] -= (V[Idx[i]] + aux[i]);
+        var aux = (3 - (i&7));
+        V[i] -= (V[Idx[i]] + aux);
       }
-      t +=2;
-    } while (t < iterations);
+    }
   }
 
-  when 4 {
+  when 4 { //inst_heavy
     fill_vec(V, vector_length, iterations, WITHOUT_BRANCHES, nfunc,
         rank);
   }
