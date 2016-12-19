@@ -32,12 +32,9 @@ writeln("Parallel Research Kernels version ", PRKVERSION);
 writeln("Chapel: Serial Branching Bonaza");
 writeln("Vector length          = ", length);
 writeln("Number of iterations   = ", iterations);
-writeln("Branching type         = ", branchtype);
+writeln("Branching type         = ", branchType);
 
 // initialization
-/* initialize the array with entries with varying signs; array "idx" is only
-   used to obfuscate the compiler (i.e. it won't vectorize a loop containing
-   indirect referencing). It functions as the identity operator.               */
 nfunc = 40;
 rank  = 5;
 
@@ -47,14 +44,24 @@ for i in 0.. vector_length-1 {
   Idx[i]= i;
 }
 
+//set branchType int
+const branchTypeInt = if branchType == "vector_stop" then 1
+                      else if branchType == "vector_go" then 2
+                      else if branchType == "no_vector" then 3
+                      else if branchType == "ins_heavy" then 4
+                      else -1;
+
+if branchTypeInt == -1 then
+  halt("Invalid branch type: ", branchType);
+
 //
 // Main loop
 //
 timer.start();
 
-select branchtype {
+select branchTypeInt {
 
-  when "vector_stop" {
+  when 1 {
     /*condition vector[idx[i]]>0 inhibits vectorization*/
     var t = 0;
     do {
@@ -76,7 +83,7 @@ select branchtype {
     } while (t < iterations);
   }
 
-  when "vector_go" {
+  when 2 {
     /* condition aux>0 allows vectorization */
     var t = 0;
     do {
@@ -98,7 +105,7 @@ select branchtype {
     } while (t < iterations);
   }
 
-  when "no_vector" {
+  when 3 {
     /*condition aux>0 allows vectorization*/
     /*but indirect idxing inbibits it */
     var t = 0;
@@ -121,14 +128,14 @@ select branchtype {
     } while (t < iterations);
   }
 
-  when "ins_heavy" {
+  when 4 {
     fill_vec(V, vector_length, iterations, WITH_BRANCHES, nfunc, rank);
   }
 }
 
 branch_time = timer.elapsed();
 timer.stop();
-if branchtype == "ins_heavy" {
+if branchTypeInt == 4 {
   writeln("Number of matrix functions = ", nfunc);
   writeln("Matrix order               = ", rank);
 }
@@ -137,9 +144,9 @@ if branchtype == "ins_heavy" {
 timer.start();
 
 /* do the whole thing one more time but now without branches */
-select branchtype {
+select branchTypeInt {
 
-  when "vector_stop" {
+  when 1 {
     /* condition vector[idx[i]]>0 inhibits vectorization                     */
     var t = 0;
     do {
@@ -155,7 +162,7 @@ select branchtype {
     } while (t < iterations);
   }
 
-  when "vector_go" {
+  when 2 {
     /* condition vector[idx[i]]>0 inhibits vectorization*/
     var t = 0;
     do {
@@ -171,7 +178,7 @@ select branchtype {
     } while (t < iterations);
   }
 
-  when "no_vector" {
+  when 3 {
     var t = 0;
     do {
       forall i in DomA {
@@ -186,8 +193,9 @@ select branchtype {
     } while (t < iterations);
   }
 
-  when "ins_heavy" {
-    fill_vec(V, vector_length, iterations, WITHOUT_BRANCHES, nfunc, rank);
+  when 4 {
+    fill_vec(V, vector_length, iterations, WITHOUT_BRANCHES, nfunc,
+        rank);
   }
 }
 
@@ -200,7 +208,7 @@ select branchtype {
 no_branch_time = timer.elapsed();
 timer.stop();
 ops = vector_length * iterations;
-if branchtype == "ins_heavy" then
+if branchTypeInt == 4 then
 ops *= rank*(rank*19 + 6);
 else
 ops *= 4.0;

@@ -3,7 +3,7 @@ param PRKVERSION = "2.15";
 config const numTasks = here.maxTaskPar;
 config const iterations : int = 100,
              length : int = 1000,
-             branchtype : string = "vector_stop",
+             branchType : string = "vector_stop",
              debug: bool = false,
              validate: bool = false;
 
