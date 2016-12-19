@@ -224,11 +224,11 @@ writeln (" a[0,0] = ",a[0,0]);
    for i in 0.. 5 { 
 */
    for (j,i) in Dom2 {
-    if (i != j) then err += ABS(b[j,i]); 
+    if (i != j) then err += abs(b[j,i]); 
     }
-  //for (i=0; i<5; i++) err += ABS(1-b[i][i]);
-  //for i in 0.. # 5 {err += ABS(1-b[i][i]);}
-  for (i,j) in Dom2 {err += ABS(1-b[i,i]);}
+  //for (i=0; i<5; i++) err += abs(1-b[i][i]);
+  //for i in 0.. # 5 {err += abs(1-b[i][i]);}
+  for (i,j) in Dom2 {err += abs(1-b[i,i]);}
   if (err) 
   then return(0);
   else return(idx);
@@ -439,17 +439,18 @@ proc func20(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  //for (j=0; j<5; j++) for (i=0; i<5; i++)
-  for j in 0.. 5 {
-   for i in 0.. 5 { b[j,i] = (a[i,j]+a[j,i])/2; }
-   } 
-  //for (j=0; j<5; j++) for (i=0; i<5; i++)
-  for j in 0.. 5 {
-   for j in 0.. 5 { if (i != j) then err += ABS(b[j,i]);}
-   }
-  if (err) 
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+   for i in Dom1 do
+     b[j,i] = (a[i,j]+a[j,i])/2;
+
+  for i in Dom1 do
+   for j in Dom1 do
+     if (i != j) then err += abs(b[j,i]);
+
+  if (err) then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func1(idx: int, a, b) {
@@ -657,11 +658,17 @@ proc func1(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func21(idx: int, a, b) {
@@ -869,11 +876,17 @@ proc func21(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 
 }
 
@@ -1082,11 +1095,17 @@ proc func2(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func22(idx: int, a, b) {
@@ -1294,11 +1313,17 @@ proc func22(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func3(idx: int, a, b) {
@@ -1506,11 +1531,17 @@ proc func3(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func23(idx: int, a, b) {
@@ -1718,11 +1749,17 @@ proc func23(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func4(idx: int, a, b) {
@@ -1930,11 +1967,17 @@ proc func4(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func24(idx: int, a, b) {
@@ -2142,11 +2185,17 @@ proc func24(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func5(idx: int, a, b) {
@@ -2354,11 +2403,17 @@ proc func5(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func25(idx: int, a, b) {
@@ -2566,11 +2621,17 @@ proc func25(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func6(idx: int, a, b) {
@@ -2778,11 +2839,17 @@ proc func6(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func26(idx: int, a, b) {
@@ -2990,11 +3057,17 @@ proc func26(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func7(idx: int, a, b) {
@@ -3202,11 +3275,17 @@ proc func7(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func27(idx: int, a, b) {
@@ -3414,11 +3493,17 @@ proc func27(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func8(idx: int, a, b) {
@@ -3626,11 +3711,17 @@ proc func8(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func28(idx: int, a, b) {
@@ -3838,11 +3929,17 @@ proc func28(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func9(idx: int, a, b) {
@@ -4050,11 +4147,17 @@ proc func9(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func29(idx: int, a, b) {
@@ -4262,11 +4365,17 @@ proc func29(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func10(idx: int, a, b) {
@@ -4474,11 +4583,17 @@ proc func10(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func30(idx: int, a, b) {
@@ -4686,11 +4801,17 @@ proc func30(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func11(idx: int, a, b) {
@@ -4898,11 +5019,17 @@ proc func11(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func31(idx: int, a, b) {
@@ -5110,11 +5237,17 @@ proc func31(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func12(idx: int, a, b) {
@@ -5322,11 +5455,17 @@ proc func12(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func32(idx: int, a, b) {
@@ -5534,11 +5673,17 @@ proc func32(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func13(idx: int, a, b) {
@@ -5746,11 +5891,17 @@ proc func13(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func33(idx: int, a, b) {
@@ -5958,11 +6109,17 @@ proc func33(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func14(idx: int, a, b) {
@@ -6170,11 +6327,17 @@ proc func14(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func34(idx: int, a, b) {
@@ -6382,11 +6545,17 @@ proc func34(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func15(idx: int, a, b) {
@@ -6594,11 +6763,17 @@ proc func15(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func35(idx: int, a, b) {
@@ -6806,11 +6981,17 @@ proc func35(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func16(idx: int, a, b) {
@@ -7018,11 +7199,17 @@ proc func16(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func36(idx: int, a, b) {
@@ -7230,11 +7417,17 @@ proc func36(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func17(idx: int, a, b) {
@@ -7442,11 +7635,17 @@ proc func17(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func37(idx: int, a, b) {
@@ -7654,11 +7853,17 @@ proc func37(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func18(idx: int, a, b) {
@@ -7866,11 +8071,17 @@ proc func18(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func38(idx: int, a, b) {
@@ -8078,11 +8289,17 @@ proc func38(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func19(idx: int, a, b) {
@@ -8290,11 +8507,17 @@ proc func19(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 
 proc func39(idx: int, a, b) {
@@ -8502,10 +8725,16 @@ proc func39(idx: int, a, b) {
   x3 = (x1 + 4*x2) % 5;
   a[4,4] = one[x3];
 
-  for j in 0.. 5 { for i in 0.. 5 { if (i != j) then err += ABS(b[j,i]); } }
-  for i in 0.. # 5 {err += ABS(1-b[i,i]);}
-  if (err)
-  then return(0);
-  else return(idx);
+  for j in Dom1 do
+    for i in Dom1 do
+      if (i != j) then err += abs(b[j,i]);
+
+  for i in Dom1 do
+    err += abs(1-b[i,i]);
+
+  if err then
+    return(0);
+  else
+    return(idx);
 }
 

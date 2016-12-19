@@ -8,17 +8,11 @@ config const iterations : int = 100,
              validate: bool = false;
 
 // config const offset : int = 0; // do we really need offset?? Let's skip it for now.
-config var MAXLENGTH = 2000000;
-config var SCALAR = 3.0;
 config var tileSize: int = 0;
 
 /* the following values are only used as labels */
-const VECTOR_STOP = 66;
-const VECTOR_GO = 77;
-const NO_VECTOR = 88;
-const INS_HEAVY = 99;
-const WITH_BRANCHES = 1;
-const WITHOUT_BRANCHES = 0;
+const WITH_BRANCHES = true;
+const WITHOUT_BRANCHES = false;
 const Dom1 = {0..#5};
 const Dom2 = {0..#5,0..#5};
 
