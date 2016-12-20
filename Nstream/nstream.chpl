@@ -3,18 +3,13 @@
 //
 use Time;
 
-extern proc sizeof(e): size_t;
 param PRKVERSION = "2.15";
 
-config const numTasks = here.maxTaskPar;
 config const iterations : int = 100,
              length : int = 100,
-             debug: bool = false,
              validate: bool = false;
 
-config var MAXLENGTH = 2000000;
 config var SCALAR = 3.0;
-config var tileSize: int = 0;
 
 //
 // Process and test input configs
@@ -26,11 +21,11 @@ if length < 0 then
   halt("ERROR: vector length must be >= 1: ", length);
 
 // Domains
-const    DomA = {0.. # length};
+const    Dom = {0.. # length};
 
 var timer: Timer,
-    A    : [DomA] real,
-    B, C : [DomA] real;
+    A    : [Dom] real,
+    B, C : [Dom] real;
 
 //
 // Print information before main loop
@@ -73,7 +68,7 @@ if validate {
   aj = aj * length:real;
 
   var asum = 0.0;
-  for j in DomA do asum += A[j]; //reduce sequentially
+  for j in Dom do asum += A[j]; //reduce sequentially
 
   if abs(aj-asum)/asum <= epsilon then
     writeln("Validation successful");
@@ -81,8 +76,9 @@ if validate {
     halt("Validation failed");
 }
 
-const bytes = 4.0 * 8 * length;
-writeln("Rate (MB/s): ", 1.0E-06*bytes/avgTime," Avg time (s): ",avgTime);
+const bytes = 4 * 8 * length;
+writeln("Rate (MB/s): ", 1.0E-06*bytes/avgTime,
+   " Avg time (s): ",avgTime);
 
 
 
