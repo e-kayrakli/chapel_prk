@@ -13,7 +13,8 @@ config const length : int = 4,
              update_ratio: int = 16,
              log2_table_size: int = 16,
              debug: bool = false,
-             validate: bool = false;
+             validate: bool = false,
+             verbose = true;
 
 param POLY:uint(64)=0x0000000000000007;
 param PERIOD:int(64) = 1317624576693539401;
@@ -25,6 +26,8 @@ param SEQSEED:int(64) = 834568137686317453;
 //
 if length < 0 then
   halt("ERROR: vector length must be >= 1: ", length);
+
+
 
 // Domains
 
@@ -66,6 +69,11 @@ const DomA = {0..#nstarts};
 var Table: [Dom] int;
 var ran: [DomA] uint(64);
 
+// Histograms for verbose mode
+var hist: [Dom] uint;
+var histHist: [Dom] int;
+
+
 for i in 0.. # tablesize do Table[i] = i;
 
 //
@@ -75,7 +83,6 @@ var v:  int;
 
 
 timer.start();
-
 // do two identical rounds of Random Access to make sure we recover the
 // initial condition
 coforall t in 0..#here.maxTaskPar {
@@ -93,6 +100,8 @@ coforall t in 0..#here.maxTaskPar {
           else 0;
         idx = (ran[j] & (tablesize-1)):int;
         Table[idx] ^= (ran[j]):int;
+        if verbose then
+          hist[idx] += 1;
       }
     }
   }
@@ -119,7 +128,17 @@ else {
   writeln("Solution validates, number of errors: ",err);
   writeln("Rate (GUPs/s): ", 1.0E-9*nupdate/random_time,", time (s) = ",random_time);
 }
- 
+
+//print out histogram
+if verbose {
+  writeln("HistHist: ");
+  for i in Dom do histHist[hist[i]:int] += 1;
+  for i in Dom {
+    if histHist[i] != 0 {
+      writeln("histhist[", i, "] = ", histHist[i]);
+    }
+  }
+}
 
 /* Utility routine to start random number generator at nth step*/
 
