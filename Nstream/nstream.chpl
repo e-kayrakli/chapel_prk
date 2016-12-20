@@ -49,44 +49,40 @@ C = 2.0;
 // Main loop
 //
 for iteration in 0..iterations {
-  // Start timer after a warmup lap
-  if iteration == 1 then timer.start();
+  if iteration == 1 then
+    timer.start(); //Start timer after a warmup lap
+
   A += B+SCALAR*C;
-} // end of main loop
+}
 
 // Timings
 timer.stop();
-var myTime = timer.elapsed(),
-var avgTime = myTime / iterations;
+var avgTime = timer.elapsed() / iterations;
+timer.clear();
 
 //
 // Analyze and output results
 //
+if validate {
+  config const epsilon = 1.e-8;
 
+  var aj=0.0, bj=2.0, cj=2.0;
+  for 0..iterations do
+    aj += bj+SCALAR*cj;
 
-// Error tolerance
-const epsilon = 1.e-8;
-//var bytes = 4.0 * sizeof(real) * length;
-var sz = sizeof(1:real(64));
-var bytes = 4.0 * sz * length;
+  aj = aj * length:real;
 
-// verify correctness */
-var element_value = iterations + 2.0;
- 
-var absErr = 0.0;
-/*
-for i in 0.. #length {
-  if (abs(vector[i] - element_value) >= epsilon) {
-     writeln("First error at i=",i,"; value: ",vector[i],"; reference value: ",element_value); 
-     }
+  var asum = 0.0;
+  for j in DomA do asum += A[j]; //reduce sequentially
+
+  if abs(aj-asum)/asum <= epsilon then
+    writeln("Validation successful");
+  else
+    halt("Validation failed");
 }
-*/
 
+const bytes = 4.0 * 8 * length;
+writeln("Rate (MB/s): ", 1.0E-06*bytes/avgTime," Avg time (s): ",avgTime);
 
-// output
-if (absErr < epsilon) {
-  writeln("Solution validates");
-  writeln("Rate (MB/s): ", 1.0E-06*bytes/avgTime," Avg time (s): ",avgTime);
-}
 
 
