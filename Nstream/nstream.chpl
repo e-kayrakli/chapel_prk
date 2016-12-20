@@ -1,5 +1,5 @@
 //
-// Chapel's serial implementation of nstream
+// Chapel's implementation of nstream
 //
 use Time;
 
@@ -12,7 +12,6 @@ config const iterations : int = 100,
              debug: bool = false,
              validate: bool = false;
 
-// config const offset : int = 0; // do we really need offset?? Let's skip it for now.
 config var MAXLENGTH = 2000000;
 config var SCALAR = 3.0;
 config var tileSize: int = 0;
@@ -20,20 +19,15 @@ config var tileSize: int = 0;
 //
 // Process and test input configs
 //
-if (iterations < 1) {
-  writeln("ERROR: iterations must be >= 1: ", iterations);
-  exit(1);
-}
-if (length < 0) {
-  writeln("ERROR: vector length must be >= 1: ", length);
-  exit(1);
-}
+if iterations < 1 then
+  halt("ERROR: iterations must be >= 1: ", iterations);
+
+if length < 0 then
+  halt("ERROR: vector length must be >= 1: ", length);
 
 // Domains
 const    DomA = {0.. # length};
-//const    DomB = {0.. # length+offset}; // do we really need offset?? Let's skip it for now.
 
-var N : int;
 var timer: Timer,
     A    : [DomA] real,
     B, C : [DomA] real;
@@ -41,16 +35,12 @@ var timer: Timer,
 //
 // Print information before main loop
 //
-if (!validate) {
-  writeln("Parallel Research Kernels version ", PRKVERSION);
-  writeln("Serial stream triad: A = B + SCALAR*C");
-  writeln("Vector length          = ", length);
-  //writeln("Offset                 = ", offset);
-  writeln("Number of iterations   = ", iterations);
-}
+writeln("Parallel Research Kernels version ", PRKVERSION);
+writeln("Serial stream triad: A = B + SCALAR*C");
+writeln("Vector length          = ", length);
+writeln("Number of iterations   = ", iterations);
 
 // initialization
-N = MAXLENGTH;      
 A = 0.0;
 B = 2.0;
 C = 2.0;
@@ -58,22 +48,17 @@ C = 2.0;
 //
 // Main loop
 //
-for iteration in 0.. iterations {
+for iteration in 0..iterations {
   // Start timer after a warmup lap
-  if (iteration == 1) then timer.start();
-
-//coforall tid in 0..#numTasks do
-  //for i in 0.. # length {
-  forall (i) in DomA {
-    A[i] += B[i]+SCALAR*C[i];
-  }
+  if iteration == 1 then timer.start();
+  A += B+SCALAR*C;
 } // end of main loop
 
 // Timings
-var myTime = timer.elapsed(),
-    avgTime = myTime / iterations;
-
 timer.stop();
+var myTime = timer.elapsed(),
+var avgTime = myTime / iterations;
+
 //
 // Analyze and output results
 //
