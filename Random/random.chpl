@@ -146,7 +146,8 @@ if verbose {
 // lot of bit arithmetic. Engin
 proc PRK_starts(m:int(64)):uint(64) {
   var i, j, n:  int;
-  var m2: [64] uint;
+  const m2Dom = {0..#64};
+  var m2: [m2Dom] uint;
   var temp, ran: uint(64);
 
   n = m;
@@ -160,25 +161,27 @@ proc PRK_starts(m:int(64)):uint(64) {
   if n == 0 then return 0x1;
 
   temp = 0x1;
-  for i in 0.. #64 {
+  for i in 0..#64 {
     m2[i] = temp;
     temp = (temp << 1) ^ if temp:int(64)<0 then POLY else 0;
     temp = (temp << 1) ^ if temp:int(64)<0 then POLY else 0;
   }
 
+  i=-1;
   for ii in 0..62 by -1 {
-    if ((n >> i) & 1) {
+    if ((n >> ii) & 1) {
       i = ii;
       break;
     }
   }
+  if i==-1 then i=0;
 
   ran = 0x2;
   while i > 0 {
     temp = 0;
-    for j in 0.. # 64 {
-      if (((ran >> j) & 1):uint(64))
-                           then temp ^= m2[j];
+    for j in 0.. #64 {
+      if (((ran >> j) & 1):uint(64)) then
+       temp ^= m2[j];
     }
     ran = temp;
     i -= 1;
