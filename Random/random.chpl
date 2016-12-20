@@ -65,16 +65,14 @@ writeln("Number of updates      = ", nupdate);
 writeln("Vector length          = ", length);
 
 const Dom = {0..#tablesize};
-const DomA = {0..#nstarts};
-var Table: [Dom] int;
-var ran: [DomA] uint(64);
+var Table: [Dom] uint;
 
 // Histograms for verbose mode
-var hist: [Dom] uint;
+var hist: [Dom] int;
 var histHist: [Dom] int;
 
 
-for i in 0.. # tablesize do Table[i] = i;
+for i in Table.domain do Table[i] = i:uint;
 
 //
 // Main loop
@@ -86,14 +84,18 @@ timer.start();
 // do two identical rounds of Random Access to make sure we recover the
 // initial condition
 coforall t in 0..#here.maxTaskPar {
-  const offset = t*nstarts;
+  const localNStarts = nstarts/here.maxTaskPar;
+  const DomA = {0..#localNStarts};
+  var ran: [DomA] uint;
+
+  const offset = t*localNStarts;
   var idx: int;
   for round in 0..#2 {
 
-    for j in 0..#nstarts do
+    for j in 0..#localNStarts do
       ran[j] = PRK_starts(SEQSEED+(nupdate/nstarts)*(j+offset));
 
-    for j in 0..#nstarts {
+    for j in 0..#localNStarts {
       //because we do two rounds, we divide nupdates in two
       for i in 0.. #nupdate/(nstarts*2) {
         ran[j] = (ran[j] << 1) ^ if ran[j]:int(64)<0 then POLY
@@ -112,7 +114,7 @@ timer.stop();
 random_time = timer.elapsed();
 
 /* verification test */
-for i in DomA {
+for i in Table.domain {
   if Table[i] != i:uint(64) {
     writeln ("Error Table[",i,"]=",Table[i]);
     err +=1;
@@ -131,8 +133,7 @@ else {
 
 //print out histogram
 if verbose {
-  writeln("HistHist: ");
-  for i in Dom do histHist[hist[i]:int] += 1;
+  for i in Dom do histHist[hist[i]] += 1;
   for i in Dom {
     if histHist[i] != 0 {
       writeln("histhist[", i, "] = ", histHist[i]);
@@ -144,13 +145,10 @@ if verbose {
 
 // I am keeping argument and return types as this function involves a
 // lot of bit arithmetic. Engin
-proc PRK_starts(m:int(64)):uint(64) {
-  var i, j, n:  int;
+proc PRK_starts(in n:int(64)):uint(64) {
   const m2Dom = {0..#64};
   var m2: [m2Dom] uint;
   var temp, ran: uint(64);
-
-  n = m;
 
   while n<0 do
     n += PERIOD;
@@ -167,7 +165,7 @@ proc PRK_starts(m:int(64)):uint(64) {
     temp = (temp << 1) ^ if temp:int(64)<0 then POLY else 0;
   }
 
-  i=-1;
+  var i=-1;
   for ii in 0..62 by -1 {
     if ((n >> ii) & 1) {
       i = ii;
@@ -179,7 +177,7 @@ proc PRK_starts(m:int(64)):uint(64) {
   ran = 0x2;
   while i > 0 {
     temp = 0;
-    for j in 0.. #64 {
+    for j in 0..#64 {
       if (((ran >> j) & 1):uint(64)) then
        temp ^= m2[j];
     }

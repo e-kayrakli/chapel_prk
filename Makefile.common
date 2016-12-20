@@ -7,7 +7,8 @@ all: $(MAIN)
 
 $(MAIN):
 	echo Building $@
-	chpl $(CHPLFLAGS) $(MISCFLAGS) -o $@ $(SRC) --main-module=$(MAIN)
+	chpl $(CHPLFLAGS) $(MISCFLAGS) -o $@ $(SRC) \
+	  --main-module=$(MAIN) $(USERFLAGS)
 
 clean:
 	rm -f $(MAIN)
