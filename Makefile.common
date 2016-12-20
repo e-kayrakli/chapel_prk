@@ -1,0 +1,11 @@
+CHPLFLAGS=--fast --local --vectorize --replace-array-accesses-with-ref-temps
+MISCFLAGS=--print-passes --print-commands
+
+all: $(MAIN)
+
+$(MAIN):
+	echo Building $@
+	chpl $(CHPLFLAGS) $(MISCFLAGS) -o $@ $(SRC) --main-module=$(MAIN)
+
+clean:
+	rm -f $(MAIN)
