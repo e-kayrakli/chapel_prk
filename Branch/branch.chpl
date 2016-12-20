@@ -9,10 +9,10 @@ use procs;
 // Process and test input configs
 //
 if iterations < 1 then
-halt("ERROR: iterations must be >= 1: ", iterations);
+  halt("ERROR: iterations must be >= 1: ", iterations);
 
 if length < 0 then
-halt("ERROR: vector length must be >= 1: ", length);
+  halt("ERROR: vector length must be >= 1: ", length);
 
 vector_length = length;
 
@@ -37,6 +37,8 @@ writeln("Branching type         = ", branchType);
 // initialization
 nfunc = 40;
 rank  = 5;
+
+const parIterations = iterations*here.maxTaskPar;
 
 for i in 0.. vector_length-1 {
   V[i]  = (3 - (i&7)):dataType;
@@ -63,7 +65,7 @@ select branchTypeInt {
 
   when 1 { //vector_stop
     /*condition vector[idx[i]]>0 inhibits vectorization*/
-    for t in 0..#iterations by 2 {
+    for t in 0..#parIterations by 2 {
       forall i in DomA {
         var aux = (-(3 - (i&7))):dataType;
         if V[Idx[i]]>0 then
@@ -83,7 +85,7 @@ select branchTypeInt {
 
   when 2 { //vector_go
     /* condition aux>0 allows vectorization */
-    for t in 0..#iterations by 2 {
+    for t in 0..#parIterations by 2 {
       forall i in DomA {
         var aux = -(3 - (i&7)):dataType;
         if aux>0 then
@@ -104,7 +106,7 @@ select branchTypeInt {
   when 3 { //no_vector
     /*condition aux>0 allows vectorization*/
     /*but indirect idxing inbibits it */
-    for t in 0..#iterations by 2 {
+    for t in 0..#parIterations by 2 {
       forall i in DomA {
         var aux = -(3 - (i&7)):dataType;
         if aux>0 then
@@ -123,12 +125,13 @@ select branchTypeInt {
   }
 
   when 4 { //ins_heavy
-    fill_vec(V, vector_length, iterations, WITH_BRANCHES, nfunc, rank);
+    fill_vec(V, vector_length, parIterations, WITH_BRANCHES, nfunc, rank);
   }
 }
 
 branch_time = timer.elapsed();
 timer.stop();
+timer.clear();
 if branchTypeInt == 4 {
   writeln("Number of matrix functions = ", nfunc);
   writeln("Matrix order               = ", rank);
@@ -142,7 +145,7 @@ select branchTypeInt {
 
   when 1 { //vector_stop
     /* condition vector[idx[i]]>0 inhibits vectorization */
-    for t in 0..#iterations by 2 {
+    for t in 0..#parIterations by 2 {
       forall i in DomA {
         var aux = -(3 - (i&7)):dataType;
         V[i] -= V[i] + aux;
@@ -156,7 +159,7 @@ select branchTypeInt {
 
   when 2 { //vector_go
     /* condition vector[idx[i]]>0 inhibits vectorization*/
-    for t in 0..#iterations by 2 {
+    for t in 0..#parIterations by 2 {
       forall i in DomA {
         var aux = -(3 - (i&7)):dataType;
         V[i] -= (V[i] + aux);
@@ -169,7 +172,7 @@ select branchTypeInt {
   }
 
   when 3 { //no_vector
-    for t in 0..#iterations by 2 {
+    for t in 0..#parIterations by 2 {
       forall i in DomA {
         var aux = -(3 - (i&7)):dataType;
         V[i] -= (V[Idx[i]] + aux);
@@ -182,7 +185,7 @@ select branchTypeInt {
   }
 
   when 4 { //inst_heavy
-    fill_vec(V, vector_length, iterations, WITHOUT_BRANCHES, nfunc,
+    fill_vec(V, vector_length, parIterations, WITHOUT_BRANCHES, nfunc,
         rank);
   }
 }
@@ -195,7 +198,7 @@ select branchTypeInt {
 // verify correctness */
 no_branch_time = timer.elapsed();
 timer.stop();
-ops = vector_length * iterations;
+ops = vector_length * parIterations;
 if branchTypeInt == 4 then
 ops *= rank*(rank*19 + 6);
 else
@@ -222,7 +225,7 @@ if total == total_ref {
   writeln("Rate (Mops/s): without branches:", ops/(no_branch_time*1.E6)," time (s): ",no_branch_time);
 }
 
-proc fill_vec(vector, length, iterations, branch, nfunc, rank) {
+proc fill_vec(vector, length, parIterations, branch, nfunc, rank) {
   var a, b: [Dom2] dataType;
   var zero, one: [Dom1] dataType;
   var aux, aux2, i, t: dataType;
@@ -238,7 +241,7 @@ proc fill_vec(vector, length, iterations, branch, nfunc, rank) {
         V[i] -= (V[i]+aux2);
       }
       t +=2;
-    } while (t < iterations);
+    } while (t < parIterations);
   }
   else {
     //for i in 0.. # 5 { zero[i] = 0; one[i] = i; }
@@ -345,7 +348,7 @@ proc fill_vec(vector, length, iterations, branch, nfunc, rank) {
         } // end of select
       } // end of forall
       t +=2;
-    } while (t < iterations);
+    } while (t < parIterations);
   } // end of else
 } // end of proc fill_vec
 
