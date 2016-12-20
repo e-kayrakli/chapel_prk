@@ -1,5 +1,7 @@
-CHPLFLAGS=--fast --local --vectorize --replace-array-accesses-with-ref-temps
-MISCFLAGS=--print-passes --print-commands
+CHPLFLAGS=--fast --local --vectorize \
+	  --replace-array-accesses-with-ref-temps
+
+MISCFLAGS=--print-passes --print-commands --savec c_code
 
 all: $(MAIN)
 

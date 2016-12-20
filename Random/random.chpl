@@ -6,24 +6,23 @@ use Time;
 extern proc sizeof(e): size_t;
 param PRKVERSION = "2.15";
 
+config param errorPercent = 1;
+
 config const numTasks = here.maxTaskPar;
-config const iterations : int = 100,
-             length : int = 4,
+config const length : int = 4,
              update_ratio: int = 16,
              log2_table_size: int = 16,
              debug: bool = false,
              validate: bool = false;
 
-const POLY:uint(64)=0x0000000000000007;
-const PERIOD:int(64) = 1317624576693539401;
+param POLY:uint(64)=0x0000000000000007;
+param PERIOD:int(64) = 1317624576693539401;
 // sequence number in stream of random numbers to be used as initial value       
-const SEQSEED:int(64) = 834568137686317453;
+param SEQSEED:int(64) = 834568137686317453;
 
 //
 // Process and test input configs
 //
-if iterations < 1 then
-  halt("ERROR: iterations must be >= 1: ", iterations);
 if length < 0 then
   halt("ERROR: vector length must be >= 1: ", length);
 
@@ -52,7 +51,6 @@ tablesize = 2 ** log2_table_size;
 tablespace = tablesize*8;
 nupdate = update_ratio * tablesize;
 
-
 //
 // Print information before main loop
 //
@@ -62,7 +60,6 @@ writeln("Table size (shared)    = ", tablesize);
 writeln("Update ratio           = ", update_ratio);
 writeln("Number of updates      = ", nupdate);
 writeln("Vector length          = ", length);
-writeln("Number of iterations   = ", iterations);
 
 const Dom = {0..#tablesize};
 const DomA = {0..#nstarts};
@@ -75,22 +72,28 @@ for i in 0.. # tablesize do Table[i] = i;
 // Main loop
 //
 var v:  int;
-var idx2: [DomA] int;
+
 
 timer.start();
 
 // do two identical rounds of Random Access to make sure we recover the
 // initial condition
-for round in 0..#2 {
-  forall j in 0..#nstarts do
-    ran[j] = PRK_starts(SEQSEED+(nupdate/nstarts)*j);
+coforall t in 0..#here.maxTaskPar {
+  const offset = t*nstarts;
+  var idx: int;
+  for round in 0..#2 {
 
-  for j in 0.. # nstarts {
-    //because we do two rounds, we divide nupdates in two
-    for i in 0.. #nupdate/(nstarts*2) {
-      ran[j] = (ran[j] << 1) ^ if ran[j]<0 then POLY else 0;
-      idx2[j] = (ran[j] & (tablesize-1)):int;
-      Table[idx2[j]] = (Table[idx2[j]]^ran[j]):int;
+    for j in 0..#nstarts do
+      ran[j] = PRK_starts(SEQSEED+(nupdate/nstarts)*(j+offset));
+
+    for j in 0..#nstarts {
+      //because we do two rounds, we divide nupdates in two
+      for i in 0.. #nupdate/(nstarts*2) {
+        ran[j] = (ran[j] << 1) ^ if ran[j]:int(64)<0 then POLY
+          else 0;
+        idx = (ran[j] & (tablesize-1)):int;
+        Table[idx] ^= (ran[j]):int;
+      }
     }
   }
 }
@@ -100,22 +103,21 @@ timer.stop();
 random_time = timer.elapsed();
 
 /* verification test */
-for (i) in DomA {
-  if(Table[i] != i:uint(64)) {
+for i in DomA {
+  if Table[i] != i:uint(64) {
     writeln ("Error Table[",i,"]=",Table[i]);
     err +=1;
   }
 }
 
-const epsilon = 1.0E-9;
-
 // output
-if (err > 0) {
+if (err>0 && errorPercent==0 ||
+    err/tablesize > errorPercent*0.01) {
   writeln("ERROR: number of incorrect table elements: ",err);
   }
 else {
   writeln("Solution validates, number of errors: ",err);
-  writeln("Rate (GUPs/s): ", epsilon*nupdate/random_time,", time (s) = ",random_time);
+  writeln("Rate (GUPs/s): ", 1.0E-9*nupdate/random_time,", time (s) = ",random_time);
 }
  
 
