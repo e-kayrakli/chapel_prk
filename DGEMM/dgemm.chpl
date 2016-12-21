@@ -47,23 +47,23 @@ else {
   const bVecRange = 0..#blockSize;
   const blockDom = {bVecRange, bVecRange};
 
+  // we need task-local arrays for blocked matrix multiplication. It
+  // seems that in intent for arrays is not working currently, so I am
+  // falling back to writing my own coforall. Engin
+  coforall tid in 0..#here.maxTaskPar {
 
-  for niter in 0..#iterations {
-    if iterations==1 || niter==1 then t.start();
+    const numElems = order/blockSize;
+    const myChunk = _computeBlock(numElems, here.maxTaskPar, tid,
+        numElems-1, 0, 0);
 
+    var AA: [blockDom] real,
+        BB: [blockDom] real,
+        CC: [blockDom] real;
 
-    // we need task-local arrays for blocked matrix multiplication. It
-    // seems that in intent for arrays is not working currently, so I am
-    // falling back to writing my own coforall. Engin
-    coforall t in 0..#here.maxTaskPar {
+    const iterDomain = {bVecRange, bVecRange, bVecRange};
 
-      const numElems = order/blockSize;
-      const myChunk = _computeBlock(numElems, here.maxTaskPar, t,
-          numElems-1, 0, 0);
-
-      var AA: [blockDom] real,
-          BB: [blockDom] real,
-          CC: [blockDom] real;
+    for niter in 0..#iterations {
+      if tid==0 && (iterations==1 || niter==1) then t.start();
 
       for (jjj,kk) in {myChunk[1]..myChunk[2], vecRange by blockSize} {
         const jj = jjj*blockSize;
@@ -80,7 +80,7 @@ else {
 
           for cc in CC do cc = 0.0;
 
-          for (i,j,k) in {bVecRange, bVecRange, bVecRange} do
+          for (i,j,k) in iterDomain do
             CC[i,j] += AA[i,k] * BB[j,k];
 
           for (iB, i) in zip(ii..#blockSize, bVecRange) do
