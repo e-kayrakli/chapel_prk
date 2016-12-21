@@ -4,7 +4,8 @@ config const order = 10,
              epsilon = 1e-8,
              iterations = 100,
              blockSize = 0,
-             debug = false;
+             debug = false,
+             validate = true;
 
 
 // TODO current logic assumes order is divisible by blockSize. add that
@@ -93,14 +94,15 @@ else {
   t.stop();
 }
 
-const checksum = + reduce C;
-if abs(checksum-refChecksum)/refChecksum > epsilon {
-  writeln("Reference checksum = ", refChecksum, " Checksum = ",
-      checksum);
-  halt("Checksum failed");
+if validate {
+  const checksum = + reduce C;
+  if abs(checksum-refChecksum)/refChecksum > epsilon then
+    halt("VALIDATION FAILED!\n \
+        Reference checksum = ", refChecksum, " Checksum = ",
+        checksum);
 }
 
 const nflops = 2.0*(order**3);
 const avgTime = t.elapsed()/iterations;
-
+writeln("Validation succesful.");
 writeln("Rate(MFlop/s) = ", 1e-6*nflops/avgTime, " Time : ", avgTime);
