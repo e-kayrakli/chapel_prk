@@ -11,4 +11,4 @@ $(MAIN):
 	  --main-module=$(MAIN) $(USERFLAGS)
 
 clean:
-	rm -f $(MAIN)
+	rm -rf $(MAIN) c_code/
