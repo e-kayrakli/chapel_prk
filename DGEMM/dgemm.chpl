@@ -24,6 +24,12 @@ forall (i,j) in matrixDom {
   C[i,j] = 0;
 }
 
+writeln("Chapel Dense matrix-matrix multiplication");
+writeln("Matrix order         =   ", order);
+writeln("Blocking factor      =   ", if blockSize>0 then blockSize+""
+    else "N/A");
+writeln("Number of iterations =   ", iterations);
+writeln();
 
 const refChecksum = (iterations) *
     (0.25*order*order*order*(order-1.0)*(order-1.0));
