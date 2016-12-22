@@ -1,0 +1,59 @@
+Branch
+
+- Implemented and running.
+- We need to modify the script so that it creates Chapel procs instead
+  of C functions.
+
+DGEMM
+
+- Implemented and running.
+
+NStream
+
+- Implemented and running.
+
+PIC
+
+- MISSING
+- Looked complicated but could be a good addition
+
+Random
+
+- Implemented and running
+- There is a minor discrepency in the created data, compared to OpenMP.
+  This disappears when run with 1 thread per locale, leading me to
+  believe that there is a race condition while using the homegrown RNG.
+
+Reduce
+
+- MISSING
+- This seems to rely on first-touch memory allocation. Which may not be
+  very easy to emulate in Chapel.
+
+Refcount
+
+- MISSING
+
+Sparse
+
+- MISSING
+- TODO
+
+Stencil
+
+- Implemented and running
+- Performance seemed muich better than OpenMP, leading me to believe
+  that there might be some subtle implementation difference
+- But than again it was forked from upstream
+
+Synch_*
+
+- MISSING
+- These seems to rely on first-touch memory allocation. Which may not be
+  very easy to emulate in Chapel.
+
+Transpose
+
+- Implemented and running
+
+
