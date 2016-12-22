@@ -5,34 +5,33 @@ use Time;
 
 param PRKVERSION = "2.17";
 
-config const iterations : int = 100,
-             order : int = 100,
-             debug: bool = false,
-             validate: bool = false;
+config const iterations = 100,
+             order = 100,
+             debug = false,
+             validate = false;
 
-config var tileSize: int = 0;
+config const tileSize = 0;
 
 //
 // Process and test input configs
 //
-if (iterations < 1) {
-  writeln("ERROR: iterations must be >= 1: ", iterations);
-  exit(1);
-}
-if (order < 0) {
-  writeln("ERROR: Matrix Order must be greater than 0 : ", order);
-  exit(1);
-}
+if iterations < 1 then
+  halt("ERROR: iterations must be >= 1: ", iterations);
+
+if order < 0 then
+  halt("ERROR: Matrix Order must be greater than 0 : ", order);
+
+if tileSize > order then
+  halt("ERROR: Tile size cannot be larger than order");
 
 // Determine tiling
-var tiled = (tileSize < order && tileSize > 0);
-
-// Safety check for creation of tiledDom
-if (!tiled) then tileSize = 1;
+const tiled = tileSize > 0;
 
 // Domains
 const    Dom = {0.. # order, 0.. # order};
-var tiledDom = {0.. # order by tileSize, 0.. # order by tileSize};
+var tiledDom = if tiled then
+  {0.. # order by tileSize, 0.. # order by tileSize} else
+  {0..5 by 1, 0..5 by 1}; //junk domain
 
 var timer: Timer,
     bytes = 2.0 * numBytes(real) * order * order,
@@ -41,14 +40,12 @@ var timer: Timer,
 //
 // Print information before main loop
 //
-if (!validate) {
-  writeln("Parallel Research Kernels version ", PRKVERSION);
-  writeln("Serial Matrix transpose: B = A^T");
-  writeln("Matrix order          = ", order);
-  if (tiled) then writeln("Tile size              = ", tileSize);
-  else            writeln("Untiled");
-  writeln("Number of iterations = ", iterations);
-}
+writeln("Parallel Research Kernels version ", PRKVERSION);
+writeln("Serial Matrix transpose: B = A^T");
+writeln("Matrix order          = ", order);
+if (tiled) then writeln("Tile size              = ", tileSize);
+else            writeln("Untiled");
+writeln("Number of iterations = ", iterations);
 
 // Fill original column matrix
 [(i, j) in Dom] A[i,j] = order*j + i;
@@ -61,12 +58,12 @@ B = 0.0;
 //
 for iteration in 0..iterations {
   // Start timer after a warmup lap
-  if (iteration == 1) then timer.start();
+  if iteration == 1 then timer.start();
 
-  if (tiled) {
+  if tiled {
     forall (i,j) in tiledDom {
-      for it in i .. # min(order - i, tileSize) {
-        for jt in j .. # min(order - j, tileSize) {
+      for it in i..#min(order-i, tileSize) {
+        for jt in j..#min(order-j, tileSize) {
           B[jt,it] += A[it,jt];
           A[it,jt] += 1.0;
         }
@@ -92,9 +89,8 @@ timer.stop();
 var transposeTime = timer.elapsed(),
     avgTime = transposeTime / iterations;
 
-// Error tolerance
+// Verify correctness
 const epsilon = 1.e-8;
-
 var absErr = 0.0;
 const addit = ((iterations+1) * iterations)/2.0;
 
@@ -102,18 +98,11 @@ for (i,j) in Dom {
   absErr += abs(B[i,j] - ((order*i + j)*(iterations+1)+addit));
 }
 
-if (debug) {
-  writeln("transposeTime = ", transposeTime);
-  writeln("Sum of absolute differences: ", absErr);
-}
-
-// Verify correctness
-/*if (absErr < epsilon) {*/
-if (absErr < epsilon) {
-  writeln("Solution validates");
-  if (!validate) then writeln("Rate (MB/s): ", 1.0E-06 * bytes / avgTime,
-                              " Avg time (s): ", avgTime);
-} else {
-  writeln("ERROR: Aggregate squared error", absErr,
+if absErr > epsilon then
+  halt("ERROR: Aggregate squared error", absErr,
           " exceeds threshold ", epsilon);
-}
+
+// Report performance
+writeln("Solution validates");
+writeln("Rate (MB/s): ", 1.0E-06 * bytes / avgTime,
+    " Avg time (s): ", avgTime);
