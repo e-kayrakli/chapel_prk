@@ -186,8 +186,8 @@ proc main() {
           for param ii in -R..-1 do tmpout += weight[R1+ii][R1] * input[i+ii, j];
           for param ii in 1..R   do tmpout += weight[R1+ii][R1] * input[i+ii, j];
         } else {
-          for ii in -R..R do
-            for jj in -R..R do
+          for param ii in -R..R do
+            for param jj in -R..R do
               tmpout += weight[R1+ii][R1+jj] * input[i+ii, j+jj];
         }
         output[i, j] += tmpout;
@@ -203,8 +203,8 @@ proc main() {
               for param ii in -R..-1 do tmpout += weight[R1+ii][R1] * input[i+ii, j];
               for param ii in 1..R   do tmpout += weight[R1+ii][R1] * input[i+ii, j];
             } else {
-              for ii in -R..R do
-                for jj in -R..R do
+              for param ii in -R..R do
+                for param jj in -R..R do
                   tmpout += weight[R1+ii][R1+jj] * input[i+ii, j+jj];
             }
             output[i, j] += tmpout;
