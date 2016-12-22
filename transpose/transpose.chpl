@@ -91,12 +91,9 @@ var transposeTime = timer.elapsed(),
 
 // Verify correctness
 const epsilon = 1.e-8;
-var absErr = 0.0;
 const addit = ((iterations+1) * iterations)/2.0;
-
-for (i,j) in Dom {
-  absErr += abs(B[i,j] - ((order*i + j)*(iterations+1)+addit));
-}
+const absErr = + reduce [(i,j) in Dom]
+    abs(B[i,j]-((order*i+j)*(iterations+1)+addit));
 
 if absErr > epsilon then
   halt("ERROR: Aggregate squared error", absErr,
