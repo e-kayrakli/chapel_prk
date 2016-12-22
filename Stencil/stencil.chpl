@@ -117,12 +117,27 @@ proc main() {
   /* Weight matrix represented as tuple of tuples*/
   var weight: Wsize*(Wsize*(dtype));
 
-  for i in 1..R {
-    const element : dtype = 1 / (2*i*R) : dtype;
-    weight[R1][R1+i]  =  element;
-    weight[R1+i][R1]  =  element;
-    weight[R1-i][R1] = -element;
-    weight[R1][R1-i] = -element;
+  if !compact {
+    for i in 1..R {
+      const element : dtype = 1 / (2*i*R) : dtype;
+      weight[R1][R1+i]  =  element;
+      weight[R1+i][R1]  =  element;
+      weight[R1-i][R1] = -element;
+      weight[R1][R1-i] = -element;
+    }
+  }
+  else {
+    for jj in 1..R {
+      const element = (1.0/(4.0*jj*(2.0*jj-1)*R)):dtype;
+      for ii in R1+-jj+1..R1+jj-1 {
+        weight[ ii][R1+jj] = element;
+        weight[ ii][R1-jj] = -element;
+        weight[R1+jj][ ii] = element;
+        weight[R1-jj][ ii] = -element;
+      }
+      weight[R1+jj][R1+jj] = (1.0/(4.0*jj*R));
+      weight[R1-jj][R1-jj] = -(1.0/(4.0*jj*R));
+    }
   }
 
   /* Initialize Input matrix */
