@@ -7,10 +7,8 @@ param PRKVERSION = "2.17";
 
 config const iterations = 100,
              order = 100,
-             debug = false,
-             validate = false;
-
-config const tileSize = 0;
+             tileSize = 0,
+             debug = false;
 
 //
 // Process and test input configs
@@ -28,9 +26,9 @@ if tileSize > order then
 const tiled = tileSize > 0;
 
 // Domains
-const    Dom = {0.. # order, 0.. # order};
+const Dom = {0..#order, 0..#order};
 var tiledDom = if tiled then
-  {0.. # order by tileSize, 0.. # order by tileSize} else
+  {0..#order by tileSize, 0..#order by tileSize} else
   {0..5 by 1, 0..5 by 1}; //junk domain
 
 var timer: Timer,
@@ -50,7 +48,7 @@ writeln("Number of iterations = ", iterations);
 // Fill original column matrix
 [(i, j) in Dom] A[i,j] = order*j + i;
 
-// Set transpose matrix to known garbage value
+// Initialize B for clarity
 B = 0.0;
 
 //
@@ -76,7 +74,6 @@ for iteration in 0..iterations {
       A[i,j] += 1.0;
     }
   }
-
 } // end of main loop
 
 timer.stop();
@@ -86,7 +83,7 @@ timer.stop();
 //
 
 // Timings
-var transposeTime = timer.elapsed(),
+const transposeTime = timer.elapsed(),
     avgTime = transposeTime / iterations;
 
 // Verify correctness
