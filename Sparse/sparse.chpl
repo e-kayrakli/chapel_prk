@@ -55,29 +55,19 @@ if debug {
   writeln();
 }
 
+const t = new Timer();
 for niter in 0..iterations {
+
+  if niter == 1 then t.start();
   forall i in vectorDom do
     vector[i] += i+1;
-
-  if debug {
-    writeln();
-    writeln("Vector");
-    for v in vector do write(v, " ");
-    writeln();
-  }
 
   // do the multiplication
   forall (i,j) in matrixDom {
     result[i] += matrix[i,j] * vector[j];
   }
 }
-
-if debug {
-  writeln();
-  writeln("Result");
-  for v in result do write(v, " ");
-  writeln();
-}
+t.stop();
 
 // verify the result
 const epsilon = 1e-8;
@@ -89,6 +79,10 @@ if abs(vectorSum-referenceSum) > epsilon then
       " Vector sum = ", vectorSum);
 
 writeln("Validation successful");
+const nflop = 2.0*matrixDom.numIndices;
+const avgTime = t.elapsed()/iterations;
+writeln("Rate (MFlops/s): ", 1e-6*nflop/avgTime, " Avg time (s): ",
+    avgTime);
 
 inline proc LIN(i, j) {
   return (i+(j<<lsize));
