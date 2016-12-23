@@ -1,8 +1,11 @@
 use Time;
 use LayoutCSR;
 
+config param directAccess = false;
+
 config const lsize = 5;
 config const radius = 2;
+const stencilSize = 4*radius+1;
 config const iterations = 10;
 config const debug = false;
 
@@ -13,7 +16,7 @@ const size2 = size*size;
 /*const size2 = 2**(2*lsize);*/
 
 const parentDom = {0..#size2, 0..#size2};
-var matrixDom: sparse subdomain(parentDom);
+var matrixDom: sparse subdomain(parentDom) dmapped CSR();
 
 //initialize sparse domain
 for row in 0..#size2 {
@@ -63,8 +66,20 @@ for niter in 0..iterations {
     vector[i] += i+1;
 
   // do the multiplication
-  forall (i,j) in matrixDom {
-    result[i] += matrix[i,j] * vector[j];
+  if !directAccess {
+    forall (i,j) in matrixDom {
+      result[i] += matrix[i,j] * vector[j];
+    }
+  }
+  else {
+    const ref sparseDom = matrixDom._instance;
+    const ref sparseArr = matrix._instance;
+
+    forall i in parentDom.dim(1) {
+      for j in sparseDom.rowStart[i]..sparseDom.rowStop[i]{
+        result[i] += sparseArr.data[j] * vector[sparseDom.colIdx[j]];
+      }
+    }
   }
 }
 t.stop();
