@@ -2,6 +2,7 @@ use Time;
 use LayoutCSR;
 
 config param directAccess = false;
+param PRKVERSION = "2.17";
 
 config const lsize = 5;
 config const radius = 2;
@@ -13,13 +14,14 @@ config const debug = false;
 const lsize2 = 2*lsize;
 const size = 1<<lsize;
 const size2 = size*size;
+const sparsity = (4*radius+1):real/size2;
 /*const size2 = 2**(2*lsize);*/
 
 const parentDom = {0..#size2, 0..#size2};
 var matrixDom: sparse subdomain(parentDom) dmapped CSR();
 
 // temporary index buffer for fast initialization
-const indBufDom = {0..#(size2*(4*radius+1))};
+const indBufDom = {0..#(size2*stencilSize)};
 var indBuf: [indBufDom] 2*int;
 
 //initialize sparse domain
@@ -64,6 +66,16 @@ if debug {
   for v in vector do write(v, " ");
   writeln();
 }
+
+// Print information before main loop
+writeln("Parallel Research Kernels Version ", PRKVERSION);
+writeln("Sparse matrix-dense vector multiplication");
+writeln("Matrix order         = ", size2);
+writeln("Stencil diameter     = ", 2*radius+1);
+writeln("Sparsity             = ", sparsity);
+writeln("Number of iterations = ", iterations);
+writeln("Direct access ", if directAccess then "enabled" else
+    "disabled");
 
 const t = new Timer();
 for niter in 0..iterations {
