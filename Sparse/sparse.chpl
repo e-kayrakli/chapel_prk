@@ -7,7 +7,8 @@ config param directAccess = false;
 
 config const lsize = 5,
              radius = 2,
-             iterations = 10;
+             iterations = 10,
+             scramble = true;
 
 const lsize2 = 2*lsize;
 const size = 1<<lsize;
@@ -29,12 +30,12 @@ for row in 0..#size2 {
 
   const bufIdx = row*5;
 
-  indBuf[bufIdx] = (row, LIN(i,j));
+  indBuf[bufIdx] = (row, reverse(LIN(i,j)));
   for r in 1..radius {
-    indBuf[bufIdx+1] = (row, LIN((i+r)%size,j));
-    indBuf[bufIdx+2] = (row, LIN((i-r+size)%size,j));
-    indBuf[bufIdx+3] = (row, LIN(i, (j+r)%size));
-    indBuf[bufIdx+4] = (row, LIN(i, (j-r+size)%size));
+    indBuf[bufIdx+1] = (row, reverse(LIN((i+r)%size,j)));
+    indBuf[bufIdx+2] = (row, reverse(LIN((i-r+size)%size,j)));
+    indBuf[bufIdx+3] = (row, reverse(LIN(i, (j+r)%size)));
+    indBuf[bufIdx+4] = (row, reverse(LIN(i, (j-r+size)%size)));
   }
 }
 matrixDom.bulkAdd(indBuf, preserveInds=false);
@@ -58,6 +59,7 @@ writeln("Sparsity             = ", sparsity);
 writeln("Number of iterations = ", iterations);
 writeln("Direct access ", if directAccess then "enabled" else
     "disabled");
+writeln("Indexes are ", if !scramble then "not " else "", "scrambled");
 
 const t = new Timer();
 for niter in 0..iterations {
@@ -106,3 +108,16 @@ inline proc LIN(i, j) {
   return (i+(j<<lsize));
 }
 
+proc reverse(xx) {
+  if !scramble then return xx;
+
+  var x = xx:uint;
+
+  x = ((x >> 1)  & 0x5555555555555555) | ((x << 1)  & 0xaaaaaaaaaaaaaaaa);
+  x = ((x >> 2)  & 0x3333333333333333) | ((x << 2)  & 0xcccccccccccccccc);
+  x = ((x >> 4)  & 0x0f0f0f0f0f0f0f0f) | ((x << 4)  & 0xf0f0f0f0f0f0f0f0);
+  x = ((x >> 8)  & 0x00ff00ff00ff00ff) | ((x << 8)  & 0xff00ff00ff00ff00);
+  x = ((x >> 16) & 0x0000ffff0000ffff) | ((x << 16) & 0xffff0000ffff0000);
+  x = ((x >> 32) & 0x00000000ffffffff) | ((x << 32) & 0xffffffff00000000);
+  return (x>>(64-lsize)):int;
+}
