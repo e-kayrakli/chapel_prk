@@ -18,19 +18,26 @@ const size2 = size*size;
 const parentDom = {0..#size2, 0..#size2};
 var matrixDom: sparse subdomain(parentDom) dmapped CSR();
 
+// temporary index buffer for fast initialization
+const indBufDom = {0..#(size2*(4*radius+1))};
+var indBuf: [indBufDom] 2*int;
+
 //initialize sparse domain
 for row in 0..#size2 {
   const i = row%size;
   const j = row/size;
 
-  matrixDom += (row, LIN(i,j));
+  var bufIdx = row*5;
+
+  indBuf[bufIdx] = (row, LIN(i,j));
   for r in 1..radius {
-    matrixDom += (row, LIN((i+r)%size,j));
-    matrixDom += (row, LIN((i-r+size)%size,j));
-    matrixDom += (row, LIN(i, (j+r)%size));
-    matrixDom += (row, LIN(i, (j-r+size)%size));
+    indBuf[bufIdx+1] = (row, LIN((i+r)%size,j));
+    indBuf[bufIdx+2] = (row, LIN((i-r+size)%size,j));
+    indBuf[bufIdx+3] = (row, LIN(i, (j+r)%size));
+    indBuf[bufIdx+4] = (row, LIN(i, (j-r+size)%size));
   }
 }
+matrixDom.bulkAdd(indBuf, preserveInds=false);
 
 var matrix: [matrixDom] real;
 
