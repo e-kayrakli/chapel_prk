@@ -90,20 +90,14 @@ var particleDom = {1..0};
 var particles: [particleDom] particle;
 
 select particleMode {
-  when "GEOMETRIC" do
-    initializeGeometric();
-  when "SINUSOIDAL" do
-    initializeSinusoidal();
-  when "LINEAR" do
-    initializeLinear();
-  when "PATCH" {
-    if badPatch(patch, gridPatch) then
-      halt("Bad patch given");
-    initializePatch();
-  }
-  otherwise do
-    halt("Unknown particle mode: ", particleMode);
+  when "GEOMETRIC" do initializeGeometric();
+  when "SINUSOIDAL" do initializeSinusoidal();
+  when "LINEAR" do initializeLinear();
+  when "PATCH" do initializePatch();
+  otherwise do halt("Unknown particle mode: ", particleMode);
 }
+
+finishDistribution();
 
 writeln("Number of particles placed : ", particles.size);
 
@@ -161,13 +155,13 @@ proc initializeGrid(L) {
 
 proc initializeGeometric() {
 
+  const A = n * ((1.0-rho) / (1.0-(rho**L))) / L:real;
   LCG_init();
 
-  const A = n * ((1.0-rho) / (1.0-(rho**L))) / L:real;
 
   var nPlaced = 0;
   for (x,y) in {0..#L, 0..#L} do
-    nPlaced += random_draw(A*(rho**x)):int;
+    nPlaced += random_draw(getSeed(x)):int;
 
   particleDom = {0..#nPlaced};
 
@@ -177,17 +171,13 @@ proc initializeGeometric() {
   for (x,y) in {0..#L, 0..#L} {
     // TODO without cast this creates a seg fault and overflow
     // warning with no --fast. Investigate for possible bug. Engin
-    const actual_particles = random_draw(A * (rho**x)):int;
-    for p in 0..#actual_particles {
-      particles[pIdx].x = x + REL_X;
-      particles[pIdx].y = y + REL_Y;
-      particles[pIdx].k = k;
-      particles[pIdx].m = m;
-      pIdx += 1;
-    }
+    const actual_particles = random_draw(getSeed(x)):int;
+    placeParticles(pIdx, actual_particles, x, y);
   }
 
-  finish_distribution(nPlaced, particles);
+  inline proc getSeed(x) {
+    return A * (rho**x);
+  }
 }
 
 proc initializeSinusoidal() {
@@ -211,16 +201,8 @@ proc initializeSinusoidal() {
     // TODO without cast this creates a seg fault and overflow
     // warning with no --fast. Investigate for possible bug. Engin
     const actual_particles = random_draw(getSeed(x)):int;
-    for p in 0..#actual_particles {
-      particles[pIdx].x = x + REL_X;
-      particles[pIdx].y = y + REL_Y;
-      particles[pIdx].k = k;
-      particles[pIdx].m = m;
-      pIdx += 1;
-    }
+    placeParticles(pIdx, actual_particles, x, y);
   }
-
-  finish_distribution(nPlaced, particles);
 
   inline proc getSeed(x) {
     return 2.0*(cos(x*step)**2)*n/(L**2);
@@ -248,15 +230,8 @@ proc initializeLinear() {
     // TODO without cast this creates a seg fault and overflow
     // warning with no --fast. Investigate for possible bug. Engin
     const actual_particles = random_draw(getSeed(x)):int;
-    for p in 0..#actual_particles {
-      particles[pIdx].x = x + REL_X;
-      particles[pIdx].y = y + REL_Y;
-      particles[pIdx].k = k;
-      particles[pIdx].m = m;
-      pIdx += 1;
-    }
+    placeParticles(pIdx, actual_particles, x, y);
   }
-  finish_distribution(nPlaced, particles);
 
   inline proc getSeed(x) {
     return n * ((beta - alpha * step * x:real)/total_weight)/L;
@@ -264,6 +239,10 @@ proc initializeLinear() {
 }
 
 proc initializePatch() {
+
+  if badPatch(patch, gridPatch) then
+    halt("Bad patch given");
+
   const total_cells  = (patch.right - patch.left+1)*(patch.top -
       patch.bottom+1);
   const particles_per_cell = (n/total_cells):real;
@@ -287,27 +266,32 @@ proc initializePatch() {
     // warning with no --fast. Investigate for possible bug. Engin
     const actual_particles = random_draw(particles_per_cell):int;
     if !outsidePatch(x, y) {
-      for p in 0..#actual_particles {
-        particles[pIdx].x = x + REL_X;
-        particles[pIdx].y = y + REL_Y;
-        particles[pIdx].k = k;
-        particles[pIdx].m = m;
-        pIdx += 1;
-      }
+      placeParticles(pIdx, actual_particles, x, y);
     }
   }
-  finish_distribution(nPlaced, particles);
 
   inline proc outsidePatch(x, y) {
     return x<patch.left   || x>patch.right ||
             y<patch.bottom || y>patch.top;
   }
+
+  proc badPatch(patch, patch_contain) {
+    if patch.left>=patch.right || patch.bottom>=patch.top then
+      return true;
+    if patch.left  <patch_contain.left   ||
+      patch.right>patch_contain.right then
+        return true;
+    if patch.bottom<patch_contain.bottom ||
+      patch.top > patch_contain.top then
+        return true;
+    return false;
+  }
 }
 
-proc finish_distribution(n, p) { //n is the size, unnecessary
-  for pIdx in 0..#n {
-    var x_coord = p[pIdx].x;
-    var y_coord = p[pIdx].y;
+proc finishDistribution() {
+  for p in particles {
+    var x_coord = p.x;
+    var y_coord = p.y;
     var rel_x = mod(x_coord, 1.0);
     var rel_y = mod(y_coord, 1.0);
 
@@ -319,13 +303,13 @@ proc finish_distribution(n, p) { //n is the size, unnecessary
     var base_charge = 1.0 / ((DT*DT) * Q * (cos_theta/r1_sq +
           cos_phi/r2_sq));
 
-    p[pIdx].v_x = 0.0;
-    p[pIdx].v_y = p[pIdx].m/DT;
+    p.v_x = 0.0;
+    p.v_y = p.m/DT;
 
-    p[pIdx].q = if (x%2 == 0) then (2*p[pIdx].k+1) * base_charge
-      else -1.0 * (2*p[pIdx].k+1) * base_charge ;
-    p[pIdx].x0 = x_coord;
-    p[pIdx].y0 = y_coord;
+    p.q = if (x%2 == 0) then (2*p.k+1) * base_charge
+      else -1.0 * (2*p.k+1) * base_charge ;
+    p.x0 = x_coord;
+    p.y0 = y_coord;
   }
 }
 
@@ -395,14 +379,12 @@ proc verifyParticle(p) {
   return true;
 }
 
-proc badPatch(patch, patch_contain) {
-  if patch.left>=patch.right || patch.bottom>=patch.top then
-    return true;
-  if patch.left  <patch_contain.left   ||
-      patch.right>patch_contain.right then
-    return true;
-  if patch.bottom<patch_contain.bottom ||
-      patch.top > patch_contain.top then
-    return true;
-  return false;
+inline proc placeParticles(ref pIdx, n, x, y) {
+  for p in 0..#n {
+    particles[pIdx].x = x + REL_X;
+    particles[pIdx].y = y + REL_Y;
+    particles[pIdx].k = k;
+    particles[pIdx].m = m;
+    pIdx += 1;
+  }
 }
