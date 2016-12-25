@@ -108,9 +108,6 @@ for niter in 0..iterations {
   if niter == 1 then t.start();
 
   forall i in 0..#n {
-    /*var fx = 0.0;*/
-    /*var fy = 0.0;*/
-
 
     const (fx, fy) = computeTotalForce(particles[i]);
     if debug then writeln("Force acting on particle " , i, " ", (fx,fy));
@@ -120,11 +117,12 @@ for niter in 0..iterations {
     if debug then write("Particle ", i, " moved from ",
         (particles[i].x,particles[i].y));
 
-    particles[i].x = mod(particles[i].x + particles[i].v_x*DT + 0.5*ax*DT*DT + L, L);
-    particles[i].y = mod(particles[i].y + particles[i].v_y*DT + 0.5*ay*DT*DT + L, L);
+    particles[i].x = mod(particles[i].x + particles[i].v_x*DT +
+        0.5*ax*DT*DT + L, L);
+    particles[i].y = mod(particles[i].y + particles[i].v_y*DT +
+        0.5*ay*DT*DT + L, L);
 
-    if debug then writeln(" to ",
-        (particles[i].x,particles[i].y));
+    if debug then writeln(" to ", (particles[i].x,particles[i].y));
 
     particles[i].v_x += ax * DT;
     particles[i].v_y += ay * DT;
