@@ -1,13 +1,11 @@
-CHPLFLAGS=--fast --local --vectorize \
-	  --replace-array-accesses-with-ref-temps
+CHPLFLAGS=--fast --local --vectorize --replace-array-accesses-with-ref-temps
 
 MISCFLAGS=
 all: $(MAIN)
 
 $(MAIN):
 	echo Building $@
-	chpl $(CHPLFLAGS) $(MISCFLAGS) -o $@ $(SRC) \
-	  --main-module=$(MAIN) $(USERFLAGS)
+	chpl $(CHPLFLAGS) $(MISCFLAGS) -o $@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 
 clean:
 	rm -rf $(MAIN) c_code/
