@@ -1,3 +1,5 @@
+use Time;
+
 extern proc LCG_init();
 extern proc random_draw(x: c_double): uint(64);
 
@@ -164,7 +166,12 @@ proc computeTotalForce(p, L, Qgrid, ref fx, ref fy) {
   if debug then writeln("Total force on particle : ", (fx, fy));
 }
 
+const t = new Timer();
+
 for niter in 0..iterations {
+
+  if niter == 1 then t.start();
+
   forall i in 0..#n {
     var fx = 0.0;
     var fy = 0.0;
@@ -188,6 +195,7 @@ for niter in 0..iterations {
     particles[i].v_y += ay * DT;
   }
 }
+t.stop();
 
 proc verifyParticle(p, iterations, Qgrid, L) {
 
@@ -216,3 +224,6 @@ for i in 0..#n {
 }
 
 writeln("Verification succesful");
+
+const avgTime = t.elapsed()/iterations;
+writeln("Rate (Mparticles_moved/s): ", 1.0e-6*(n/avgTime));
