@@ -1,9 +1,8 @@
 CHPLFLAGS=--fast --local --vectorize --replace-array-accesses-with-ref-temps
 
 MISCFLAGS=
-all: $(MAIN)
 
-$(MAIN):
+$(MAIN): $(SRC)
 	echo Building $@
 	chpl $(CHPLFLAGS) $(MISCFLAGS) -o $@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 
