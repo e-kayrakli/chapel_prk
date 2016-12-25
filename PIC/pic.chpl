@@ -3,6 +3,7 @@ use Time;
 extern proc LCG_init();
 extern proc random_draw(x: c_double): uint(64);
 
+param PRKVERSION = "2.17";
 param REL_X = 0.5;
 param REL_Y = 0.5;
 param DT = 1.0;
@@ -58,6 +59,30 @@ record particle {
   var k: int;
   var m: int;
 }
+
+writeln("Parallel Research Kernels Version ", PRKVERSION);
+writeln("Chapel Particle-in-Cell execution on 2D grid");
+writeln("Number of threads              = ", here.maxTaskPar);
+writeln("Grid Size                      = ", L);
+writeln("Number of particles requested  = ", n);
+writeln("Number of time steps           = ", iterations);
+writeln("Initialization mode            = ", particleMode);
+select particleMode {
+  when "GEOMETRIC" do
+    writeln("\tAttenuation factor           = ", rho);
+  when "LINEAR" {
+    writeln("\tNegative Slope               = ", alpha);
+    writeln("\tOffset                       = ", beta);
+  }
+  when "PATCH" {
+    writeln("\tBounding box                 = ", (initPatch.left,
+                                                  initPatch.right,
+                                                  initPatch.top,
+                                                  initPatch.bottom));
+  }
+}
+writeln("Particle charge semi-increment = ", k);
+writeln("Vertical velocity              = ", m);
 
 var Qgrid = initializeGrid(L);
 
