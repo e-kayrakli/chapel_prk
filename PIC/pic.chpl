@@ -18,8 +18,12 @@ config const iterations = 10;
 config const debug = false;
 config const particleMode = "SINUSOIDAL";
 
+// for geomteric initialization
 config const rho = 1.0;
 
+// for linear initialization
+config const alpha = 0.5;
+config const beta = 0.5;
 
 record particle {
   var x: real;
@@ -41,10 +45,12 @@ var particleDom = {1..0};
 var particles: [particleDom] particle;
 
 select particleMode {
-  when "SINUSOIDAL" do
-    particles = initializeSinusoidal(n, L, k, m, n);
   when "GEOMETRIC" do
     particles = initializeGeometric(n, L, rho, k, m, n);
+  when "SINUSOIDAL" do
+    particles = initializeSinusoidal(n, L, k, m, n);
+  when "LINEAR" do
+    particles = initializeLinear(n, L, alpha, beta, k, m, n);
   otherwise do
     halt("Unknown particle mode: ", particleMode);
 }
@@ -179,6 +185,47 @@ proc initializeSinusoidal(n_input, L, k, m,
     }
   }
 
+  finish_distribution(n_placed, particles);
+  return particles;
+}
+
+proc initializeLinear(n_input, L, alpha, beta, k, m, ref n_placed) {
+
+  const step = 1.0/L;
+  n_placed = 0;
+
+  LCG_init();
+
+  const total_weight = beta*L-alpha*0.5*step*L*(L-1);
+  for x in 0..#L {
+    const current_weight = (beta - alpha * step * x:real);
+    for y in 0..#L {
+      n_placed +=
+        random_draw(n_input * (current_weight/total_weight)/L):int;
+    }
+  }
+
+  particleDom = {0..#n_placed};
+
+  LCG_init();
+
+  var pIdx = 0;
+  for x in 0..#L {
+    const current_weight = (beta - alpha * step * x:real);
+    for y in 0..#L {
+      // TODO without cast this creates a seg fault and overflow
+      // warning with no --fast. Investigate for possible bug. Engin
+      const actual_particles =
+        random_draw(n_input * (current_weight/total_weight)/L):int;
+      for p in 0..#actual_particles {
+        particles[pIdx].x = x + REL_X;
+        particles[pIdx].y = y + REL_Y;
+        particles[pIdx].k = k;
+        particles[pIdx].m = m;
+        pIdx += 1;
+      }
+    }
+  }
   finish_distribution(n_placed, particles);
   return particles;
 }
