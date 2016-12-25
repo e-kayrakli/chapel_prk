@@ -16,6 +16,10 @@ config const k = 1;
 config const m = 1;
 config const iterations = 10;
 config const debug = false;
+config const particleMode = "SINUSOIDAL";
+
+config const rho = 1.0;
+
 
 record particle {
   var x: real;
@@ -32,7 +36,18 @@ record particle {
 }
 
 var Qgrid = initializeGrid(L);
-var particles = initializeSinusoidal(n, L, k, m, n);
+
+var particleDom = {1..0};
+var particles: [particleDom] particle;
+
+select particleMode {
+  when "SINUSOIDAL" do
+    particles = initializeSinusoidal(n, L, k, m, n);
+  when "GEOMETRIC" do
+    particles = initializeGeometric(n, L, rho, k, m, n);
+  otherwise do
+    halt("Unknown particle mode: ", particleMode);
+}
 
 writeln("Number of particles placed : ", n);
 
@@ -88,6 +103,44 @@ proc initializeGrid(L) {
   return grid;
 }
 
+proc initializeGeometric(n_input, L, rho, k, m, ref n_placed) {
+
+  LCG_init();
+
+  var A = n_input * ((1.0-rho) / (1.0-(rho**L))) / L:real;
+
+  n_placed = 0;
+  for x in 0..#L {
+    for y in 0..#L {
+      n_placed += random_draw(A*(rho**x)):int;
+    }
+  }
+
+  particleDom = {0..#n_placed};
+
+  LCG_init();
+
+  A = n_input * ((1.0-rho) / (1.0-(rho**L))) / L:real;
+  var pIdx = 0;
+  for x in 0..#L {
+    for y in 0..#L {
+      // TODO without cast this creates a seg fault and overflow
+      // warning with no --fast. Investigate for possible bug. Engin
+      const actual_particles = random_draw(A * (rho**x)):int;
+      for p in 0..#actual_particles {
+        particles[pIdx].x = x + REL_X;
+        particles[pIdx].y = y + REL_Y;
+        particles[pIdx].k = k;
+        particles[pIdx].m = m;
+        pIdx += 1;
+      }
+    }
+  }
+
+  finish_distribution(n_placed, particles);
+  return particles;
+}
+
 proc initializeSinusoidal(n_input, L, k, m,
     ref n_placed) {
 
@@ -104,8 +157,7 @@ proc initializeSinusoidal(n_input, L, k, m,
     }
   }
 
-  const particleDom = {0..#n_placed};
-  var particles: [particleDom] particle;
+  particleDom = {0..#n_placed};
 
   LCG_init();
 
