@@ -31,6 +31,53 @@ record particle {
   var m: int;
 }
 
+var Qgrid = initializeGrid(L);
+var particles = initializeSinusoidal(n, L, k, m, n);
+
+writeln("Number of particles placed : ", n);
+
+const t = new Timer();
+
+for niter in 0..iterations {
+
+  if niter == 1 then t.start();
+
+  forall i in 0..#n {
+    var fx = 0.0;
+    var fy = 0.0;
+
+
+    computeTotalForce(particles[i], L, Qgrid, fx, fy);
+    if debug then writeln("Force acting on particle " , i, " ", (fx,fy));
+    const ax = fx * MASS_INV;
+    const ay = fy * MASS_INV;
+
+    if debug then write("Particle ", i, " moved from ",
+        (particles[i].x,particles[i].y));
+
+    particles[i].x = mod(particles[i].x + particles[i].v_x*DT + 0.5*ax*DT*DT + L, L);
+    particles[i].y = mod(particles[i].y + particles[i].v_y*DT + 0.5*ay*DT*DT + L, L);
+
+    if debug then writeln(" to ",
+        (particles[i].x,particles[i].y));
+
+    particles[i].v_x += ax * DT;
+    particles[i].v_y += ay * DT;
+  }
+}
+t.stop();
+
+
+for i in 0..#n {
+  if !verifyParticle(particles[i], iterations, Qgrid, L) then
+    halt("Verification failed");
+}
+
+writeln("Verification succesful");
+
+const avgTime = t.elapsed()/iterations;
+writeln("Rate (Mparticles_moved/s): ", 1.0e-6*(n/avgTime));
+
 proc initializeGrid(L) {
   const gridDom = {0..#(L+1), 0..#(L+1)};
   var grid: [gridDom] real;
@@ -39,10 +86,6 @@ proc initializeGrid(L) {
     grid[y,x] = if x%2==0 then Q else -Q;
   }
   return grid;
-}
-
-proc foo(){
-  return 5:uint;
 }
 
 proc initializeSinusoidal(n_input, L, k, m,
@@ -113,12 +156,6 @@ proc finish_distribution(n, p) { //n is the size, unnecessary
   }
 }
 
-
-var Qgrid = initializeGrid(L);
-var particles = initializeSinusoidal(n, L, k, m, n);
-
-writeln("Number of particles placed : ", n);
-
 proc computeCoulomb(x_dist, y_dist, q1, q2, ref fx, ref fy) {
 
   const r2 = x_dist**2 + y_dist**2;
@@ -166,37 +203,6 @@ proc computeTotalForce(p, L, Qgrid, ref fx, ref fy) {
   if debug then writeln("Total force on particle : ", (fx, fy));
 }
 
-const t = new Timer();
-
-for niter in 0..iterations {
-
-  if niter == 1 then t.start();
-
-  forall i in 0..#n {
-    var fx = 0.0;
-    var fy = 0.0;
-
-
-    computeTotalForce(particles[i], L, Qgrid, fx, fy);
-    if debug then writeln("Force acting on particle " , i, " ", (fx,fy));
-    const ax = fx * MASS_INV;
-    const ay = fy * MASS_INV;
-
-    if debug then writeln("Particle ", i, " moved from ",
-        (particles[i].x,particles[i].y));
-
-    particles[i].x = mod(particles[i].x + particles[i].v_x*DT + 0.5*ax*DT*DT + L, L);
-    particles[i].y = mod(particles[i].y + particles[i].v_y*DT + 0.5*ay*DT*DT + L, L);
-
-    if debug then writeln(" to ",
-        (particles[i].x,particles[i].y));
-
-    particles[i].v_x += ax * DT;
-    particles[i].v_y += ay * DT;
-  }
-}
-t.stop();
-
 proc verifyParticle(p, iterations, Qgrid, L) {
 
   const y = p.y0:int;
@@ -217,13 +223,3 @@ proc verifyParticle(p, iterations, Qgrid, L) {
   }
   return true;
 }
-
-for i in 0..#n {
-  if !verifyParticle(particles[i], iterations, Qgrid, L) then
-    halt("Verification failed");
-}
-
-writeln("Verification succesful");
-
-const avgTime = t.elapsed()/iterations;
-writeln("Rate (Mparticles_moved/s): ", 1.0e-6*(n/avgTime));
