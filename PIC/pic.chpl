@@ -25,6 +25,26 @@ config const rho = 1.0;
 config const alpha = 0.5;
 config const beta = 0.5;
 
+// for patch initialization
+record bbox {
+  var left: int,
+      right: int,
+      bottom: int,
+      top: int;
+}
+
+config const initPatchLeft = 1;
+config const initPatchRight = 2;
+config const initPatchTop= 1;
+config const initPatchBottom = 2;
+
+const initPatch = new bbox(initPatchLeft,
+                           initPatchRight,
+                           initPatchTop,
+                           initPatchBottom);
+
+const gridPatch = new bbox(0, (L+1), 0, (L+1));
+
 record particle {
   var x: real;
   var y: real;
@@ -51,6 +71,11 @@ select particleMode {
     particles = initializeSinusoidal(n, L, k, m, n);
   when "LINEAR" do
     particles = initializeLinear(n, L, alpha, beta, k, m, n);
+  when "PATCH" {
+    if badPatch(initPatch, gridPatch) then
+      halt("Bad patch given");
+    particles = initializePatch(n, L, initPatch, k, m, n);
+  }
   otherwise do
     halt("Unknown particle mode: ", particleMode);
 }
@@ -230,6 +255,46 @@ proc initializeLinear(n_input, L, alpha, beta, k, m, ref n_placed) {
   return particles;
 }
 
+proc initializePatch(n_input, L, patch, k, m, ref n_placed) {
+  n_placed = 0;
+  LCG_init();
+
+  const total_cells  = (patch.right - patch.left+1)*(patch.top -
+      patch.bottom+1);
+  const particles_per_cell = (n_input/total_cells):real;
+  for x in 0..#L {
+    for y in 0..#L {
+      var actual_particles = random_draw(particles_per_cell):int;
+      if x<patch.left   || x>patch.right ||
+         y<patch.bottom || y>patch.top then
+        actual_particles = 0;
+      n_placed += actual_particles;
+    }
+  }
+
+  particleDom = {0..#n_placed};
+  var pIdx = 0;
+  for x in 0..#L {
+    for y in 0..#L {
+      // TODO without cast this creates a seg fault and overflow
+      // warning with no --fast. Investigate for possible bug. Engin
+      var actual_particles = random_draw(particles_per_cell):int;
+      if x<patch.left   || x>patch.right ||
+         y<patch.bottom || y>patch.top then
+        actual_particles = 0;
+      for p in 0..#actual_particles {
+        particles[pIdx].x = x + REL_X;
+        particles[pIdx].y = y + REL_Y;
+        particles[pIdx].k = k;
+        particles[pIdx].m = m;
+        pIdx += 1;
+      }
+    }
+  }
+  finish_distribution(n_placed, particles);
+  return particles;
+}
+
 proc finish_distribution(n, p) { //n is the size, unnecessary
   for pIdx in 0..#n {
     var x_coord = p[pIdx].x;
@@ -321,4 +386,16 @@ proc verifyParticle(p, iterations, Qgrid, L) {
     return false;
   }
   return true;
+}
+
+proc badPatch(patch, patch_contain) {
+  if patch.left>=patch.right || patch.bottom>=patch.top then
+    return true;
+  if patch.left  <patch_contain.left   ||
+      patch.right>patch_contain.right then
+    return true;
+  if patch.bottom<patch_contain.bottom ||
+      patch.top > patch_contain.top then
+    return true;
+  return false;
 }
