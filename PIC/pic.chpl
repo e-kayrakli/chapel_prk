@@ -39,7 +39,7 @@ config const initPatchRight = 2;
 config const initPatchTop= 1;
 config const initPatchBottom = 2;
 
-const initPatch = new bbox(initPatchLeft,
+const patch = new bbox(initPatchLeft,
                            initPatchRight,
                            initPatchTop,
                            initPatchBottom);
@@ -75,10 +75,10 @@ select particleMode {
     writeln("\tOffset                       = ", beta);
   }
   when "PATCH" {
-    writeln("\tBounding box                 = ", (initPatch.left,
-                                                  initPatch.right,
-                                                  initPatch.top,
-                                                  initPatch.bottom));
+    writeln("\tBounding box                 = ", (patch.left,
+                                                  patch.right,
+                                                  patch.top,
+                                                  patch.bottom));
   }
 }
 writeln("Particle charge semi-increment = ", k);
@@ -91,21 +91,21 @@ var particles: [particleDom] particle;
 
 select particleMode {
   when "GEOMETRIC" do
-    particles = initializeGeometric(n, L, rho, k, m, n);
+    initializeGeometric();
   when "SINUSOIDAL" do
-    particles = initializeSinusoidal(n, L, k, m, n);
+    initializeSinusoidal();
   when "LINEAR" do
-    particles = initializeLinear(n, L, alpha, beta, k, m, n);
+    initializeLinear();
   when "PATCH" {
-    if badPatch(initPatch, gridPatch) then
+    if badPatch(patch, gridPatch) then
       halt("Bad patch given");
-    particles = initializePatch(n, L, initPatch, k, m, n);
+    initializePatch();
   }
   otherwise do
     halt("Unknown particle mode: ", particleMode);
 }
 
-writeln("Number of particles placed : ", n);
+writeln("Number of particles placed : ", particles.size);
 
 const t = new Timer();
 
@@ -114,11 +114,11 @@ for niter in 0..iterations {
   if niter == 1 then t.start();
 
   forall i in 0..#n {
-    var fx = 0.0;
-    var fy = 0.0;
+    /*var fx = 0.0;*/
+    /*var fy = 0.0;*/
 
 
-    computeTotalForce(particles[i], L, Qgrid, fx, fy);
+    const (fx, fy) = computeTotalForce(particles[i]);
     if debug then writeln("Force acting on particle " , i, " ", (fx,fy));
     const ax = fx * MASS_INV;
     const ay = fy * MASS_INV;
@@ -140,7 +140,7 @@ t.stop();
 
 
 for i in 0..#n {
-  if !verifyParticle(particles[i], iterations, Qgrid, L) then
+  if !verifyParticle(particles[i]) then
     halt("Verification failed");
 }
 
@@ -159,154 +159,134 @@ proc initializeGrid(L) {
   return grid;
 }
 
-proc initializeGeometric(n_input, L, rho, k, m, ref n_placed) {
+proc initializeGeometric() {
 
   LCG_init();
 
-  var A = n_input * ((1.0-rho) / (1.0-(rho**L))) / L:real;
+  const A = n * ((1.0-rho) / (1.0-(rho**L))) / L:real;
 
-  n_placed = 0;
-  for x in 0..#L {
-    for y in 0..#L {
-      n_placed += random_draw(A*(rho**x)):int;
-    }
-  }
+  var nPlaced = 0;
+  for (x,y) in {0..#L, 0..#L} do
+    nPlaced += random_draw(A*(rho**x)):int;
 
-  particleDom = {0..#n_placed};
+  particleDom = {0..#nPlaced};
 
   LCG_init();
 
-  A = n_input * ((1.0-rho) / (1.0-(rho**L))) / L:real;
   var pIdx = 0;
-  for x in 0..#L {
-    for y in 0..#L {
-      // TODO without cast this creates a seg fault and overflow
-      // warning with no --fast. Investigate for possible bug. Engin
-      const actual_particles = random_draw(A * (rho**x)):int;
-      for p in 0..#actual_particles {
-        particles[pIdx].x = x + REL_X;
-        particles[pIdx].y = y + REL_Y;
-        particles[pIdx].k = k;
-        particles[pIdx].m = m;
-        pIdx += 1;
-      }
+  for (x,y) in {0..#L, 0..#L} {
+    // TODO without cast this creates a seg fault and overflow
+    // warning with no --fast. Investigate for possible bug. Engin
+    const actual_particles = random_draw(A * (rho**x)):int;
+    for p in 0..#actual_particles {
+      particles[pIdx].x = x + REL_X;
+      particles[pIdx].y = y + REL_Y;
+      particles[pIdx].k = k;
+      particles[pIdx].m = m;
+      pIdx += 1;
     }
   }
 
-  finish_distribution(n_placed, particles);
-  return particles;
+  finish_distribution(nPlaced, particles);
 }
 
-proc initializeSinusoidal(n_input, L, k, m,
-    ref n_placed) {
+proc initializeSinusoidal() {
 
   const step = pi/L;
 
   LCG_init();
 
-  n_placed = 0;
+  var nPlaced = 0;
 
-  for x in 0..#L {
-    for y in 0..#L {
-      n_placed +=
-        random_draw(2.0*cos(x*step)*cos(x*step)*n_input/(L*L)):int;
-    }
-  }
+  for (x,y) in {0..#L, 0..#L} do
+    nPlaced += random_draw(getSeed(x)):int;
 
-  particleDom = {0..#n_placed};
+  particleDom = {0..#nPlaced};
 
   LCG_init();
 
   // pIdx = pi in OpenMP code
   var pIdx = 0;
-  for x in 0..#L {
-    for y in 0..#L {
-      // TODO without cast this creates a seg fault and overflow
-      // warning with no --fast. Investigate for possible bug. Engin
-      const actual_particles =
-        random_draw(2.0*cos(x*step)*cos(x*step)*n_input/(L*L)):int;
-      for p in 0..#actual_particles {
-        particles[pIdx].x = x + REL_X;
-        particles[pIdx].y = y + REL_Y;
-        particles[pIdx].k = k;
-        particles[pIdx].m = m;
-        pIdx += 1;
-      }
+  for (x,y) in {0..#L, 0..#L} {
+    // TODO without cast this creates a seg fault and overflow
+    // warning with no --fast. Investigate for possible bug. Engin
+    const actual_particles = random_draw(getSeed(x)):int;
+    for p in 0..#actual_particles {
+      particles[pIdx].x = x + REL_X;
+      particles[pIdx].y = y + REL_Y;
+      particles[pIdx].k = k;
+      particles[pIdx].m = m;
+      pIdx += 1;
     }
   }
 
-  finish_distribution(n_placed, particles);
-  return particles;
+  finish_distribution(nPlaced, particles);
+
+  inline proc getSeed(x) {
+    return 2.0*(cos(x*step)**2)*n/(L**2);
+  }
 }
 
-proc initializeLinear(n_input, L, alpha, beta, k, m, ref n_placed) {
+proc initializeLinear() {
 
   const step = 1.0/L;
-  n_placed = 0;
+  const total_weight = beta*L-alpha*0.5*step*L*(L-1);
+
+  var nPlaced = 0;
 
   LCG_init();
 
-  const total_weight = beta*L-alpha*0.5*step*L*(L-1);
-  for x in 0..#L {
-    const current_weight = (beta - alpha * step * x:real);
-    for y in 0..#L {
-      n_placed +=
-        random_draw(n_input * (current_weight/total_weight)/L):int;
-    }
-  }
+  for (x,y) in {0..#L, 0..#L} do
+    nPlaced += random_draw(getSeed(x)):int;
 
-  particleDom = {0..#n_placed};
+  particleDom = {0..#nPlaced};
 
   LCG_init();
 
   var pIdx = 0;
-  for x in 0..#L {
-    const current_weight = (beta - alpha * step * x:real);
-    for y in 0..#L {
-      // TODO without cast this creates a seg fault and overflow
-      // warning with no --fast. Investigate for possible bug. Engin
-      const actual_particles =
-        random_draw(n_input * (current_weight/total_weight)/L):int;
-      for p in 0..#actual_particles {
-        particles[pIdx].x = x + REL_X;
-        particles[pIdx].y = y + REL_Y;
-        particles[pIdx].k = k;
-        particles[pIdx].m = m;
-        pIdx += 1;
-      }
+  for (x,y) in {0..#L, 0..#L} {
+    // TODO without cast this creates a seg fault and overflow
+    // warning with no --fast. Investigate for possible bug. Engin
+    const actual_particles = random_draw(getSeed(x)):int;
+    for p in 0..#actual_particles {
+      particles[pIdx].x = x + REL_X;
+      particles[pIdx].y = y + REL_Y;
+      particles[pIdx].k = k;
+      particles[pIdx].m = m;
+      pIdx += 1;
     }
   }
-  finish_distribution(n_placed, particles);
-  return particles;
+  finish_distribution(nPlaced, particles);
+
+  inline proc getSeed(x) {
+    return n * ((beta - alpha * step * x:real)/total_weight)/L;
+  }
 }
 
-proc initializePatch(n_input, L, patch, k, m, ref n_placed) {
-  n_placed = 0;
-  LCG_init();
-
+proc initializePatch() {
   const total_cells  = (patch.right - patch.left+1)*(patch.top -
       patch.bottom+1);
-  const particles_per_cell = (n_input/total_cells):real;
-  for x in 0..#L {
-    for y in 0..#L {
-      var actual_particles = random_draw(particles_per_cell):int;
-      if x<patch.left   || x>patch.right ||
-         y<patch.bottom || y>patch.top then
-        actual_particles = 0;
-      n_placed += actual_particles;
-    }
+  const particles_per_cell = (n/total_cells):real;
+
+  var nPlaced = 0;
+  LCG_init();
+
+  for (x,y) in {0..#L, 0..#L} {
+    const actual_particles = random_draw(particles_per_cell):int;
+    if !outsidePatch(x, y) then
+      nPlaced += actual_particles;
   }
 
-  particleDom = {0..#n_placed};
+  particleDom = {0..#nPlaced};
+
+  LCG_init();
+
   var pIdx = 0;
-  for x in 0..#L {
-    for y in 0..#L {
-      // TODO without cast this creates a seg fault and overflow
-      // warning with no --fast. Investigate for possible bug. Engin
-      var actual_particles = random_draw(particles_per_cell):int;
-      if x<patch.left   || x>patch.right ||
-         y<patch.bottom || y>patch.top then
-        actual_particles = 0;
+  for (x,y) in {0..#L, 0..#L} {
+    // TODO without cast this creates a seg fault and overflow
+    // warning with no --fast. Investigate for possible bug. Engin
+    const actual_particles = random_draw(particles_per_cell):int;
+    if !outsidePatch(x, y) {
       for p in 0..#actual_particles {
         particles[pIdx].x = x + REL_X;
         particles[pIdx].y = y + REL_Y;
@@ -316,8 +296,12 @@ proc initializePatch(n_input, L, patch, k, m, ref n_placed) {
       }
     }
   }
-  finish_distribution(n_placed, particles);
-  return particles;
+  finish_distribution(nPlaced, particles);
+
+  inline proc outsidePatch(x, y) {
+    return x<patch.left   || x>patch.right ||
+            y<patch.bottom || y>patch.top;
+  }
 }
 
 proc finish_distribution(n, p) { //n is the size, unnecessary
@@ -345,54 +329,52 @@ proc finish_distribution(n, p) { //n is the size, unnecessary
   }
 }
 
-proc computeCoulomb(x_dist, y_dist, q1, q2, ref fx, ref fy) {
+inline proc computeCoulomb(x_dist, y_dist, q1, q2) {
 
   const r2 = x_dist**2 + y_dist**2;
   const r = sqrt(r2);
   const f_coulomb = q1*q2/r2;
 
-  fx = f_coulomb * x_dist/r;
-  fy = f_coulomb * y_dist/r;
+  const fx = f_coulomb * x_dist/r;
+  const fy = f_coulomb * y_dist/r;
 
-  if debug then writeln("Coulomb force : ", (fx, fy));
+  return (fx, fy);
 }
 
-proc computeTotalForce(p, L, Qgrid, ref fx, ref fy) {
+proc computeTotalForce(p) {
 
-  const y = floor(p.y):int;
   const x = floor(p.x):int;
+  const y = floor(p.y):int;
 
   const rel_x = p.x-x;
   const rel_y = p.y-y;
 
-  if debug then writeln("rel_xy ", (rel_x, rel_y));
-
   var tmp_fx = 0.0;
   var tmp_fy = 0.0;
 
-  computeCoulomb(rel_x, rel_y, p.q, Qgrid[y,x], tmp_fx, tmp_fy);
+  (tmp_fx, tmp_fy) = computeCoulomb(rel_x, rel_y, p.q, Qgrid[y,x]);
   var tmp_res_x = tmp_fx;
   var tmp_res_y = tmp_fy;
 
-  computeCoulomb(rel_x, 1.0-rel_y, p.q, Qgrid[y+1,x], tmp_fx, tmp_fy);
+  (tmp_fx, tmp_fy) = computeCoulomb(rel_x, 1.0-rel_y, p.q, Qgrid[y+1,x]);
   tmp_res_x += tmp_fx;
   tmp_res_y -= tmp_fy;
 
-  computeCoulomb(1.0-rel_x, rel_y, p.q, Qgrid[y,x+1], tmp_fx, tmp_fy);
+  (tmp_fx, tmp_fy) = computeCoulomb(1.0-rel_x, rel_y, p.q, Qgrid[y,x+1]);
   tmp_res_x -= tmp_fx;
   tmp_res_y += tmp_fy;
 
-  computeCoulomb(1.0-rel_x, 1.0-rel_y, p.q, Qgrid[y+1,x+1], tmp_fx, tmp_fy);
+  (tmp_fx, tmp_fy) = computeCoulomb(1.0-rel_x, 1.0-rel_y, p.q, Qgrid[y+1,x+1]);
   tmp_res_x -= tmp_fx;
   tmp_res_y -= tmp_fy;
 
-  fx = tmp_res_x;
-  fy = tmp_res_y;
+  if debug then writeln("Total force on particle : ", (tmp_res_x,
+        tmp_res_y));
 
-  if debug then writeln("Total force on particle : ", (fx, fy));
+  return (tmp_res_x, tmp_res_y);
 }
 
-proc verifyParticle(p, iterations, Qgrid, L) {
+proc verifyParticle(p) {
 
   const y = p.y0:int;
   const x = p.x0:int;
