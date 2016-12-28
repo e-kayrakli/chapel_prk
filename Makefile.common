@@ -6,5 +6,7 @@ $(MAIN): $(SRC)
 	echo Building $@
 	chpl $(CHPLFLAGS) $(MISCFLAGS) -o $@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 
+cleanout:
+	rm -f out/*
 clean:
 	rm -rf $(MAIN) c_code/
