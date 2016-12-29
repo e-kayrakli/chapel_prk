@@ -40,6 +40,8 @@ for row in 0..#size2 {
   }
 }
 matrixDom.bulkAdd(indBuf, preserveInds=false);
+writeln(matrixDom.numIndices);
+writeln(size2*stencilSize);
 
 var matrix: [matrixDom] real;
 
@@ -83,9 +85,12 @@ for niter in 0..iterations {
     const ref sparseDom = matrixDom._instance;
     const ref sparseArr = matrix._instance;
 
-    forall i in parentDom.dim(1) do
-      for j in sparseDom.rowStart[i]..sparseDom.rowStop[i] do
+    forall i in parentDom.dim(1) {
+      const first = i*stencilSize+1; //internal arrays are 1-based
+      const last = first+stencilSize-1;
+      for j in first..last do
         result[i] += sparseArr.data[j] * vector[sparseDom.colIdx[j]];
+    }
   }
 }
 t.stop();
