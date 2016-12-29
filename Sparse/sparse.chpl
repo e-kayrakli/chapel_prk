@@ -28,7 +28,7 @@ for row in 0..#size2 {
   const i = row%size;
   const j = row/size;
 
-  const bufIdx = row*5;
+  var bufIdx = row*stencilSize;
 
   indBuf[bufIdx] = (row, reverse(LIN(i,j)));
   for r in 1..radius {
@@ -36,6 +36,7 @@ for row in 0..#size2 {
     indBuf[bufIdx+2] = (row, reverse(LIN((i-r+size)%size,j)));
     indBuf[bufIdx+3] = (row, reverse(LIN(i, (j+r)%size)));
     indBuf[bufIdx+4] = (row, reverse(LIN(i, (j-r+size)%size)));
+    bufIdx += 4;
   }
 }
 matrixDom.bulkAdd(indBuf, preserveInds=false);
@@ -119,5 +120,5 @@ proc reverse(xx) {
   x = ((x >> 8)  & 0x00ff00ff00ff00ff) | ((x << 8)  & 0xff00ff00ff00ff00);
   x = ((x >> 16) & 0x0000ffff0000ffff) | ((x << 16) & 0xffff0000ffff0000);
   x = ((x >> 32) & 0x00000000ffffffff) | ((x << 32) & 0xffffffff00000000);
-  return (x>>(64-lsize)):int;
+  return (x>>(64-lsize2)):int;
 }
