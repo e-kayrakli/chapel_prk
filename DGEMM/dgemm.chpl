@@ -43,7 +43,7 @@ if blockSize == 0 {
     //TODO OpenMP version uses jik loops and parallelizes j loop, I
     //haven't seen any benefit of my laptop in Chapel, but it requires
     //further study. Engin
-    forall (i,j,k) in {vecRange, vecRange, vecRange} {
+    forall (j,k,i) in {vecRange, vecRange, vecRange} {
       C[i,j] += A[i,k] * B[k,j];
     }
   }
@@ -87,7 +87,7 @@ else {
 
           for cc in CC do cc = 0.0;
 
-          for (i,j,k) in iterDomain do
+          for (k,j,i) in iterDomain do
             CC[i,j] += AA[i,k] * BB[j,k];
 
           for (iB, i) in zip(ii..#blockSize, bVecRange) do
