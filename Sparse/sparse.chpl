@@ -40,8 +40,11 @@ for row in 0..#size2 {
   }
 }
 matrixDom.bulkAdd(indBuf, preserveInds=false);
-writeln(matrixDom.numIndices);
-writeln(size2*stencilSize);
+
+//do a sanitiy check to make sure we have created correct numver of
+//indicese in the sparse domain
+if matrixDom.numIndices != size2*stencilSize then
+  halt("Incorrect number of indices created");
 
 var matrix: [matrixDom] real;
 
