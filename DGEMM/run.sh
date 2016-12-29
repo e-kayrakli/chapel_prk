@@ -7,7 +7,7 @@ block_size=(00 32 64)
 
 make cleanout
 for b in "${block_size[@]}"; do
-  execflags="--order=$order --blockSize=$block_size"
+  execflags="--order=$order --blockSize=$b"
   for t in "${num_threads[@]}"; do
     echo "Running $execname > THREADS=$t BLOCK SIZE=$b"
     CHPL_RT_NUM_THREADS_PER_LOCALE=$t ./$execname --iterations=$niter\
