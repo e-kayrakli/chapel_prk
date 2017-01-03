@@ -7,14 +7,14 @@ extern proc sizeof(e): size_t;
 param PRKVERSION = "2.15";
 
 config param errorPercent = 1;
+config param verbose = false;
 
 config const numTasks = here.maxTaskPar;
 config const length : int = 4,
              update_ratio: int = 16,
              log2_table_size: int = 16,
              debug: bool = false,
-             validate: bool = false,
-             verbose = true;
+             validate: bool = false;
 
 param POLY:uint(64)=0x0000000000000007;
 param PERIOD:int(64) = 1317624576693539401;
@@ -117,7 +117,7 @@ random_time = timer.elapsed();
 /* verification test */
 for i in Table.domain {
   if Table[i] != i:uint(64) {
-    writeln ("Error Table[",i,"]=",Table[i]);
+    if verbose then writeln ("Error Table[",i,"]=",Table[i]);
     err +=1;
   }
 }
