@@ -29,7 +29,7 @@ var timer: Timer,
 // Print information before main loop
 //
 writeln("Parallel Research Kernels version ", PRKVERSION);
-writeln("Chapel: Serial Branching Bonaza");
+writeln("Max parallelism        = ", here.maxTaskPar);
 writeln("Vector length          = ", length);
 writeln("Number of iterations   = ", iterations);
 writeln("Branching type         = ", branchType);

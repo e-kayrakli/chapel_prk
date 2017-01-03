@@ -59,6 +59,7 @@ nupdate = update_ratio * tablesize;
 //
 writeln("Parallel Research Kernels version ", PRKVERSION);
 writeln("Chapel: Serial Random Access");
+writeln("Max parallelism        = ", here.maxTaskPar);
 writeln("Table size (shared)    = ", tablesize);
 writeln("Update ratio           = ", update_ratio);
 writeln("Number of updates      = ", nupdate);

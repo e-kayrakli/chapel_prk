@@ -25,6 +25,7 @@ forall (i,j) in matrixDom {
 }
 
 writeln("Chapel Dense matrix-matrix multiplication");
+writeln("Max parallelism      =   ", here.maxTaskPar);
 writeln("Matrix order         =   ", order);
 writeln("Blocking factor      =   ", if blockSize>0 then blockSize+""
     else "N/A");

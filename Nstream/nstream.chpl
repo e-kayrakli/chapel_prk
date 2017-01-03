@@ -32,6 +32,7 @@ var timer: Timer,
 //
 writeln("Parallel Research Kernels version ", PRKVERSION);
 writeln("Serial stream triad: A = B + SCALAR*C");
+writeln("Max parallelism        = ", here.maxTaskPar);
 writeln("Vector length          = ", length);
 writeln("Number of iterations   = ", iterations);
 

@@ -152,6 +152,7 @@ proc main() {
   if (!validate) {
     writeln("Parallel Research Kernels Version ", PRKVERSION);
     writeln("Serial stencil execution on 2D grid");
+    writeln("Max parallelism      = ", here.maxTaskPar);
     writeln("Grid size            = ", order);
     writeln("Radius of stencil    = ", R);
     if compact then writeln("Type of stencil      = compact");

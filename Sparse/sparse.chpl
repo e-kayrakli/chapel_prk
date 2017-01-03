@@ -59,6 +59,7 @@ result = 0;
 // Print information before main loop
 writeln("Parallel Research Kernels Version ", PRKVERSION);
 writeln("Sparse matrix-dense vector multiplication");
+writeln("Max parallelism      = ", here.maxTaskPar);
 writeln("Matrix order         = ", size2);
 writeln("Stencil diameter     = ", 2*radius+1);
 writeln("Sparsity             = ", sparsity);

@@ -62,7 +62,7 @@ record particle {
 
 writeln("Parallel Research Kernels Version ", PRKVERSION);
 writeln("Chapel Particle-in-Cell execution on 2D grid");
-writeln("Number of threads              = ", here.maxTaskPar);
+writeln("Max parallelism                = ", here.maxTaskPar);
 writeln("Grid Size                      = ", L);
 writeln("Number of particles requested  = ", n);
 writeln("Number of time steps           = ", iterations);

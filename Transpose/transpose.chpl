@@ -40,6 +40,7 @@ var timer: Timer,
 //
 writeln("Parallel Research Kernels version ", PRKVERSION);
 writeln("Serial Matrix transpose: B = A^T");
+writeln("Max parallelism       = ", here.maxTaskPar);
 writeln("Matrix order          = ", order);
 if (tiled) then writeln("Tile size              = ", tileSize);
 else            writeln("Untiled");
