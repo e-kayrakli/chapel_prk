@@ -3,12 +3,18 @@ use LayoutCSR;
 
 param PRKVERSION = "2.17";
 
-config param directAccess = false;
+config param useBalancedRows = false,
+             useFixedRows    = false;
+
+if useBalancedRows && useFixedRows then
+  halt("Incorrect compile-time configuration");
 
 config const lsize = 5,
              radius = 2,
              iterations = 10,
              scramble = true;
+
+config const naive = false;
 
 const lsize2 = 2*lsize;
 const size = 1<<lsize;
@@ -64,9 +70,12 @@ writeln("Matrix order         = ", size2);
 writeln("Stencil diameter     = ", 2*radius+1);
 writeln("Sparsity             = ", sparsity);
 writeln("Number of iterations = ", iterations);
-writeln("Direct access ", if directAccess then "enabled" else
-    "disabled");
+/*writeln("Direct access ", if directAccess then "enabled" else*/
+    /*"disabled");*/
 writeln("Indexes are ", if !scramble then "not " else "", "scrambled");
+
+if useFixedRows then
+  matrixDom._instance.setFixedNNZPerRow();
 
 const t = new Timer();
 for niter in 0..iterations {
@@ -74,6 +83,7 @@ for niter in 0..iterations {
   if niter == 1 then t.start();
   [i in vectorDom] vector[i] += i+1;
 
+  // TODO fix this comment
   // In OpenMP version, the way CSR domain is accessed depends heavily
   // on the fact that there will be 5 indices per row. This allows them
   // to avoid doing index searching in the CSR arrays.
@@ -81,24 +91,37 @@ for niter in 0..iterations {
   // When directAccess==true, what we do is to use the "guts" of the CSR
   // domain to have that kind of access to the spare array and the dense
   // vector.
-  if !directAccess {
-
-    //FIXME for this loop to work without race condition, we must ensure
-    //that no row is divided between two separate tasks. So far, power
-    //of two size logic and fixed nnz per row  guarantees that this
-    //would work.
-    forall (i,j) in matrixDom do
-      result[i] += matrix[i,j] * vector[j];
+  // TODO fix this comment
+  if naive {
+    /*forall (i,j) in matrixDom do*/
+    forall ((i,j),e) in zip(matrixDom, matrix) do
+      result[i] += e * vector[j];
   }
   else {
-    const ref sparseDom = matrixDom._instance;
-    const ref sparseArr = matrix._instance;
+    if useFixedRows {
+      /*writeln("Here");*/
+      forall ((i,j), elem) in zip(matrixDom, matrix) do
+        result[i] += elem * vector[j];
+      /*const ref sparseDom = matrixDom._instance;*/
+      /*const ref sparseArr = matrix._instance;*/
 
-    forall i in parentDom.dim(1) {
-      const first = i*stencilSize+1; //internal arrays are 1-based
-      const last = first+stencilSize-1;
-      for j in first..last do
-        result[i] += sparseArr.data[j] * vector[sparseDom.colIdx[j]];
+      /*forall i in parentDom.dim(1) {*/
+        /*const first = sparseDom.rowStart[i];*/
+        /*const last = sparseDom.rowStop[i];*/
+        /*for j in first..last do*/
+          /*result[i] += sparseArr.data[j] * vector[sparseDom.colIdx[j]];*/
+      /*}*/
+    }
+    else {
+      const ref sparseDom = matrixDom._instance;
+      const ref sparseArr = matrix._instance;
+
+      forall i in parentDom.dim(1) {
+        const first = sparseDom.rowStart[i];
+        const last = sparseDom.rowStop[i];
+        for j in first..last do
+          result[i] += sparseArr.data[j] * vector[sparseDom.colIdx[j]];
+      }
     }
   }
 }
