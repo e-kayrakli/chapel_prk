@@ -98,30 +98,14 @@ for niter in 0..iterations {
       result[i] += e * vector[j];
   }
   else {
-    if useFixedRows {
-      /*writeln("Here");*/
-      forall ((i,j), elem) in zip(matrixDom, matrix) do
-        result[i] += elem * vector[j];
-      /*const ref sparseDom = matrixDom._instance;*/
-      /*const ref sparseArr = matrix._instance;*/
+    const ref sparseDom = matrixDom._instance;
+    const ref sparseArr = matrix._instance;
 
-      /*forall i in parentDom.dim(1) {*/
-        /*const first = sparseDom.rowStart[i];*/
-        /*const last = sparseDom.rowStop[i];*/
-        /*for j in first..last do*/
-          /*result[i] += sparseArr.data[j] * vector[sparseDom.colIdx[j]];*/
-      /*}*/
-    }
-    else {
-      const ref sparseDom = matrixDom._instance;
-      const ref sparseArr = matrix._instance;
-
-      forall i in parentDom.dim(1) {
-        const first = sparseDom.rowStart[i];
-        const last = sparseDom.rowStop[i];
-        for j in first..last do
-          result[i] += sparseArr.data[j] * vector[sparseDom.colIdx[j]];
-      }
+    forall i in parentDom.dim(1) {
+      const first = sparseDom.rowStart[i];
+      const last = sparseDom.rowStop[i];
+      for j in first..last do
+        result[i] += sparseArr.data[j] * vector[sparseDom.colIdx[j]];
     }
   }
 }
