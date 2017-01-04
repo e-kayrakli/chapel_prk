@@ -20,10 +20,8 @@ vector_length = length;
 DomA = {0..#length};
 
 
-var N : int;
-var timer: Timer,
-    V    : [DomA] dataType,
-    Idx  : [DomA] dataType;
+var timer: Timer;
+var total: atomic int;
 
 //
 // Print information before main loop
@@ -40,11 +38,6 @@ rank  = 5;
 
 const parIterations = iterations*here.maxTaskPar;
 
-for i in 0.. vector_length-1 {
-  V[i]  = (3 - (i&7)):dataType;
-  /*aux[i] = 0;*/
-  Idx[i]= i:dataType;
-}
 
 //set branchType int
 const branchTypeInt = if branchType == "vector_stop" then 1
@@ -53,161 +46,170 @@ const branchTypeInt = if branchType == "vector_stop" then 1
                       else if branchType == "ins_heavy" then 4
                       else -1;
 
-if branchTypeInt == -1 then
-  halt("Invalid branch type: ", branchType);
+if branchTypeInt == -1 then halt("Invalid branch type: ", branchType);
 
-//
-// Main loop
-//
-timer.start();
+coforall tid in 0..#here.maxTaskPar {
+  var V    : [DomA] dataType;
+  var Idx  : [DomA] dataType;
+  for i in 0.. vector_length-1 {
+    V[i]  = (3 - (i&7)):dataType;
+    /*aux[i] = 0;*/
+    Idx[i]= i:dataType;
+  }
+  //
+  // Main loop
+  //
+  if tid==0 then timer.start();
 
-select branchTypeInt {
+  select branchTypeInt {
 
-  when 1 { //vector_stop
-    /*condition vector[idx[i]]>0 inhibits vectorization*/
-    for t in 0..#parIterations by 2 {
-      forall i in DomA {
-        var aux = (-(3 - (i&7))):dataType;
-        if V[Idx[i]]>0 then
-          V[i] -= 2*V[i];
-        else
-          V[i] -= 2*aux;
+    when 1 { //vector_stop
+      /*condition vector[idx[i]]>0 inhibits vectorization*/
+      for t in 0..#parIterations by 2 {
+        for i in DomA {
+          var aux = (-(3 - (i&7))):dataType;
+          if V[Idx[i]]>0 then
+            V[i] -= 2*V[i];
+          else
+            V[i] -= 2*aux;
+        }
+        for i in DomA {
+          var aux = (3 - (i&7)):dataType;
+          if V[Idx[i]]>0 then
+            V[i] -= 2*V[i];
+          else
+            V[i] -= 2*aux;
+        }
       }
-      forall i in DomA {
-        var aux = (3 - (i&7)):dataType;
-        if V[Idx[i]]>0 then
-          V[i] -= 2*V[i];
-        else
-          V[i] -= 2*aux;
+    }
+
+    when 2 { //vector_go
+      /* condition aux>0 allows vectorization */
+      for t in 0..#parIterations by 2 {
+        for i in DomA {
+          var aux = -(3 - (i&7)):dataType;
+          if aux>0 then
+            V[i] -= 2*V[i];
+          else
+            V[i] -= 2*aux;
+        }
+        for i in DomA {
+          var aux = (3 - (i&7)):dataType;
+          if aux>0 then
+            V[i] -= 2*V[i];
+          else
+            V[i] -= 2*aux;
+        }
       }
+    }
+
+    when 3 { //no_vector
+      /*condition aux>0 allows vectorization*/
+      /*but indirect idxing inbibits it */
+      for t in 0..#parIterations by 2 {
+        for i in DomA {
+          var aux = -(3 - (i&7)):dataType;
+          if aux>0 then
+            V[i] -= 2*V[Idx[i]];
+          else
+            V[i] -= 2*aux;
+        }
+        for i in DomA {
+          var aux = (3 - (i&7)):dataType;
+          if aux>0 then
+            V[i] -= 2*V[Idx[i]];
+          else
+            V[i] -= 2*aux;
+        }
+      }
+    }
+
+    when 4 { //ins_heavy
+      fill_vec(V, vector_length, parIterations, WITH_BRANCHES, nfunc, rank);
     }
   }
 
-  when 2 { //vector_go
-    /* condition aux>0 allows vectorization */
-    for t in 0..#parIterations by 2 {
-      forall i in DomA {
-        var aux = -(3 - (i&7)):dataType;
-        if aux>0 then
-          V[i] -= 2*V[i];
-        else
-          V[i] -= 2*aux;
-      }
-      forall i in DomA {
-        var aux = (3 - (i&7)):dataType;
-        if aux>0 then
-          V[i] -= 2*V[i];
-        else
-          V[i] -= 2*aux;
+  if tid == 0 {
+    branch_time = timer.elapsed();
+    timer.stop();
+    timer.clear();
+    if branchTypeInt == 4 {
+      writeln("Number of matrix functions = ", nfunc);
+      writeln("Matrix order               = ", rank);
+    }
+    timer.start();
+  }
+
+
+
+  /* do the whole thing one more time but now without branches */
+  select branchTypeInt {
+
+    when 1 { //vector_stop
+      /* condition vector[idx[i]]>0 inhibits vectorization */
+      for t in 0..#parIterations by 2 {
+        for i in DomA {
+          var aux = -(3 - (i&7)):dataType;
+          V[i] -= V[i] + aux;
+        }
+        for i in DomA {
+          var aux = (3 - (i&7)):dataType;
+          V[i] -= V[i] + aux;
+        }
       }
     }
-  }
 
-  when 3 { //no_vector
-    /*condition aux>0 allows vectorization*/
-    /*but indirect idxing inbibits it */
-    for t in 0..#parIterations by 2 {
-      forall i in DomA {
-        var aux = -(3 - (i&7)):dataType;
-        if aux>0 then
-          V[i] -= 2*V[Idx[i]];
-        else
-          V[i] -= 2*aux;
-      }
-      forall i in DomA {
-        var aux = (3 - (i&7)):dataType;
-        if aux>0 then
-          V[i] -= 2*V[Idx[i]];
-        else
-          V[i] -= 2*aux;
+    when 2 { //vector_go
+      /* condition vector[idx[i]]>0 inhibits vectorization*/
+      for t in 0..#parIterations by 2 {
+        for i in DomA {
+          var aux = -(3 - (i&7)):dataType;
+          V[i] -= (V[i] + aux);
+        }
+        for i in DomA {
+          var aux = (3 - (i&7)):dataType;
+          V[i] -= (V[i] + aux);
+        }
       }
     }
-  }
 
-  when 4 { //ins_heavy
-    fill_vec(V, vector_length, parIterations, WITH_BRANCHES, nfunc, rank);
-  }
-}
-
-branch_time = timer.elapsed();
-timer.stop();
-timer.clear();
-if branchTypeInt == 4 {
-  writeln("Number of matrix functions = ", nfunc);
-  writeln("Matrix order               = ", rank);
-}
-
-
-timer.start();
-
-/* do the whole thing one more time but now without branches */
-select branchTypeInt {
-
-  when 1 { //vector_stop
-    /* condition vector[idx[i]]>0 inhibits vectorization */
-    for t in 0..#parIterations by 2 {
-      forall i in DomA {
-        var aux = -(3 - (i&7)):dataType;
-        V[i] -= V[i] + aux;
-      }
-      forall i in DomA {
-        var aux = (3 - (i&7)):dataType;
-        V[i] -= V[i] + aux;
+    when 3 { //no_vector
+      for t in 0..#parIterations by 2 {
+        for i in DomA {
+          var aux = -(3 - (i&7)):dataType;
+          V[i] -= (V[Idx[i]] + aux);
+        }
+        for i in DomA {
+          var aux = (3 - (i&7)):dataType;
+          V[i] -= (V[Idx[i]] + aux);
+        }
       }
     }
-  }
 
-  when 2 { //vector_go
-    /* condition vector[idx[i]]>0 inhibits vectorization*/
-    for t in 0..#parIterations by 2 {
-      forall i in DomA {
-        var aux = -(3 - (i&7)):dataType;
-        V[i] -= (V[i] + aux);
-      }
-      forall i in DomA {
-        var aux = (3 - (i&7)):dataType;
-        V[i] -= (V[i] + aux);
-      }
+    when 4 { //inst_heavy
+      fill_vec(V, vector_length, parIterations, WITHOUT_BRANCHES, nfunc,
+          rank);
     }
   }
-
-  when 3 { //no_vector
-    for t in 0..#parIterations by 2 {
-      forall i in DomA {
-        var aux = -(3 - (i&7)):dataType;
-        V[i] -= (V[Idx[i]] + aux);
-      }
-      forall i in DomA {
-        var aux = (3 - (i&7)):dataType;
-        V[i] -= (V[Idx[i]] + aux);
-      }
-    }
-  }
-
-  when 4 { //inst_heavy
-    fill_vec(V, vector_length, parIterations, WITHOUT_BRANCHES, nfunc,
-        rank);
-  }
-}
 
 //
 // Analyze and output results
 //
 
+  if tid == 0 {
+    no_branch_time = timer.elapsed();
+    timer.stop();
+  }
+  // verify correctness */
+  total.add(+ reduce V);
+}
 
-// verify correctness */
-no_branch_time = timer.elapsed();
-timer.stop();
 ops = vector_length * parIterations;
 if branchTypeInt == 4 then
 ops *= rank*(rank*19 + 6);
 else
 ops *= 4.0;
 
-total = 0;
-for i in 0.. vector_length -1 {
-  total += V[i];
-}
 writeln ("total = ",total);
 
 /* compute verification values */
@@ -215,14 +217,18 @@ var len1 = vector_length%8;
 var len2 = vector_length%8-8;
 writeln ("len1 = ",len1," len2 = ",len2);
 
-total_ref = ((vector_length%8)*(vector_length%8-8) + vector_length)/2;
-writeln ("total_ref = ",total_ref);
+total_ref = ((vector_length%8)*(vector_length%8-8) +
+    vector_length)/2*here.maxTaskPar;
 
 // output
-if total == total_ref {
+if total.read() == total_ref {
   writeln("Solution validates");
   writeln("Rate (Mops/s): with branches:", ops/(branch_time*1.E6)," time (s): ",branch_time);
   writeln("Rate (Mops/s): without branches:", ops/(no_branch_time*1.E6)," time (s): ",no_branch_time);
+}
+else {
+  writeln("Validation failed: Reference Total = ", total_ref,
+      " Total = ", total.read());
 }
 
 proc fill_vec(vector, length, parIterations, branch, nfunc, rank) {
@@ -234,11 +240,11 @@ proc fill_vec(vector, length, parIterations, branch, nfunc, rank) {
     do {
       for i in 0.. vector_length -1 {
         aux2 = -(3-(func0(i:dataType,a,b)&7)):dataType;
-        V[i] -= (V[i]+aux2);
+        vector[i] -= (vector[i]+aux2);
       }
       for i in 0.. vector_length -1 {
         aux2 = (3-(func0(i:dataType,a,b)&7)):dataType;
-        V[i] -= (V[i]+aux2);
+        vector[i] -= (vector[i]+aux2);
       }
       t +=2;
     } while (t < parIterations);
