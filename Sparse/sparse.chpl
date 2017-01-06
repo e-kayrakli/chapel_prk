@@ -87,7 +87,7 @@ for niter in 0..iterations {
     //that no row is divided between two separate tasks. So far, power
     //of two size logic and fixed nnz per row  guarantees that this
     //would work.
-    forall (i,j) in matrixDom do
+    forall (i,j) in matrix.domain do
       result[i] += matrix[i,j] * vector[j];
   }
   else {
