@@ -121,3 +121,9 @@ const nflops = 2.0*(order**3);
 const avgTime = t.elapsed()/iterations;
 writeln("Validation succesful.");
 writeln("Rate(MFlop/s) = ", 1e-6*nflops/avgTime, " Time : ", avgTime);
+
+inline proc c_memset(dest :c_ptr, val: int(32), n: integral) {
+  extern proc memset(dest: c_void_ptr, val: c_int, n: size_t):
+    c_void_ptr;
+  return memset(dest, val, n.safeCast(size_t));
+}
