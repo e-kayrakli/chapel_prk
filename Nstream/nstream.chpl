@@ -46,7 +46,7 @@ if lowLevel {
   coforall tid in 0..#here.maxTaskPar {
 
     const numElems = length/here.maxTaskPar;
-    const myChunk = _computeBlock(numElems, here.maxTaskPar, tid,
+    const myChunk = _computeBlock(length, here.maxTaskPar, tid,
         length-1, 0, 0);
     const myRange = myChunk[1]..myChunk[2];
 
