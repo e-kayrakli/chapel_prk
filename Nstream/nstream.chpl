@@ -5,6 +5,7 @@ use Time;
 
 param PRKVERSION = "2.15";
 
+config param lowLevel = false;
 config const iterations : int = 100,
              length : int = 100,
              validate: bool = false;
@@ -23,8 +24,7 @@ if length < 0 then
 // Domains
 const    Dom = {0.. # length};
 
-var timer: Timer,
-    A    : [Dom] real,
+var A    : [Dom] real,
     B, C : [Dom] real;
 
 //
@@ -41,14 +41,34 @@ A = 0.0;
 B = 2.0;
 C = 2.0;
 
-//
-// Main loop
-//
-for iteration in 0..iterations {
-  if iteration == 1 then
-    timer.start(); //Start timer after a warmup lap
+const timer = new Timer();
+if lowLevel {
+  coforall tid in 0..#here.maxTaskPar {
 
-  A += B+SCALAR*C;
+    const numElems = length/here.maxTaskPar;
+    const myChunk = _computeBlock(numElems, here.maxTaskPar, tid,
+        length-1, 0, 0);
+    const myRange = myChunk[1]..myChunk[2];
+
+    //
+    // Main loop
+    //
+    for iteration in 0..iterations {
+      if tid == 0 && iteration == 1 then
+        timer.start(); //Start timer after a warmup lap
+
+      for i in myRange do
+        A[i] += B[i]+SCALAR*C[i];
+    }
+  }
+}
+else {
+  for iteration in 0..iterations {
+    if iteration == 1 then
+      timer.start(); //Start timer after a warmup lap
+
+    A += B+SCALAR*C;
+  }
 }
 
 // Timings
