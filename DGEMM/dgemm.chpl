@@ -60,7 +60,7 @@ else {
   // falling back to writing my own coforall. Engin
   coforall tid in 0..#here.maxTaskPar {
 
-    const numElems = order/blockSize;
+    const numElems = (order-1)/blockSize+1;
     const myChunk = _computeBlock(numElems, here.maxTaskPar, tid,
         numElems-1, 0, 0);
 
@@ -68,31 +68,36 @@ else {
         BB: [blockDom] real,
         CC: [blockDom] real;
 
-    const iterDomain = {bVecRange, bVecRange, bVecRange};
-
     for niter in 0..#iterations {
       if tid==0 && (iterations==1 || niter==1) then t.start();
 
       for (jjj,kk) in {myChunk[1]..myChunk[2], vecRange by blockSize} {
         const jj = jjj*blockSize;
 
-        for (jB, j) in zip(jj..#blockSize, bVecRange) do
-          for (kB, k) in zip(kk..#blockSize, bVecRange) do
+        const jMax = min(jj+blockSize-1, order);
+        const kMax = min(kk+blockSize-1, order);
+        const jRange = 0..jMax-jj;
+        const kRange = 0..kMax-kk;
+
+        for (jB, j) in zip(jj..jMax, bVecRange) do
+          for (kB, k) in zip(kk..kMax, bVecRange) do
             BB[j,k] = B[kB,jB];
 
         for ii in vecRange by blockSize {
-          /*AA = A[ii..#blockSize, kk..#blockSize];*/
-          for (iB, i) in zip(ii..#blockSize, bVecRange) do
-            for (kB, k) in zip(kk..#blockSize, bVecRange) do
+          const iMax = min(ii+blockSize-1, order);
+          const iRange = 0..iMax-ii;
+
+          for (iB, i) in zip(ii..iMax, bVecRange) do
+            for (kB, k) in zip(kk..kMax, bVecRange) do
               AA[i,k] = A[iB, kB];
 
           for cc in CC do cc = 0.0;
 
-          for (k,j,i) in iterDomain do
+          for (k,j,i) in {kRange, jRange, iRange} do
             CC[i,j] += AA[i,k] * BB[j,k];
 
-          for (iB, i) in zip(ii..#blockSize, bVecRange) do
-            for (jB, j) in zip(jj..#blockSize, bVecRange) do
+          for (iB, i) in zip(ii..iMax, bVecRange) do
+            for (jB, j) in zip(jj..jMax, bVecRange) do
               C[iB,jB] += CC[i,j];
         }
       }
