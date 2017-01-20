@@ -64,10 +64,6 @@ else {
     const myChunk = _computeBlock(numElems, here.maxTaskPar, tid,
         numElems-1, 0, 0);
 
-    /*var AA: [blockDom] real,*/
-        /*BB: [blockDom] real,*/
-        /*CC: [blockDom] real;*/
-
     var AA = c_calloc(real, blockDom.size);
     var BB = c_calloc(real, blockDom.size);
     var CC = c_calloc(real, blockDom.size);
@@ -82,25 +78,21 @@ else {
 
         for (jB, j) in zip(jj..#blockSize, bVecRange) do
           for (kB, k) in zip(kk..#blockSize, bVecRange) do
-            /*BB[j,k] = B[kB,jB];*/
             BB[j*blockSize+k] = B[kB,jB];
 
         for ii in vecRange by blockSize {
           /*AA = A[ii..#blockSize, kk..#blockSize];*/
           for (iB, i) in zip(ii..#blockSize, bVecRange) do
             for (kB, k) in zip(kk..#blockSize, bVecRange) do
-              /*AA[i,k] = A[iB, kB];*/
               AA[i*blockSize+k] = A[iB, kB];
 
           c_memset(CC, 0:int(32), blockDom.size*8);
 
           for (k,j,i) in iterDomain do
-            /*CC[i,j] += AA[i,k] * BB[j,k];*/
             CC[i*blockSize+j] += AA[i*blockSize+k] * BB[j*blockSize+k];
 
           for (iB, i) in zip(ii..#blockSize, bVecRange) do
             for (jB, j) in zip(jj..#blockSize, bVecRange) do
-              /*C[iB,jB] += CC[i,j];*/
               C[iB,jB] += CC[i*blockSize+j];
         }
       }
