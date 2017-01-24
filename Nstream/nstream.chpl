@@ -24,8 +24,9 @@ if length < 0 then
 // Domains
 const    Dom = {0.. # length};
 
-var A    : [Dom] real,
-    B, C : [Dom] real;
+var A = c_malloc(real, length);
+var B = c_malloc(real, length);
+var C = c_malloc(real, length);
 
 //
 // Print information before main loop
@@ -37,9 +38,12 @@ writeln("Vector length          = ", length);
 writeln("Number of iterations   = ", iterations);
 
 // initialization
-A = 0.0;
-B = 2.0;
-C = 2.0;
+
+forall i in Dom {
+  A[i] = 0.0;
+  B[i] = 2.0;
+  C[i] = 2.0;
+}
 
 const timer = new Timer();
 if lowLevel {
@@ -67,7 +71,9 @@ else {
     if iteration == 1 then
       timer.start(); //Start timer after a warmup lap
 
-    A += B+SCALAR*C;
+    forall i in Dom {
+      A[i] += B[i]+SCALAR*C[i];
+    }
   }
 }
 
