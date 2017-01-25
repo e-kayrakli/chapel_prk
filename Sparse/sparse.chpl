@@ -82,13 +82,11 @@ for niter in 0..iterations {
   // domain to have that kind of access to the spare array and the dense
   // vector.
   if !directAccess {
-
-    //FIXME for this loop to work without race condition, we must ensure
-    //that no row is divided between two separate tasks. So far, power
-    //of two size logic and fixed nnz per row  guarantees that this
-    //would work.
-    forall (i,j) in matrix.domain do
-      result[i] += matrix[i,j] * vector[j];
+    forall i in matrix.domain.dim(1) {
+      for j in matrix.domain.dimIter(2, i) {
+        result[i] += matrix[i,j] * vector[j];
+      }
+    }
   }
   else {
     const ref sparseDom = matrixDom._instance;
