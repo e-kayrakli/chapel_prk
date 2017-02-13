@@ -1,4 +1,6 @@
 use Time;
+use BlockDist;
+use RangeChunk;
 
 config const order = 10,
              epsilon = 1e-8,
@@ -13,7 +15,8 @@ config const order = 10,
 
 const vecRange = 0..#order;
 
-const matrixDom = {vecRange, vecRange};
+const matrixSpace = {vecRange, vecRange};
+const matrixDom = matrixSpace dmapped Block(matrixSpace);
 var A: [matrixDom] real,
     B: [matrixDom] real,
     C: [matrixDom] real;
@@ -24,8 +27,9 @@ forall (i,j) in matrixDom {
   C[i,j] = 0;
 }
 
+const nTasksPerLocale = here.maxTaskPar;
 writeln("Chapel Dense matrix-matrix multiplication");
-writeln("Max parallelism      =   ", here.maxTaskPar);
+writeln("Max parallelism      =   ", nTasksPerLocale);
 writeln("Matrix order         =   ", order);
 writeln("Blocking factor      =   ", if blockSize>0 then blockSize+""
     else "N/A");
@@ -51,54 +55,56 @@ if blockSize == 0 {
   t.stop();
 }
 else {
-  // variables for blocked dgemm
-  const bVecRange = 0..#blockSize;
-  const blockDom = {bVecRange, bVecRange};
-
   // we need task-local arrays for blocked matrix multiplication. It
   // seems that in intent for arrays is not working currently, so I am
   // falling back to writing my own coforall. Engin
-  coforall tid in 0..#here.maxTaskPar {
+  coforall l in Locales {
+    on l {
+      const bVecRange = 0..#blockSize;
+      const blockDom = {bVecRange, bVecRange};
+      const localDom = matrixDom.localSubdomain();
 
-    const numElems = (order-1)/blockSize+1;
-    const myChunk = _computeBlock(numElems, here.maxTaskPar, tid,
-        numElems-1, 0, 0);
+      coforall tid in 0..#nTasksPerLocale {
+        const myChunk = chunk(localDom.dim(2), nTasksPerLocale, tid);
 
-    var AA: [blockDom] real,
-        BB: [blockDom] real,
-        CC: [blockDom] real;
+        var AA: [blockDom] real,
+            BB: [blockDom] real,
+            CC: [blockDom] real;
 
-    for niter in 0..#iterations {
-      if tid==0 && (iterations==1 || niter==1) then t.start();
+        for niter in 0..#iterations {
+          if tid==0 && (iterations==1 || niter==1) then t.start();
 
-      for (jjj,kk) in {myChunk[1]..myChunk[2], vecRange by blockSize} {
-        const jj = jjj*blockSize;
+          for (jj,kk) in {myChunk by blockSize, vecRange by blockSize} {
+            const jMax = min(jj+blockSize-1, myChunk.high);
+            const kMax = min(kk+blockSize-1, vecRange.high);
+            const jRange = 0..jMax-jj;
+            const kRange = 0..kMax-kk;
 
-        const jMax = min(jj+blockSize-1, order);
-        const kMax = min(kk+blockSize-1, order);
-        const jRange = 0..jMax-jj;
-        const kRange = 0..kMax-kk;
-
-        for (jB, j) in zip(jj..jMax, bVecRange) do
-          for (kB, k) in zip(kk..kMax, bVecRange) do
-            BB[j,k] = B[kB,jB];
-
-        for ii in vecRange by blockSize {
-          const iMax = min(ii+blockSize-1, order);
-          const iRange = 0..iMax-ii;
-
-          for (iB, i) in zip(ii..iMax, bVecRange) do
-            for (kB, k) in zip(kk..kMax, bVecRange) do
-              AA[i,k] = A[iB, kB];
-
-          for cc in CC do cc = 0.0;
-
-          for (k,j,i) in {kRange, jRange, iRange} do
-            CC[i,j] += AA[i,k] * BB[j,k];
-
-          for (iB, i) in zip(ii..iMax, bVecRange) do
             for (jB, j) in zip(jj..jMax, bVecRange) do
-              C[iB,jB] += CC[i,j];
+              for (kB, k) in zip(kk..kMax, bVecRange) do
+                BB[j,k] = B[kB,jB];
+
+            for ii in localDom.dim(1) by blockSize {
+              const iMax = min(ii+blockSize-1, localDom.dim(1).high);
+              const iRange = 0..iMax-ii;
+
+              for (iB, i) in zip(ii..iMax, bVecRange) do
+                for (kB, k) in zip(kk..kMax, bVecRange) do
+                  AA[i,k] = A[iB, kB];
+
+              local {
+                for cc in CC do
+                  cc = 0.0;
+
+                for (k,j,i) in {kRange, jRange, iRange} do
+                  CC[i,j] += AA[i,k] * BB[j,k];
+
+                for (iB, i) in zip(ii..iMax, bVecRange) do
+                  for (jB, j) in zip(jj..jMax, bVecRange) do
+                    C[iB,jB] += CC[i,j];
+              }
+            }
+          }
         }
       }
     }
