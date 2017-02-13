@@ -1,6 +1,7 @@
 use Time;
 use BlockDist;
 use RangeChunk;
+use commMethods;
 
 config const order = 10,
              epsilon = 1e-8,
@@ -8,6 +9,9 @@ config const order = 10,
              blockSize = 0,
              debug = false,
              validate = true;
+
+config const prefetch = false,
+             consistent = true;
 
 
 // TODO current logic assumes order is divisible by blockSize. add that
@@ -38,6 +42,11 @@ writeln();
 
 const refChecksum = (iterations) *
     (0.25*order*order*order*(order-1.0)*(order-1.0));
+
+if prefetch {
+  A._instance.rowWiseAllGather(consistent);
+  B._instance.colWiseAllGather(consistent);
+}
 
 const t = new Timer();
 
