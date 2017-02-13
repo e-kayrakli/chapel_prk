@@ -76,10 +76,9 @@ else {
       coforall tid in 0..#nTasksPerLocale {
         const myChunk = chunk(localDom.dim(2), nTasksPerLocale, tid);
 
-        var AA: [blockDom] real,
-            BB: [blockDom] real,
-            CC: [blockDom] real;
-
+        var AA = c_calloc(real, blockDom.size);
+        var BB = c_calloc(real, blockDom.size);
+        var CC = c_calloc(real, blockDom.size);
         for niter in 0..#iterations {
           if tid==0 && (iterations==1 || niter==1) then t.start();
 
@@ -91,7 +90,7 @@ else {
 
             for (jB, j) in zip(jj..jMax, bVecRange) do
               for (kB, k) in zip(kk..kMax, bVecRange) do
-                BB[j,k] = B[kB,jB];
+                BB[j*blockSize+k] = B[kB,jB];
 
             for ii in localDom.dim(1) by blockSize {
               const iMax = min(ii+blockSize-1, localDom.dim(1).high);
@@ -99,18 +98,17 @@ else {
 
               for (iB, i) in zip(ii..iMax, bVecRange) do
                 for (kB, k) in zip(kk..kMax, bVecRange) do
-                  AA[i,k] = A[iB, kB];
+                  AA[i*blockSize+k] = A[iB, kB];
 
               local {
-                for cc in CC do
-                  cc = 0.0;
+                c_memset(CC, 0:int(32), blockDom.size*8);
 
                 for (k,j,i) in {kRange, jRange, iRange} do
-                  CC[i,j] += AA[i,k] * BB[j,k];
+                  CC[i*blockSize+j] += AA[i*blockSize+k] * BB[j*blockSize+k];
 
                 for (iB, i) in zip(ii..iMax, bVecRange) do
                   for (jB, j) in zip(jj..jMax, bVecRange) do
-                    C[iB,jB] += CC[i,j];
+                    C[iB,jB] += CC[i*blockSize+j];
               }
             }
           }
@@ -133,3 +131,9 @@ const nflops = 2.0*(order**3);
 const avgTime = t.elapsed()/iterations;
 writeln("Validation succesful.");
 writeln("Rate(MFlop/s) = ", 1e-6*nflops/avgTime, " Time : ", avgTime);
+
+inline proc c_memset(dest :c_ptr, val: int(32), n: integral) {
+  extern proc memset(dest: c_void_ptr, val: c_int, n: size_t):
+    c_void_ptr;
+  return memset(dest, val, n.safeCast(size_t));
+}
