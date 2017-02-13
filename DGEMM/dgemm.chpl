@@ -83,32 +83,34 @@ else {
           if tid==0 && (iterations==1 || niter==1) then t.start();
 
           for (jj,kk) in {myChunk by blockSize, vecRange by blockSize} {
-            const jMax = min(jj+blockSize-1, myChunk.high);
-            const kMax = min(kk+blockSize-1, vecRange.high);
-            const jRange = 0..jMax-jj;
-            const kRange = 0..kMax-kk;
+            local { //comment this if !prefetch
+              const jMax = min(jj+blockSize-1, myChunk.high);
+              const kMax = min(kk+blockSize-1, vecRange.high);
+              const jRange = 0..jMax-jj;
+              const kRange = 0..kMax-kk;
 
-            for (jB, j) in zip(jj..jMax, bVecRange) do
-              for (kB, k) in zip(kk..kMax, bVecRange) do
-                BB[j*blockSize+k] = B[kB,jB];
-
-            for ii in localDom.dim(1) by blockSize {
-              const iMax = min(ii+blockSize-1, localDom.dim(1).high);
-              const iRange = 0..iMax-ii;
-
-              for (iB, i) in zip(ii..iMax, bVecRange) do
+              for (jB, j) in zip(jj..jMax, bVecRange) do
                 for (kB, k) in zip(kk..kMax, bVecRange) do
-                  AA[i*blockSize+k] = A[iB, kB];
+                  BB[j*blockSize+k] = B[kB,jB];
 
-              local {
-                c_memset(CC, 0:int(32), blockDom.size*8);
-
-                for (k,j,i) in {kRange, jRange, iRange} do
-                  CC[i*blockSize+j] += AA[i*blockSize+k] * BB[j*blockSize+k];
+              for ii in localDom.dim(1) by blockSize {
+                const iMax = min(ii+blockSize-1, localDom.dim(1).high);
+                const iRange = 0..iMax-ii;
 
                 for (iB, i) in zip(ii..iMax, bVecRange) do
-                  for (jB, j) in zip(jj..jMax, bVecRange) do
-                    C[iB,jB] += CC[i*blockSize+j];
+                  for (kB, k) in zip(kk..kMax, bVecRange) do
+                    AA[i*blockSize+k] = A[iB, kB];
+
+                local {
+                  c_memset(CC, 0:int(32), blockDom.size*8);
+
+                  for (k,j,i) in {kRange, jRange, iRange} do
+                    CC[i*blockSize+j] += AA[i*blockSize+k] * BB[j*blockSize+k];
+
+                  for (iB, i) in zip(ii..iMax, bVecRange) do
+                    for (jB, j) in zip(jj..jMax, bVecRange) do
+                      C[iB,jB] += CC[i*blockSize+j];
+                }
               }
             }
           }
