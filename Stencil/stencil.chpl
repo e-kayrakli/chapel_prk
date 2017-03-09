@@ -9,6 +9,7 @@ use VisualDebug;
 
 /* Included from miniMD benchmark */
 use StencilDist;
+use commMethods;
 
 /* Version kept in sync with PRK repository */
 param PRKVERSION = "2.16";
@@ -26,6 +27,10 @@ config param R = 2,
              useBlockDist = false;
              /* No domain mapping, if neither is selected (shared) */
 
+
+//these should be param eventually
+config const consistent = true,
+             printAfterPrefetch = false;
 /* Number of iterations to execute (0th iteration is untimed) */
 config const iterations: int = 10,
              /* Input/Output matrix dimensions are 'order' x 'order' */
@@ -33,7 +38,8 @@ config const iterations: int = 10,
              /* Enable debug output, including chplvis data */
              debug: bool = false,
              /* Only print result of validation - used in correctness tests*/
-             validate: bool = false;
+             validate: bool = false,
+             prefetch = false;
 
 /* Size of stride for tiling; disables tiling if set to 0 */
 config var tileSize: int = 0;
@@ -142,7 +148,13 @@ proc main() {
 
   /* Initialize Input matrix */
   [(i, j) in Dom] input[i,j] = coefx*i+coefy*j;
-
+  /*writeln("Initialized");*/
+  /*for i in localDom.dim(1) {*/
+    /*for j in localDom.dim(2) {*/
+      /*write(input[i, j], " ");*/
+    /*}*/
+    /*writeln();*/
+  /*}*/
   /* Update ghost cells with initial values */
   if useStencilDist then input.updateFluff();
 
@@ -166,11 +178,32 @@ proc main() {
     else                        writeln("Distribution         = None");
   }
 
+  if useBlockDist {
+    if prefetch {
+      input._value.stencilPrefetch(consistent, corners=compact, depth=R);
+
+      if printAfterPrefetch {
+        for l in Locales do on l {
+          writeln(here);
+          for i in localDom.dim(1) {
+            for j in localDom.dim(2) {
+              write(input[i, j], " ");
+            }
+            writeln();
+          }
+        }
+      }
+    }
+  }
+
   //
   // Main loop of Stencil
   //
   if debug then startVdebug("stencil-fast-vis");
   for iteration in 0..iterations {
+
+    if !consistent then
+      input._value.updatePrefetch();
 
     /* Start timer after warmup iteration */
     if (iteration == 1) {
@@ -180,37 +213,54 @@ proc main() {
     if debug then diagnostics('stencil');
     if (!tiling) {
       forall (i,j) in innerDom with (in weight) {
-        var tmpout: dtype = 0.0;
-        if (!compact) {
-          for param jj in -R..-1 do tmpout += weight[R1][R1+jj] * input[i, j+jj];
-          for param jj in 1..R   do tmpout += weight[R1][R1+jj] * input[i, j+jj];
-          for param ii in -R..-1 do tmpout += weight[R1+ii][R1] * input[i+ii, j];
-          for param ii in 1..R   do tmpout += weight[R1+ii][R1] * input[i+ii, j];
-        } else {
-          for param ii in -R..R do
-            for param jj in -R..R do
-              tmpout += weight[R1+ii][R1+jj] * input[i+ii, j+jj];
-        }
-        output[i, j] += tmpout;
+        /*local {*/
+          var tmpout: dtype = 0.0;
+          if (!compact) {
+            for param jj in -R..-1 do tmpout += weight[R1][R1+jj] * input[i, j+jj];
+            for param jj in 1..R   do tmpout += weight[R1][R1+jj] * input[i, j+jj];
+            for param ii in -R..-1 do tmpout += weight[R1+ii][R1] * input[i+ii, j];
+            for param ii in 1..R   do tmpout += weight[R1+ii][R1] * input[i+ii, j];
+          } else {
+            for param ii in -R..R do
+              for param jj in -R..R do
+                tmpout += weight[R1+ii][R1+jj] * input[i+ii, j+jj];
+          }
+          /*if tmpout != 2 {*/
+          if false {
+            /*writeln((i,j), " I see : ", input[i-2, j], "\n",*/
+                                        /*input[i-1, j], "\n",*/
+ /*input[i, j-2], " ", input[i, j-1], " ",input[i  , j], " ",input[i, j+1], " ", input[i, j+2], "\n", */
+                                        /*input[i+1, j], "\n",*/
+                                        /*input[i+2, j], "\n");*/
+            writeln("Iteration :", iteration, " index ", (i,j));
+            for jj in -R..-1 do writeln(" XXX ", weight[R1][R1+jj] , " ", input[i, j+jj]);
+            for jj in 1..R   do writeln(" XXX ", weight[R1][R1+jj] , " ", input[i, j+jj]);
+            for ii in -R..-1 do writeln(" XXX ", weight[R1+ii][R1] , " ", input[i+ii, j]);
+            for ii in 1..R   do writeln(" XXX ", weight[R1+ii][R1] , " ", input[i+ii, j]);
+          }
+          output[i, j] += tmpout;
+        /*}*/
       }
     } else {
-      forall (it,jt) in tiledDom {
-        for i in it .. # min(order - R - it, tileSize) {
-          for j in jt .. # min(order - R - jt, tileSize) {
-            var tmpout: dtype = 0.0;
-            if (!compact) {
-              for param jj in -R..-1 do tmpout += weight[R1][R1+jj] * input[i, j+jj];
-              for param jj in 1..R   do tmpout += weight[R1][R1+jj] * input[i, j+jj];
-              for param ii in -R..-1 do tmpout += weight[R1+ii][R1] * input[i+ii, j];
-              for param ii in 1..R   do tmpout += weight[R1+ii][R1] * input[i+ii, j];
-            } else {
-              for param ii in -R..R do
-                for param jj in -R..R do
-                  tmpout += weight[R1+ii][R1+jj] * input[i+ii, j+jj];
+      forall (it,jt) in tiledDom with (in weight) {
+        /*local {*/
+          for i in it .. # min(order - R - it, tileSize) {
+            for j in jt .. # min(order - R - jt, tileSize) {
+              var tmpout: dtype = 0.0;
+              if (!compact) {
+                for param jj in -R..-1 do tmpout += weight[R1][R1+jj] * input[i, j+jj];
+                for param jj in 1..R   do tmpout += weight[R1][R1+jj] * input[i, j+jj];
+                for param ii in -R..-1 do tmpout += weight[R1+ii][R1] * input[i+ii, j];
+                for param ii in 1..R   do tmpout += weight[R1+ii][R1] * input[i+ii, j];
+              } else {
+                for param ii in -R..R do
+                  for param jj in -R..R do
+                    tmpout += weight[R1+ii][R1+jj] * input[i+ii, j+jj];
+              }
+              output[i, j] += tmpout;
             }
-            output[i, j] += tmpout;
           }
-        }
+        /*}*/
       }
     }
 
@@ -232,6 +282,15 @@ proc main() {
   timer.stop();
   if debug then stopVdebug();
 
+  /*for l in Locales do on l {*/
+    /*writeln(here);*/
+    /*for i in localDom.dim(1) {*/
+      /*for j in localDom.dim(2) {*/
+        /*write(input[i, j], " ");*/
+      /*}*/
+      /*writeln();*/
+    /*}*/
+  /*}*/
   //
   // Analyze and output results
   //
@@ -249,6 +308,16 @@ proc main() {
   /* Error threshold */
   const epsilon = 1.e-8;
 
+  /*writeln("Output");*/
+  /*for l in Locales do on l {*/
+    /*writeln(here);*/
+    /*for i in localDom.dim(1) {*/
+      /*for j in localDom.dim(2) {*/
+        /*write(output[i, j], " ");*/
+      /*}*/
+      /*writeln();*/
+    /*}*/
+  /*}*/
   /* Verify correctness */
   if abs(norm-referenceNorm) > epsilon then {
     writeln("ERROR: L1 norm = ", norm, ", Reference L1 norm = ", referenceNorm);
