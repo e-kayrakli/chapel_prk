@@ -1,10 +1,11 @@
-CHPLFLAGS=--fast
+CHPLFLAGS=--fast --cache-remote -M$(CHPL_HOME)/test/users/engin/collective_communications/
+BINDIR=./bin
 
 MISCFLAGS=
 
 $(MAIN): $(SRC)
 	echo Building $@
-	chpl $(CHPLFLAGS) $(MISCFLAGS) -o $@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
+	chpl $(CHPLFLAGS) $(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 
 clean:
-	rm -rf $(MAIN) c_code/
+	rm -rf $(BINDIR)/$(MAIN) c_code/
