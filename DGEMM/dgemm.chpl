@@ -77,6 +77,8 @@ else {
 
       coforall tid in 0..#nTasksPerLocale {
         const myChunk = chunk(localDom.dim(2), nTasksPerLocale, tid);
+        const tileIterDom =
+          {myChunk by blockSize, vecRange by blockSize};
 
         var AA = c_calloc(real, blockDom.size);
         var BB = c_calloc(real, blockDom.size);
@@ -84,7 +86,7 @@ else {
         for niter in 0..#iterations {
           if l.id==0 && tid==0 && (iterations==1 || niter==1) then t.start();
 
-          for (jj,kk) in {myChunk by blockSize, vecRange by blockSize} {
+          for (jj,kk) in tileIterDom {
             // two parts are identical
             if prefetch && !consistent {
               local { //comment this if !prefetch
@@ -108,8 +110,17 @@ else {
                   local {
                     c_memset(CC, 0:int(32), blockDom.size*8);
 
-                    for (k,j,i) in {kRange, jRange, iRange} do
-                      CC[i*blockSize+j] += AA[i*blockSize+k] * BB[j*blockSize+k];
+                    // we could create domains here, but domain literals
+                    // trigger fences. So iterate over ranges
+                    // explicitly.
+                    for k in kRange {
+                      for j in jRange {
+                        for i in iRange {
+                          CC[i*blockSize+j] += AA[i*blockSize+k] *
+                            BB[j*blockSize+k];
+                        }
+                      }
+                    }
 
                     for (iB, i) in zip(ii..iMax, bVecRange) do
                       for (jB, j) in zip(jj..jMax, bVecRange) do
@@ -139,8 +150,17 @@ else {
                 local {
                   c_memset(CC, 0:int(32), blockDom.size*8);
 
-                  for (k,j,i) in {kRange, jRange, iRange} do
-                    CC[i*blockSize+j] += AA[i*blockSize+k] * BB[j*blockSize+k];
+                  // we could create domains here, but domain literals
+                  // trigger fences. So iterate over ranges
+                  // explicitly.
+                  for k in kRange {
+                    for j in jRange {
+                      for i in iRange {
+                        CC[i*blockSize+j] += AA[i*blockSize+k] *
+                          BB[j*blockSize+k];
+                      }
+                    }
+                  }
 
                   for (iB, i) in zip(ii..iMax, bVecRange) do
                     for (jB, j) in zip(jj..jMax, bVecRange) do
