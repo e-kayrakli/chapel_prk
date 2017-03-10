@@ -21,7 +21,9 @@ locales=["01", "02" , "04"]
 locales_int = [1,2,4]
 
 if use_slurm:
-    locales=["01", "02" , "04", "08", "16", "32"]
-    locales_int = [1,2,4,8,16,32]
+    # locales=["01", "02" , "04", "08", "16", "32"]
+    # locales_int = [1,2,4,8,16,32]
+    locales=["01", "04", "09", "16", "25"]
+    locales_int = [1,4,9,16,25]
 
 tries = range(1, args.num_tries+1)
