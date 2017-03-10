@@ -5,6 +5,8 @@ use Time;
 
 param PRKVERSION = "2.17";
 
+config param useBlockDist = false;
+
 config const iterations = 100,
              order = 100,
              tileSize = 0,
@@ -26,10 +28,18 @@ if tileSize > order then
 const tiled = tileSize > 0;
 
 // Domains
-const Dom = {0..#order, 0..#order};
-var tiledDom = if tiled then
+const localDom = {0..#order, 0..#order};
+var tiledLocalDom = if tiled then
   {0..#order by tileSize, 0..#order by tileSize} else
   {0..5 by 1, 0..5 by 1}; //junk domain
+
+
+const blockDist = new dmap(new Block(localDom));
+const Dist =  if useBlockDist then blockDist
+                              else defaultDist;
+
+const Dom = localDom dmapped Dist;
+const tiledDom = tiledLocalDom dmapped Dist;
 
 var timer: Timer,
     bytes = 2.0 * numBytes(real) * order * order,
