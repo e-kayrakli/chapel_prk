@@ -3,9 +3,49 @@ BINDIR=./bin
 
 MISCFLAGS=
 
-$(MAIN): $(SRC)
-	echo Building $@
-	chpl $(CHPLFLAGS) $(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
+all: $(MAIN)_base $(MAIN)_pref_cons $(MAIN)_pref_cons_u $(MAIN)_pref_incons $(MAIN)_pref_incons_u
 
+$(MAIN)_base: $(SRC)
+	echo Building $@
+	chpl $(CHPLFLAGS)\
+	  -sprefetch=false -sconsistent=true -sallowPrefetchUnpacking=false\
+	$(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
+
+$(MAIN)_pref_cons: $(SRC)
+	echo Building $@
+	chpl $(CHPLFLAGS)\
+	  -sprefetch=true -sconsistent=true -sallowPrefetchUnpacking=false\
+	  $(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
+
+$(MAIN)_pref_cons_u: $(SRC)
+	echo Building $@
+	chpl $(CHPLFLAGS)\
+	  -sprefetch=true -sconsistent=true -sallowPrefetchUnpacking=true\
+	  $(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
+
+$(MAIN)_pref_incons: $(SRC)
+	echo Building $@
+	chpl $(CHPLFLAGS)\
+	  -sprefetch=true -sconsistent=false -sallowPrefetchUnpacking=false\
+	  $(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
+
+$(MAIN)_pref_incons_u: $(SRC)
+	echo Building $@
+	chpl $(CHPLFLAGS)\
+	  -sprefetch=true -sconsistent=false -sallowPrefetchUnpacking=true\
+	  $(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 clean:
-	rm -rf $(BINDIR)/$(MAIN) c_code/
+	rm -rf $(BINDIR)/$(MAIN)* c_code/
+
+cleanout:
+	rm -rf out/$(MAIN)*.out
+
+runlocal:
+	PYTHONPATH=../scripts python scripts/run.py RUN $(SIZE) $(NUMTRIES)
+plotlocal:
+	PYTHONPATH=../scripts python scripts/run.py PLOT $(SIZE) $(NUMTRIES)
+
+runslurm:
+	PYTHONPATH=../scripts python scripts/run.py --slurm RUN $(SIZE) $(NUMTRIES)
+plotslurm:
+	PYTHONPATH=../scripts python scripts/run.py --slurm PLOT $(SIZE) $(NUMTRIES)
