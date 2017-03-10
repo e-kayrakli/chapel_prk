@@ -2,6 +2,7 @@
 //    test/studies/prk
 // Last sha was bd9303f6cd002f7070a450d94d3cbdc16b074b46
 use Time;
+use commMethods;
 
 param PRKVERSION = "2.17";
 
@@ -11,6 +12,9 @@ config const iterations = 100,
              order = 100,
              tileSize = 0,
              debug = false;
+
+config const prefetch = false;
+config const consistent = true;
 
 //
 // Process and test input configs
@@ -62,6 +66,8 @@ writeln("Number of iterations = ", iterations);
 // Initialize B for clarity
 B = 0.0;
 
+if prefetch then
+  A._value.transposePrefetch(consistent);
 //
 // Main loop
 //
@@ -69,17 +75,38 @@ for iteration in 0..iterations {
   // Start timer after a warmup lap
   if iteration == 1 then timer.start();
 
+  if !consistent then A._value.updatePrefetch();
+
   if tiled {
-    forall (i,j) in tiledDom {
-      for it in i..#min(order-i, tileSize) {
-        for jt in j..#min(order-j, tileSize) {
-          B[jt,it] += A[it,jt];
-          A[it,jt] += 1.0;
+    if !consistent {
+      forall (i,j) in tiledDom {
+        local { // if !consistent
+          for it in i..#min(order-i, tileSize) {
+            for jt in j..#min(order-j, tileSize) {
+              B[it,jt] += A[jt,it];
+            }
+          }
         }
       }
     }
+    else {
+      forall (i,j) in tiledDom {
+        for it in i..#min(order-i, tileSize) {
+          for jt in j..#min(order-j, tileSize) {
+            B[it,jt] += A[jt,it];
+          }
+        }
+      }
+    }
+    forall a in A {
+      local {
+        a += 1.0;
+      }
+    }
+
   }
   else {
+    writeln("Ineffective prefetch");
     forall (i,j) in Dom {
       B[j,i] += A[i,j];
       A[i,j] += 1.0;
