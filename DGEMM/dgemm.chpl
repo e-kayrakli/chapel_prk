@@ -10,6 +10,8 @@ config const order = 10,
              debug = false,
              validate = true;
 
+config const staticDomain = false;
+
 config param  prefetch = false,
              consistent = true;
 
@@ -44,8 +46,8 @@ const refChecksum = (iterations) *
     (0.25*order*order*order*(order-1.0)*(order-1.0));
 
 if prefetch {
-  A._instance.rowWiseAllGather(consistent);
-  B._instance.colWiseAllGather(consistent);
+  A._instance.rowWiseAllGather(consistent, staticDomain);
+  B._instance.colWiseAllGather(consistent, staticDomain);
 }
 
 const t = new Timer();
