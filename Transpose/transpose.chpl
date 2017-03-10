@@ -13,8 +13,8 @@ config const iterations = 100,
              tileSize = 0,
              debug = false;
 
-config const prefetch = false;
-config const consistent = true;
+config param prefetch = false;
+config param consistent = true;
 
 //
 // Process and test input configs
