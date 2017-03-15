@@ -5,6 +5,8 @@ param PRKVERSION = "2.17";
 
 config param directAccess = false;
 
+// for bulkAdd improvement purposes - can be removed
+config const timeBulkAdd = false;
 config const lsize = 5,
              radius = 2,
              iterations = 10,
@@ -39,7 +41,15 @@ for row in 0..#size2 {
     bufIdx += 4;
   }
 }
+const initTimer = new Timer();
+if timeBulkAdd {
+  initTimer.start();
+}
 matrixDom.bulkAdd(indBuf, preserveInds=false);
+if timeBulkAdd {
+  initTimer.stop();
+  writeln("Initialization time : ", initTimer.elapsed());
+}
 
 //do a sanitiy check to make sure we have created correct numver of
 //indicese in the sparse domain
