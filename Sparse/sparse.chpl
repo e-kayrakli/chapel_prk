@@ -107,21 +107,12 @@ for niter in 0..iterations {
 
   if niter == 1 then t.start();
   [i in vectorDom] vector[i] += i+1;
+  if !consistent then vector._value.updatePrefetch();
 
-  if !consistent {
-    forall i in matrix.domain.dim(1) {
-      local {
-        for j in matrix.domain.dimIter(2, i) {
-          result[i] += matrix[i,j] * vector[j];
-        }
-      }
-    }
-  }
-  else {
-    forall i in matrix.domain.dim(1) {
-      for j in matrix.domain.dimIter(2, i) {
-        result[i] += matrix[i,j] * vector[j];
-      }
+  // no privatization in sparse domains -> no local statement :(
+  forall i in matrix.domain.dim(1) {
+    for j in matrix.domain.dimIter(2, i) {
+      result[i] += matrix[i,j] * vector[j];
     }
   }
 }
