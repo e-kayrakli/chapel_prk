@@ -4,7 +4,6 @@ use LayoutCSR;
 
 param PRKVERSION = "2.17";
 
-config param directAccess = false;
 config param rowDistributeMatrix = false;
 
 // for bulkAdd improvement purposes - can be removed
@@ -93,8 +92,6 @@ writeln("Matrix order         = ", size2);
 writeln("Stencil diameter     = ", 2*radius+1);
 writeln("Sparsity             = ", sparsity);
 writeln("Number of iterations = ", iterations);
-writeln("Direct access ", if directAccess then "enabled" else
-    "disabled");
 writeln("Indexes are ", if !scramble then "not " else "", "scrambled");
 
 const t = new Timer();
@@ -103,31 +100,9 @@ for niter in 0..iterations {
   if niter == 1 then t.start();
   [i in vectorDom] vector[i] += i+1;
 
-  // In OpenMP version, the way CSR domain is accessed depends heavily
-  // on the fact that there will be 5 indices per row. This allows them
-  // to avoid doing index searching in the CSR arrays.
-  //
-  // When directAccess==true, what we do is to use the "guts" of the CSR
-  // domain to have that kind of access to the spare array and the dense
-  // vector.
-  if !directAccess {
-    forall i in matrix.domain.dim(1) {
-      for j in matrix.domain.dimIter(2, i) {
-        result[i] += matrix[i,j] * vector[j];
-      }
-    }
-  }
-  else {
-    if numLocales != 1 then
-      halt("Not ready for direct access on multilocale runs yet");
-    const ref sparseDom = matrixDom._instance;
-    const ref sparseArr = matrix._instance;
-
-    forall i in parentDom.dim(1) {
-      const first = i*stencilSize+1; //internal arrays are 1-based
-      const last = first+stencilSize-1;
-      for j in first..last do
-        result[i] += sparseArr.data[j] * vector[sparseDom.colIdx[j]];
+  forall i in matrix.domain.dim(1) {
+    for j in matrix.domain.dimIter(2, i) {
+      result[i] += matrix[i,j] * vector[j];
     }
   }
 }
