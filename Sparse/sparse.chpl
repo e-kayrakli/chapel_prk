@@ -1,10 +1,11 @@
 use BlockDist;
 use Time;
 use LayoutCSR;
+use commMethods;
 
 param PRKVERSION = "2.17";
 
-config param rowDistributeMatrix = false;
+config param rowDistributeMatrix = true;
 
 // for bulkAdd improvement purposes - can be removed
 config const timeBulkAdd = false;
@@ -14,7 +15,7 @@ config const lsize = 5,
              scramble = true;
 
 // const for now TODO make param after correctness tests
-config const prefetch = false;
+config const prefetch = false,
              consistent = true;
 
 const lsize2 = 2*lsize;
@@ -94,15 +95,33 @@ writeln("Sparsity             = ", sparsity);
 writeln("Number of iterations = ", iterations);
 writeln("Indexes are ", if !scramble then "not " else "", "scrambled");
 
+if prefetch {
+  if !rowDistributeMatrix {
+    matrix._value.rowWiseAllGather(consistent=consistent);
+  }
+  vector._value.allGather(consistent=consistent);
+}
+
 const t = new Timer();
 for niter in 0..iterations {
 
   if niter == 1 then t.start();
   [i in vectorDom] vector[i] += i+1;
 
-  forall i in matrix.domain.dim(1) {
-    for j in matrix.domain.dimIter(2, i) {
-      result[i] += matrix[i,j] * vector[j];
+  if !consistent {
+    forall i in matrix.domain.dim(1) {
+      local {
+        for j in matrix.domain.dimIter(2, i) {
+          result[i] += matrix[i,j] * vector[j];
+        }
+      }
+    }
+  }
+  else {
+    forall i in matrix.domain.dim(1) {
+      for j in matrix.domain.dimIter(2, i) {
+        result[i] += matrix[i,j] * vector[j];
+      }
     }
   }
 }

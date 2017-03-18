@@ -5,6 +5,11 @@ MISCFLAGS=
 
 all: $(MAIN)_base $(MAIN)_pref_cons $(MAIN)_pref_cons_u $(MAIN)_pref_incons $(MAIN)_pref_incons_u
 
+$(MAIN)_def: $(SRC)
+	echo Building $@
+	chpl $(CHPLFLAGS)\
+	$(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
+
 $(MAIN)_base: $(SRC)
 	echo Building $@
 	chpl $(CHPLFLAGS)\
