@@ -14,6 +14,10 @@ config const lsize = 5,
              iterations = 10,
              scramble = true;
 
+// const for now TODO make param after correctness tests
+config const prefetch = false;
+             consistent = true;
+
 const lsize2 = 2*lsize;
 const size = 1<<lsize;
 const size2 = size*size;
@@ -107,13 +111,11 @@ for niter in 0..iterations {
   // domain to have that kind of access to the spare array and the dense
   // vector.
   if !directAccess {
-
-    //FIXME for this loop to work without race condition, we must ensure
-    //that no row is divided between two separate tasks. So far, power
-    //of two size logic and fixed nnz per row  guarantees that this
-    //would work.
-    forall (i,j) in matrix.domain do
-      result[i] += matrix[i,j] * vector[j];
+    forall i in matrix.domain.dim(1) {
+      for j in matrix.domain.dimIter(2, i) {
+        result[i] += matrix[i,j] * vector[j];
+      }
+    }
   }
   else {
     if numLocales != 1 then
@@ -162,4 +164,16 @@ proc reverse(xx) {
   x = ((x >> 16) & 0x0000ffff0000ffff) | ((x << 16) & 0xffff0000ffff0000);
   x = ((x >> 32) & 0x00000000ffffffff) | ((x << 32) & 0xffffffff00000000);
   return (x>>(64-lsize2)):int;
+}
+
+// TODO contribute this back
+iter SparseBlockDom.dimIter(param dim, idx) {
+  var targetLocRow = dist.targetLocsIdx((idx, whole.dim(2).low));
+  /*writeln("dimIter idx: ", idx, " targetLocRow ", targetLocRow);*/
+
+  for l in dist.targetLocales.domain.dim(2) {
+    for idx in locDoms[(targetLocRow[1], l)].mySparseBlock.dimIter(2, idx) {
+      yield idx;
+    }
+  }
 }
