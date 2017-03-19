@@ -18,6 +18,8 @@ config const lsize = 5,
 config const prefetch = false,
              consistent = true;
 
+config const distSpsDomInit = true;
+
 const lsize2 = 2*lsize;
 const size = 1<<lsize;
 const size2 = size*size;
@@ -41,35 +43,78 @@ var matrixDenseDom = parentDom dmapped Block(parentDom,
 
 var matrixDom: sparse subdomain(matrixDenseDom);
 
-// temporary index buffer for fast initialization
-const indBufDom = {0..#(size2*stencilSize)};
-var indBuf: [indBufDom] 2*int;
-
 //initialize sparse domain
-for row in 0..#size2 {
-  const i = row%size;
-  const j = row/size;
+if !distSpsDomInit || numLocales==1 || !rowDistributeMatrix { // naive ind addition
 
-  var bufIdx = row*stencilSize;
+  // temporary index buffer for fast initialization
+  const indBufDom = {0..#(size2*stencilSize)};
+  var indBuf: [indBufDom] 2*int;
 
-  indBuf[bufIdx] = (row, reverse(LIN(i,j)));
-  for r in 1..radius {
-    indBuf[bufIdx+1] = (row, reverse(LIN((i+r)%size,j)));
-    indBuf[bufIdx+2] = (row, reverse(LIN((i-r+size)%size,j)));
-    indBuf[bufIdx+3] = (row, reverse(LIN(i, (j+r)%size)));
-    indBuf[bufIdx+4] = (row, reverse(LIN(i, (j-r+size)%size)));
-    bufIdx += 4;
+  for row in 0..#size2 {
+    const i = row%size;
+    const j = row/size;
+
+    var bufIdx = row*stencilSize;
+
+    indBuf[bufIdx] = (row, reverse(LIN(i,j)));
+    for r in 1..radius {
+      indBuf[bufIdx+1] = (row, reverse(LIN((i+r)%size,j)));
+      indBuf[bufIdx+2] = (row, reverse(LIN((i-r+size)%size,j)));
+      indBuf[bufIdx+3] = (row, reverse(LIN(i, (j+r)%size)));
+      indBuf[bufIdx+4] = (row, reverse(LIN(i, (j-r+size)%size)));
+      bufIdx += 4;
+    }
+  }
+  const initTimer = new Timer();
+  if timeBulkAdd {
+    initTimer.start();
+  }
+  matrixDom.bulkAdd(indBuf, preserveInds=false);
+  if timeBulkAdd {
+    initTimer.stop();
+    writeln("Initialization time : ", initTimer.elapsed());
   }
 }
-const initTimer = new Timer();
-if timeBulkAdd {
-  initTimer.start();
+else { // create indices in distributed fashion
+  var rowDistDom = vectorSpace dmapped Block(vectorSpace);
+
+  var addingToNNZ$: sync bool;
+
+  coforall l in Locales do on l {
+
+    // temporary index buffer for fast initialization
+
+    const locRowDistDom = rowDistDom.localSubdomain();
+    const numLocInds = stencilSize*locRowDistDom.numIndices;
+    const indBufDom = {0..#numLocInds};
+    var indBuf: [indBufDom] 2*int;
+
+    // TODO this is very similar to what we have above -- refactor it
+    for row in locRowDistDom {
+      const i = row%size;
+      const j = row/size;
+
+      var bufIdx = (row-locRowDistDom.low)*stencilSize;
+
+      indBuf[bufIdx] = (row, reverse(LIN(i,j)));
+      for r in 1..radius {
+        indBuf[bufIdx+1] = (row, reverse(LIN((i+r)%size,j)));
+        indBuf[bufIdx+2] = (row, reverse(LIN((i-r+size)%size,j)));
+        indBuf[bufIdx+3] = (row, reverse(LIN(i, (j+r)%size)));
+        indBuf[bufIdx+4] = (row, reverse(LIN(i, (j-r+size)%size)));
+        bufIdx += 4;
+      }
+    }
+    // this assumes that targetLocales is all the locales in the same
+    // order as in Locales
+    const indsAdded =
+      matrixDom._value.locDoms[(l.id,0)].mySparseBlock.bulkAdd(indBuf,
+        preserveInds=false);
+
+  }
+  matrixDom._value.nnz = size2*stencilSize;
 }
-matrixDom.bulkAdd(indBuf, preserveInds=false);
-if timeBulkAdd {
-  initTimer.stop();
-  writeln("Initialization time : ", initTimer.elapsed());
-}
+
 
 //do a sanitiy check to make sure we have created correct numver of
 //indicese in the sparse domain
@@ -111,6 +156,8 @@ for niter in 0..iterations {
 
   // no privatization in sparse domains -> no local statement :(
   forall i in matrix.domain.dim(1) {
+    // the following call to dimiter should'nt be too horrible if
+    // rowDistributeMatrix==true
     for j in matrix.domain.dimIter(2, i) {
       result[i] += matrix[i,j] * vector[j];
     }
@@ -151,6 +198,7 @@ proc reverse(xx) {
   return (x>>(64-lsize2)):int;
 }
 
+// TODO add prefetch checks for fast iteration
 // TODO contribute this back
 iter SparseBlockDom.dimIter(param dim, idx) {
   var targetLocRow = dist.targetLocsIdx((idx, whole.dim(2).low));
