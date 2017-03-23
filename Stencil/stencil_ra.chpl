@@ -196,27 +196,14 @@ proc main() {
         /*local {*/
           var tmpout: dtype = 0.0;
           if (!compact) {
-            for param jj in -R..-1 do tmpout += ALPHA * input[i, j+jj];
-            for param jj in 1..R   do tmpout += ALPHA * input[i, j+jj];
-            for param ii in -R..-1 do tmpout += ALPHA * input[i+ii, j];
-            for param ii in 1..R   do tmpout += ALPHA * input[i+ii, j];
+            for jj in -R..-1 do tmpout += ALPHA * input[i, j+jj];
+            for jj in 1..R   do tmpout += ALPHA * input[i, j+jj];
+            for ii in -R..-1 do tmpout += ALPHA * input[i+ii, j];
+            for ii in 1..R   do tmpout += ALPHA * input[i+ii, j];
           } else {
-            for param ii in -R..R do
-              for param jj in -R..R do
+            for ii in -R..R do
+              for jj in -R..R do
                 tmpout += ALPHA * input[i+ii, j+jj];
-          }
-          /*if tmpout != 2 {*/
-          if false {
-            /*writeln((i,j), " I see : ", input[i-2, j], "\n",*/
-                                        /*input[i-1, j], "\n",*/
- /*input[i, j-2], " ", input[i, j-1], " ",input[i  , j], " ",input[i, j+1], " ", input[i, j+2], "\n", */
-                                        /*input[i+1, j], "\n",*/
-                                        /*input[i+2, j], "\n");*/
-            writeln("Iteration :", iteration, " index ", (i,j));
-            for jj in -R..-1 do writeln(" XXX ", ALPHA , " ", input[i, j+jj]);
-            for jj in 1..R   do writeln(" XXX ", ALPHA , " ", input[i, j+jj]);
-            for ii in -R..-1 do writeln(" XXX ", ALPHA , " ", input[i+ii, j]);
-            for ii in 1..R   do writeln(" XXX ", ALPHA , " ", input[i+ii, j]);
           }
           output[i, j] += tmpout;
         /*}*/
@@ -228,13 +215,13 @@ proc main() {
             for j in jt .. # min(order - R - jt, tileSize) {
               var tmpout: dtype = 0.0;
               if (!compact) {
-                for param jj in -R..-1 do tmpout += ALPHA * input[i, j+jj];
-                for param jj in 1..R   do tmpout += ALPHA * input[i, j+jj];
-                for param ii in -R..-1 do tmpout += ALPHA * input[i+ii, j];
-                for param ii in 1..R   do tmpout += ALPHA * input[i+ii, j];
+                for jj in -R..-1 do tmpout += ALPHA * input[i, j+jj];
+                for jj in 1..R   do tmpout += ALPHA * input[i, j+jj];
+                for ii in -R..-1 do tmpout += ALPHA * input[i+ii, j];
+                for ii in 1..R   do tmpout += ALPHA * input[i+ii, j];
               } else {
-                for param ii in -R..R do
-                  for param jj in -R..R do
+                for ii in -R..R do
+                  for jj in -R..R do
                     tmpout += ALPHA * input[i+ii, j+jj];
               }
               output[i, j] += tmpout;
