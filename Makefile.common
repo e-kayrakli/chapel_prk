@@ -43,7 +43,7 @@ clean:
 	rm -rf $(BINDIR)/$(MAIN)* c_code/
 
 cleanout:
-	rm -rf out/$(MAIN)*.out
+	rm -rf out/*.out
 
 runlocal:
 	PYTHONPATH=../scripts python scripts/run.py RUN $(SIZE) $(NUMTRIES)

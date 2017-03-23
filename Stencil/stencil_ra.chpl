@@ -18,6 +18,7 @@ param PRKVERSION = "2.16";
 /* Numerical type for matrix elements */
 config type dtype = real;
 
+config param ALPHA = 0.1;
 /* Radius of weight matrix */
 config param R = 2,
              /* Determine weight matrix shapre; square = false, star = true */
@@ -41,6 +42,7 @@ config const iterations: int = 10,
              debug: bool = false,
              /* Only print result of validation - used in correctness tests*/
              validate: bool = false,
+             checkResults: bool = false,
              prefetch = false;
 
 /* Size of stride for tiling; disables tiling if set to 0 */
@@ -122,32 +124,6 @@ proc main() {
   var input: [Dom] dtype = 0.0,
       output: [outputDom] dtype = 0.0;
 
-  /* Weight matrix represented as tuple of tuples*/
-  var weight: Wsize*(Wsize*(dtype));
-
-  if !compact {
-    for i in 1..R {
-      const element : dtype = 1 / (2*i*R) : dtype;
-      weight[R1][R1+i]  =  element;
-      weight[R1+i][R1]  =  element;
-      weight[R1-i][R1] = -element;
-      weight[R1][R1-i] = -element;
-    }
-  }
-  else {
-    for jj in 1..R {
-      const element = (1.0/(4.0*jj*(2.0*jj-1)*R)):dtype;
-      for ii in R1+-jj+1..R1+jj-1 {
-        weight[ ii][R1+jj] = element;
-        weight[ ii][R1-jj] = -element;
-        weight[R1+jj][ ii] = element;
-        weight[R1-jj][ ii] = -element;
-      }
-      weight[R1+jj][R1+jj] = (1.0/(4.0*jj*R));
-      weight[R1-jj][R1-jj] = -(1.0/(4.0*jj*R));
-    }
-  }
-
   /* Initialize Input matrix */
   [(i, j) in Dom] input[i,j] = coefx*i+coefy*j;
   /*writeln("Initialized");*/
@@ -216,18 +192,18 @@ proc main() {
 
     if debug then diagnostics('stencil');
     if (!tiling) {
-      forall (i,j) in innerDom with (in weight) {
+      forall (i,j) in innerDom {
         /*local {*/
           var tmpout: dtype = 0.0;
           if (!compact) {
-            for param jj in -R..-1 do tmpout += weight[R1][R1+jj] * input[i, j+jj];
-            for param jj in 1..R   do tmpout += weight[R1][R1+jj] * input[i, j+jj];
-            for param ii in -R..-1 do tmpout += weight[R1+ii][R1] * input[i+ii, j];
-            for param ii in 1..R   do tmpout += weight[R1+ii][R1] * input[i+ii, j];
+            for param jj in -R..-1 do tmpout += ALPHA * input[i, j+jj];
+            for param jj in 1..R   do tmpout += ALPHA * input[i, j+jj];
+            for param ii in -R..-1 do tmpout += ALPHA * input[i+ii, j];
+            for param ii in 1..R   do tmpout += ALPHA * input[i+ii, j];
           } else {
             for param ii in -R..R do
               for param jj in -R..R do
-                tmpout += weight[R1+ii][R1+jj] * input[i+ii, j+jj];
+                tmpout += ALPHA * input[i+ii, j+jj];
           }
           /*if tmpout != 2 {*/
           if false {
@@ -237,29 +213,29 @@ proc main() {
                                         /*input[i+1, j], "\n",*/
                                         /*input[i+2, j], "\n");*/
             writeln("Iteration :", iteration, " index ", (i,j));
-            for jj in -R..-1 do writeln(" XXX ", weight[R1][R1+jj] , " ", input[i, j+jj]);
-            for jj in 1..R   do writeln(" XXX ", weight[R1][R1+jj] , " ", input[i, j+jj]);
-            for ii in -R..-1 do writeln(" XXX ", weight[R1+ii][R1] , " ", input[i+ii, j]);
-            for ii in 1..R   do writeln(" XXX ", weight[R1+ii][R1] , " ", input[i+ii, j]);
+            for jj in -R..-1 do writeln(" XXX ", ALPHA , " ", input[i, j+jj]);
+            for jj in 1..R   do writeln(" XXX ", ALPHA , " ", input[i, j+jj]);
+            for ii in -R..-1 do writeln(" XXX ", ALPHA , " ", input[i+ii, j]);
+            for ii in 1..R   do writeln(" XXX ", ALPHA , " ", input[i+ii, j]);
           }
           output[i, j] += tmpout;
         /*}*/
       }
     } else {
-      forall (it,jt) in tiledDom with (in weight) {
+      forall (it,jt) in tiledDom {
         /*local {*/
           for i in it .. # min(order - R - it, tileSize) {
             for j in jt .. # min(order - R - jt, tileSize) {
               var tmpout: dtype = 0.0;
               if (!compact) {
-                for param jj in -R..-1 do tmpout += weight[R1][R1+jj] * input[i, j+jj];
-                for param jj in 1..R   do tmpout += weight[R1][R1+jj] * input[i, j+jj];
-                for param ii in -R..-1 do tmpout += weight[R1+ii][R1] * input[i+ii, j];
-                for param ii in 1..R   do tmpout += weight[R1+ii][R1] * input[i+ii, j];
+                for param jj in -R..-1 do tmpout += ALPHA * input[i, j+jj];
+                for param jj in 1..R   do tmpout += ALPHA * input[i, j+jj];
+                for param ii in -R..-1 do tmpout += ALPHA * input[i+ii, j];
+                for param ii in 1..R   do tmpout += ALPHA * input[i+ii, j];
               } else {
                 for param ii in -R..R do
                   for param jj in -R..R do
-                    tmpout += weight[R1+ii][R1+jj] * input[i+ii, j+jj];
+                    tmpout += ALPHA * input[i+ii, j+jj];
               }
               output[i, j] += tmpout;
             }
@@ -304,39 +280,31 @@ proc main() {
       flops = (2*stencilSize + 1) * activePoints,
       avgTime = stencilTime / iterations;
 
-  /* Compute L1 norm */
-  var referenceNorm = (iterations + 1) * (coefx + coefy),
-      norm = + reduce abs(output);
-  norm /= activePoints;
+  if checkResults {
+    /* Compute L1 norm */
+    var referenceNorm = (iterations + 1) * (coefx + coefy),
+        norm = + reduce abs(output);
+    norm /= activePoints;
 
-  /* Error threshold */
-  const epsilon = 1.e-8;
+    /* Error threshold */
+    const epsilon = 1.e-8;
 
-  /*writeln("Output");*/
-  /*for l in Locales do on l {*/
-    /*writeln(here);*/
-    /*for i in localDom.dim(1) {*/
-      /*for j in localDom.dim(2) {*/
-        /*write(output[i, j], " ");*/
-      /*}*/
-      /*writeln();*/
-    /*}*/
-  /*}*/
-  /* Verify correctness */
-  if abs(norm-referenceNorm) > epsilon then {
-    writeln("ERROR: L1 norm = ", norm, ", Reference L1 norm = ", referenceNorm);
-    exit(1);
-  } else {
-    writeln("Solution validates");
+    /* Verify correctness */
+    if abs(norm-referenceNorm) > epsilon then {
+      writeln("ERROR: L1 norm = ", norm, ", Reference L1 norm = ", referenceNorm);
+      exit(1);
+    } else {
+      writeln("Solution validates");
 
-    if debug {
-      writeln("L1 norm = ", norm, ", Reference L1 norm = ", referenceNorm);
+      if debug {
+        writeln("L1 norm = ", norm, ", Reference L1 norm = ", referenceNorm);
+      }
     }
+  }
 
-    if (!validate) {
-      writeln("Rate (MFlops/s): ", 1.0E-06 * flops/avgTime, "  Avg time (s): ",
-              avgTime);
-    }
+  if (!validate) {
+    writeln("Rate (MFlops/s): ", 1.0E-06 * flops/avgTime, "  Avg time (s): ",
+        avgTime);
   }
 }
 
