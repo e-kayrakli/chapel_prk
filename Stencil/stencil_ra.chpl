@@ -33,7 +33,7 @@ config const R = 2;
 
 //these should be param eventually
 config const consistent = true,
-             customPrefetch = true,
+             customPrefetch = false,
              printAfterPrefetch = false,
              staticDomain = true;
 /* Number of iterations to execute (0th iteration is untimed) */
@@ -156,6 +156,9 @@ proc main() {
   if useBlockDist {
     if prefetch {
       if customPrefetch {
+
+        // this custom prefetch pattern currently do not support
+        // staticDomain because differentDims will be > 1 FIXME
         const prefetchTableDom = {0..#numLocales, 0..#numLocales};
         var prefetchTable: [prefetchTableDom] domain(2);
 
