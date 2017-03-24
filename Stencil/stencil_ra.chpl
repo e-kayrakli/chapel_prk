@@ -168,7 +168,7 @@ proc main() {
         prefetchTable[1,0] = {order/2..#R, midXRange};
 
         input._value.customPrefetch(consistent,
-            descTable=prefetchTable);
+            descTable=prefetchTable, staticDomain=staticDomain);
       }
       else {
         input._value.stencilPrefetch(consistent, corners=compact,
