@@ -20,14 +20,15 @@ config type dtype = real;
 
 config param ALPHA = 0.1;
 /* Radius of weight matrix */
-config param R = 2,
              /* Determine weight matrix shapre; square = false, star = true */
-             compact = false,
+config param compact = false,
              /* Map domains to Stencil Distribution */
              useStencilDist = false,
              /* Map domains to Block Distribution */
              useBlockDist = false;
              /* No domain mapping, if neither is selected (shared) */
+
+config const R = 2;
 
 
 //these should be param eventually
@@ -48,11 +49,6 @@ config const iterations: int = 10,
 
 /* Size of stride for tiling; disables tiling if set to 0 */
 config var tileSize: int = 0;
-
-/* Weight matrix dimensions are 'Wsize' x 'Wsize' */
-param Wsize = 2*R + 1,
-      /* Frequently used constant for tuple index bookkeeping*/
-      R1 = R + 1;
 
 
 /* Number of elements that will be updated in Output matrix */

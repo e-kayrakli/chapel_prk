@@ -4,10 +4,9 @@ MAIN=stencil
 
 include ../Makefile.common
 
-r=1
-USERFLAGS=-suseBlockDist -sR=$r
+USERFLAGS=-suseBlockDist
 
 radius_analysis:
-	echo Building $@_$r
+	echo Building $@
 	chpl $(CHPLFLAGS)\
-	$(MISCFLAGS) -o $(BINDIR)/$@_$r stencil_ra.chpl $(USERFLAGS)
+	$(MISCFLAGS) -o $(BINDIR)/$@ stencil_ra.chpl $(USERFLAGS)
