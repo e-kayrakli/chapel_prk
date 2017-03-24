@@ -19,8 +19,8 @@ slurm_part = "all" # no effect if !use_slurm. george:hpcl, pyramid:all
 locales=["02"]
 locales_int = [2]
 
-# radii = ['01', '10', '20', '50', '100', '200']
-radii = ['01', '10']
+radii = ['01', '10', '20', '50', '100', '200', '300', '400', '500']
+# radii = ['01', '10']
 
 # TODO uncomment this if you decide to suppor nl != 2
 # if use_slurm:

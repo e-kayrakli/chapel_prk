@@ -30,24 +30,32 @@ def create_plots(versions, plot_name_prefix):
 
     rect = 0.1,0.1,0.8,0.8
 
-    for r in radii:
-        print(datasets["R"+r+"nopref"])
-    print
-    for r in radii:
-        print(datasets["R"+r+"pref"])
+    # for r in radii:
+        # print(datasets["R"+r+"nopref"])
+    # print
+    # for r in radii:
+        # print(datasets["R"+r+"pref"])
 
     improv = []
     for r in radii:
+        print(datasets["R"+r+"nopref"][0]/datasets["R"+r+"pref"][0])
         improv.append(datasets["R"+r+"nopref"][0]/datasets["R"+r+"pref"][0])
 
     print(improv)
+
+    flt_radii = [float(r) for r in radii]
+    ratios = [sum(range(max(1,2*int(r)-int(s)/2+1),int(r)+1))/((4*float(s)*r+float(s)-8*r**2-2*r)/2) for r in flt_radii]
+    print(ratios)
 
     filename = (plot_path + "/" +
             plot_name_prefix)
     d_fig = plt.figure(figsize=(10,10))
     d_ax = d_fig.add_axes(rect)
+    d_ax_right = d_ax.twinx()
+
     max_y = max(improv)
     d_ax.plot([int(r) for r in radii], improv, label='Improvement')
+    d_ax_right.plot([int(r) for r in radii], ratios, label='Ratios')
 
     #legend
     d_ax.legend(loc=0, fontsize=12)
