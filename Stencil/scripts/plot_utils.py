@@ -38,10 +38,18 @@ def create_plots(versions, plot_name_prefix):
 
     improv = []
     for r in radii:
-        print(datasets["R"+r+"nopref"][0]/datasets["R"+r+"pref"][0])
+        # print(datasets["R"+r+"nopref"][0]/datasets["R"+r+"pref"][0])
         improv.append(datasets["R"+r+"nopref"][0]/datasets["R"+r+"pref"][0])
 
-    print(improv)
+    improv = []
+    for r in radii:
+        # print(datasets["R"+r+"nopref"][0]/datasets["R"+r+"pref"][0])
+        improv.append(datasets["R"+r+"nopref"][0]/datasets["R"+r+"pref"][0])
+    # print(improv)
+
+    improv_incons = []
+    for r in radii:
+        improv_incons.append(datasets["R"+r+"nopref"][0]/datasets["R"+r+"pref_incons"][0])
 
     flt_radii = [float(r) for r in radii]
     ratios = [sum(range(max(1,2*int(r)-int(s)/2+1),int(r)+1))/((4*float(s)*r+float(s)-8*r**2-2*r)/2) for r in flt_radii]
@@ -55,6 +63,7 @@ def create_plots(versions, plot_name_prefix):
 
     max_y = max(improv)
     d_ax.plot([int(r) for r in radii], improv, label='Improvement')
+    d_ax.plot([int(r) for r in radii], improv_incons, label='Incons Improvement')
     d_ax_right.plot([int(r) for r in radii], ratios, label='Ratios')
 
     #legend
@@ -64,7 +73,7 @@ def create_plots(versions, plot_name_prefix):
     # x axis settings
     d_ax.set_xlabel("Stencil Radius")
     d_ax.set_xticks([int(r) for r in radii])
-    d_ax.set_xlim((0,510))
+    # d_ax.set_xlim((0,510))
     # y axis settings
     d_ax.set_ylabel("Ratio")
     d_ax.set_ylim((0,max_y*1.1))

@@ -6,7 +6,7 @@ from util import *
 from plot_utils import *
 
 commonflags = " --iterations=10 "
-prefflags = commonflags + " --prefetch --consistent --staticDomain "
+prefflags = commonflags + " --prefetch  --staticDomain "
 
 versions = []
 for r in radii:
@@ -17,6 +17,11 @@ for r in radii:
     versions.append(
             VersionType("radius_analysis", "R"+r+"pref",
                 prefflags+"--R="+r))
+
+for r in radii:
+    versions.append(
+            VersionType("radius_analysis", "R"+r+"pref_incons",
+                prefflags+"--R="+r+" --consistent=false"))
 
 # create weak scaling data size lookup table
 for l in locales:
