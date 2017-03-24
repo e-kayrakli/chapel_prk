@@ -61,7 +61,8 @@ def create_plots(versions, plot_name_prefix):
     d_ax = d_fig.add_axes(rect)
     d_ax_right = d_ax.twinx()
 
-    max_y = max(improv)
+    max_y = max(max(improv), max(improv_incons))
+
     d_ax.plot([int(r) for r in radii], improv, label='Improvement')
     d_ax.plot([int(r) for r in radii], improv_incons, label='Incons Improvement')
     d_ax_right.plot([int(r) for r in radii], ratios, label='Ratios')
@@ -77,6 +78,7 @@ def create_plots(versions, plot_name_prefix):
     # y axis settings
     d_ax.set_ylabel("Ratio")
     d_ax.set_ylim((0,max_y*1.1))
+    d_ax_right.set_ylim((-0.05,0.3))
     print("Plot saved: " + filename)
     plt.savefig(filename)
     plt.close()
