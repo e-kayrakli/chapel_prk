@@ -64,7 +64,7 @@ def create_plots(versions, plot_name_prefix):
     # x axis settings
     d_ax.set_xlabel("Stencil Radius")
     d_ax.set_xticks([int(r) for r in radii])
-    d_ax.set_xlim((0,250))
+    d_ax.set_xlim((0,510))
     # y axis settings
     d_ax.set_ylabel("Ratio")
     d_ax.set_ylim((0,max_y*1.1))

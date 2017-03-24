@@ -32,6 +32,7 @@ config param R = 2,
 
 //these should be param eventually
 config const consistent = true,
+             customPrefetch = true,
              printAfterPrefetch = false,
              staticDomain = true;
 /* Number of iterations to execute (0th iteration is untimed) */
@@ -158,8 +159,25 @@ proc main() {
 
   if useBlockDist {
     if prefetch {
-      input._value.stencilPrefetch(consistent, corners=compact,
-          staticDomain=staticDomain, depth=R);
+      if customPrefetch {
+        const prefetchTableDom = {0..#numLocales, 0..#numLocales};
+        var prefetchTable: [prefetchTableDom] domain(2);
+
+        for i in 0..#numLocales do
+          prefetchTable[i,i] = {1..0, 1..0};
+
+        const midXRange = R..#(order-2*R);
+
+        prefetchTable[0,1] = {order/2-R..#R, midXRange};
+        prefetchTable[1,0] = {order/2..#R, midXRange};
+
+        input._value.customPrefetch(consistent,
+            descTable=prefetchTable);
+      }
+      else {
+        input._value.stencilPrefetch(consistent, corners=compact,
+            staticDomain=staticDomain, depth=R);
+      }
 
       if printAfterPrefetch {
         for l in Locales do on l {
