@@ -9,7 +9,7 @@ config param rowDistributeMatrix = true;
 
 // for bulkAdd improvement purposes - can be removed
 config const timeBulkAdd = false;
-config const lsize = 5,
+config const order = 5, //formerly known as lsize
              radius = 2,
              iterations = 10,
              scramble = true;
@@ -17,11 +17,12 @@ config const lsize = 5,
 // const for now TODO make param after correctness tests
 config const prefetch = false,
              consistent = true;
+config const staticDomain = false;
 
 config const distSpsDomInit = true;
 
-const lsize2 = 2*lsize;
-const size = 1<<lsize;
+const lsize2 = 2*order;
+const size = 1<<order;
 const size2 = size*size;
 const stencilSize = 4*radius+1;
 const sparsity = stencilSize:real/size2;
@@ -65,7 +66,7 @@ if !distSpsDomInit || numLocales==1 || !rowDistributeMatrix { // naive ind addit
       bufIdx += 4;
     }
   }
-  const initTimer = new Timer();
+  var initTimer = new Timer();
   if timeBulkAdd {
     initTimer.start();
   }
@@ -142,12 +143,14 @@ writeln("Indexes are ", if !scramble then "not " else "", "scrambled");
 
 if prefetch {
   if !rowDistributeMatrix {
-    matrix._value.rowWiseAllGather(consistent=consistent);
+    matrix._value.rowWiseAllGather(consistent=consistent,
+        staticDomain=staticDomain);
   }
-  vector._value.allGather(consistent=consistent);
+  vector._value.allGather(consistent=consistent,
+      staticDomain=staticDomain);
 }
 
-const t = new Timer();
+var t = new Timer();
 for niter in 0..iterations {
 
   if niter == 1 then t.start();
@@ -181,7 +184,7 @@ writeln("Rate (MFlops/s): ", 1e-6*nflop/avgTime, " Avg time (s): ",
     avgTime);
 
 inline proc LIN(i, j) {
-  return (i+(j<<lsize));
+  return (i+(j<<order));
 }
 
 proc reverse(xx) {
