@@ -79,22 +79,26 @@ for iteration in 0..iterations {
   if !consistent then A._value.updatePrefetch();
 
   if tiled {
-    if !consistent {
-      forall (i,j) in tiledDom {
-        local { // if !consistent
-          for it in i..#min(order-i, tileSize) {
-            for jt in j..#min(order-j, tileSize) {
-              B[it,jt] += A[jt,it];
+    coforall l in Locales do on l {
+      if prefetch && !consistent {
+        const localTiledDom = tiledDom.localSubdomain();
+        local {
+          forall (i,j) in localTiledDom {
+            for it in i..min(i+tileSize-1, localTiledDom.dim(1).high) {
+              for jt in j..min(j+tileSize-1, localTiledDom.dim(2).high) {
+                B[it,jt] += A[jt,it];
+              }
             }
           }
         }
       }
-    }
-    else {
-      forall (i,j) in tiledDom {
-        for it in i..#min(order-i, tileSize) {
-          for jt in j..#min(order-j, tileSize) {
-            B[it,jt] += A[jt,it];
+      else {
+        const localTiledDom = tiledDom.localSubdomain();
+        forall (i,j) in localTiledDom {
+          for it in i..min(i+tileSize-1, localTiledDom.dim(1).high) {
+            for jt in j..min(j+tileSize-1, localTiledDom.dim(2).high) {
+              B[it,jt] += A[jt,it];
+            }
           }
         }
       }
@@ -104,7 +108,6 @@ for iteration in 0..iterations {
         a += 1.0;
       }
     }
-
   }
   else {
     writeln("Ineffective prefetch");
