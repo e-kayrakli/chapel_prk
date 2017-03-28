@@ -15,6 +15,7 @@ config const iterations = 100,
 
 config param prefetch = false;
 config param consistent = true;
+config const staticDomain = false;
 
 //
 // Process and test input configs
@@ -67,7 +68,7 @@ writeln("Number of iterations = ", iterations);
 B = 0.0;
 
 if prefetch then
-  A._value.transposePrefetch(consistent);
+  A._value.transposePrefetch(consistent, staticDomain=staticDomain);
 //
 // Main loop
 //
@@ -137,4 +138,4 @@ if absErr > epsilon then
 // Report performance
 writeln("Solution validates");
 writeln("Rate (MB/s): ", 1.0E-06 * bytes / avgTime,
-    " Avg time (s): ", avgTime);
+    " Average (s): ", avgTime);

@@ -47,9 +47,9 @@ cleanout:
 
 
 runlocal:
-	PYTHONPATH=../scripts python scripts/run.py RUN LOCAL $(SIZE) $(NUMTRIES)
+	PYTHONPATH=../scripts python scripts/run.py $(PYFLAGS) RUN LOCAL $(SIZE) $(NUMTRIES)
 plotlocal:
-	PYTHONPATH=../scripts python scripts/run.py PLOT LOCAL $(SIZE) $(NUMTRIES)
+	PYTHONPATH=../scripts python scripts/run.py $(PYFLAGS) PLOT LOCAL $(SIZE) $(NUMTRIES)
 
 pyramid: fetchpyramid plotpyramid cleanout
 runpyramid:

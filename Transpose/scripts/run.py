@@ -5,13 +5,20 @@ from global_config import *
 from util import *
 from plot_utils import *
 
-commonflags = "--iterations=2 --tileSize=8"
+commonflags = "--iterations=2 --tileSize=4"
+if use_slurm:
+    commonflags = "--iterations=10 --tileSize=8"
+
 versions = [
-    VersionType("transpose_base", "0", commonflags, "b", "o"),
-    VersionType("transpose_pref_cons", "3cons", commonflags, "r", "^"),
-    VersionType("transpose_pref_incons", "3incons", commonflags, "c", "8"),
-    VersionType("transpose_pref_cons_u", "3cons_u", commonflags, "m", "s"),
-    VersionType("transpose_pref_incons", "3incons_u", commonflags, "y", "x")]
+    VersionType("transpose_base", "0", commonflags, "b", "o", "solid"),
+    VersionType("transpose_pref_cons", "3cons", commonflags, "r", "^", "solid"),
+    VersionType("transpose_pref_incons", "3incons", commonflags, "c", "8", "solid"),
+    VersionType("transpose_pref_cons_u", "3cons_u", commonflags, "m", "s", "solid"),
+    VersionType("transpose_pref_incons", "3incons_u", commonflags, "y", "x", "solid"),
+    VersionType("transpose_pref_cons", "3cons_sd", commonflags, "r", "^", "dashed"),
+    VersionType("transpose_pref_incons", "3incons_sd", commonflags, "c", "8", "dashed"),
+    VersionType("transpose_pref_cons_u", "3cons_u_sd", commonflags, "m", "s", "dashed"),
+    VersionType("transpose_pref_incons", "3incons_u_sd", commonflags, "y", "x", "dashed")]
 
 # create weak scaling data size lookup table
 for l in locales:
@@ -19,7 +26,7 @@ for l in locales:
 
 
 if args.mode == 'PLOT':
-    create_plots(versions, "transpose")
+    create_plots(versions, "prk_transpose")
 elif args.mode == 'RUN':
     run_test(versions)
 else:

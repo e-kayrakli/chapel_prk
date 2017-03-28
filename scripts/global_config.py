@@ -31,5 +31,9 @@ if use_slurm:
     else:
         locales=["01", "02" , "04", "08", "16", "32"]
         locales_int = [1,2,4,8,16,32]
+else:
+    if square_locales:
+        locales=["01", "04"]
+        locales_int = [1,4]
 
 tries = range(1, args.num_tries+1)
