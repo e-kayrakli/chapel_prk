@@ -6,6 +6,9 @@ from util import *
 from plot_utils import *
 
 commonflags = "--iterations=2 --blockSize=4"
+if use_slurm:
+    commonflags = "--iterations=10 --blockSize=32"
+
 versions = [
     VersionType("dgemm_base", "0", commonflags, "b", "o", "solid"),
     VersionType("dgemm_pref_cons", "3cons", commonflags, "r", "^", "solid"),
