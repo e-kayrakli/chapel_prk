@@ -10,7 +10,7 @@ def get_name(v, l, s, t):
     return v.execname + "." + v.abbrev + "." + l + "." + s + ".try" + str(t)
 
 def get_time_extract_cmd(v,s,l,t):
-    return ("grep -m 1 Rate ./out/"+ get_name(v,l,s,t)+".out | cut -d\" \" -f3")
+    return ("grep -m 1 Rate ./out/"+ get_name(v,l,s,t)+".out | cut -d\" \" -f6")
 
 # version(opt) name, version flags, size, numlocales
 # def get_run_cmd(v_name, v_flags,s,l,t):

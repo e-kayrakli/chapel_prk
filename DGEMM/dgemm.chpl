@@ -1,3 +1,4 @@
+use Barrier;
 use Time;
 use BlockDist;
 use RangeChunk;
@@ -66,6 +67,11 @@ if blockSize == 0 {
   t.stop();
 }
 else {
+  // we need a barrier to artificially create some communicaiton in each
+  // iteration. Note that this is not really necessary for dgemm to run
+  // correctly and validate
+  var b = new Barrier(numLocales*nTasksPerLocale);
+
   // we need task-local arrays for blocked matrix multiplication. It
   // seems that in intent for arrays is not working currently, so I am
   // falling back to writing my own coforall. Engin
@@ -84,6 +90,16 @@ else {
         var BB = c_calloc(real, blockDom.size);
         var CC = c_calloc(real, blockDom.size);
         for niter in 0..#iterations {
+
+          b.barrier();
+          if l.id==0 && tid==0 {
+            if !consistent {
+              A._value.updatePrefetch();
+              B._value.updatePrefetch();
+            }
+          }
+          if !consistent then b.barrier(); //avoid second barrier
+
           if l.id==0 && tid==0 && (iterations==1 || niter==1) then t.start();
 
           for (jj,kk) in tileIterDom {
