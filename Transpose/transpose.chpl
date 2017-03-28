@@ -29,6 +29,9 @@ if order < 0 then
 if tileSize > order then
   halt("ERROR: Tile size cannot be larger than order");
 
+if order % (sqrt(numLocales) * tileSize) then
+  halt("ERROR: Size is indivisible");
+
 // Determine tiling
 const tiled = tileSize > 0;
 
