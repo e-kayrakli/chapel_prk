@@ -7,11 +7,11 @@ from plot_utils import *
 
 commonflags = "--iterations=2 --blockSize=4"
 versions = [
-    VersionType("dgemm_base", "0", commonflags, "b", "o"),
-    # VersionType("dgemm_pref_cons", "3cons", commonflags, "r", "^"),
-    VersionType("dgemm_pref_incons", "3incons", commonflags, "c", "8"),
-    # VersionType("dgemm_pref_cons_u", "3cons_u", commonflags, "m", "s"),
-    VersionType("dgemm_pref_incons", "3incons_u", commonflags, "y", "x")]
+    VersionType("dgemm_base", "0", commonflags, "b", "o", "solid"),
+    VersionType("dgemm_pref_cons", "3cons", commonflags, "r", "^", "solid"),
+    VersionType("dgemm_pref_incons", "3incons", commonflags, "c", "8", "solid"),
+    VersionType("dgemm_pref_cons_u", "3cons_u", commonflags, "m", "s", "solid"),
+    VersionType("dgemm_pref_incons", "3incons_u", commonflags, "y", "x", "solid")]
 
 # create weak scaling data size lookup table
 for l in locales:
@@ -19,7 +19,7 @@ for l in locales:
 
 
 if args.mode == 'PLOT':
-    create_plots(versions, "dgemm")
+    create_plots(versions, "prk_dgemm")
 elif args.mode == 'RUN':
     run_test(versions)
 else:

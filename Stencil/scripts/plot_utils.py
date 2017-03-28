@@ -52,7 +52,8 @@ def create_plots(versions, plot_name_prefix):
         improv_incons.append(datasets["R"+r+"nopref"][0]/datasets["R"+r+"pref_incons"][0])
 
     flt_radii = [float(r) for r in radii]
-    ratios = [sum(range(max(1,2*int(r)-int(s)/2+1),int(r)+1))/((4*float(s)*r+float(s)-8*r**2-2*r)/2) for r in flt_radii]
+    # ratios = [sum(range(max(1,2*int(r)-int(s)/2+1),int(r)+1))/((4*float(s)*r+float(s)-8*r**2-2*r)/2) for r in flt_radii]
+    ratios = [(int(s)-2*r)*((6*r-float(s)+2)/8)/((4*float(s)*r+float(s)-8*r**2-2*r)/2) for r in flt_radii]
     print(ratios)
 
     filename = (plot_path + "/" +
@@ -78,7 +79,7 @@ def create_plots(versions, plot_name_prefix):
     # y axis settings
     d_ax.set_ylabel("Ratio")
     d_ax.set_ylim((0,max_y*1.1))
-    d_ax_right.set_ylim((-0.05,0.3))
+    # d_ax_right.set_ylim((-0.05,0.3))
     print("Plot saved: " + filename)
     plt.savefig(filename)
     plt.close()

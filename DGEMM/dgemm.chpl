@@ -50,7 +50,7 @@ if prefetch {
   B._instance.colWiseAllGather(consistent, staticDomain);
 }
 
-const t = new Timer();
+var t = new Timer();
 
 if blockSize == 0 {
   for niter in 0..#iterations {
@@ -69,13 +69,13 @@ else {
   // we need task-local arrays for blocked matrix multiplication. It
   // seems that in intent for arrays is not working currently, so I am
   // falling back to writing my own coforall. Engin
-  coforall l in Locales {
+  coforall l in Locales with (ref t) {
     on l {
       const bVecRange = 0..#blockSize;
       const blockDom = {bVecRange, bVecRange};
       const localDom = matrixDom.localSubdomain();
 
-      coforall tid in 0..#nTasksPerLocale {
+      coforall tid in 0..#nTasksPerLocale with (ref t) {
         const myChunk = chunk(localDom.dim(2), nTasksPerLocale, tid);
         const tileIterDom =
           {myChunk by blockSize, vecRange by blockSize};

@@ -37,19 +37,33 @@ def parse(versions):
     return(ss_means, ws_means)
 
 def create_plots(versions, plot_name_prefix):
+    do_create_plots(versions, plot_name_prefix, True)
+    do_create_plots(versions, plot_name_prefix, False)
+
+def do_create_plots(versions, plot_name_prefix, do_imp_plot):
     import matplotlib.pyplot as plt
     datasets = parse(versions)
 
     rect = 0.1,0.1,0.8,0.8
     for d,suffix in zip(datasets, ["_ss", "_ws"]):
         filename = (plot_path + plot_name_prefix + "/" +
-            plot_name_prefix + suffix)
+            plot_name_prefix + suffix + "_" + args.host + "_" +
+            s + "_" + str(args.num_tries))
+        if do_imp_plot:
+            filename = filename+"_imp"
         d_fig = plt.figure(figsize=(10,10))
         d_ax = d_fig.add_axes(rect)
         max_y = 0
         for v in versions:
-            d_ax.plot(locales_int, d[v.abbrev],
-                    label=v.abbrev, color=v.color, marker=v.marker)
+            if do_imp_plot:
+                d_ax.plot(locales_int,
+                    [base/self for (self,base) in zip(d[v.abbrev], d["0"])],
+                    label=v.abbrev, color=v.color, marker=v.marker,
+                    linestyle=v.linestyle)
+            else:
+                d_ax.plot(locales_int, d[v.abbrev],
+                        label=v.abbrev, color=v.color, marker=v.marker,
+                        linestyle=v.linestyle)
             if max(d[v.abbrev]) > max_y:
                 max_y = max(d[v.abbrev])
 
@@ -60,10 +74,19 @@ def create_plots(versions, plot_name_prefix):
         # x axis settings
         d_ax.set_xlabel("Number of Locales")
         d_ax.set_xticks(locales_int)
-        d_ax.set_xlim((0,35))
+        if square_locales:
+            d_ax.set_xlim((0,50))
+        else:
+            d_ax.set_xlim((0,35))
         # y axis settings
-        d_ax.set_ylabel("Throughput (s)")
-        d_ax.set_ylim((0,max_y*1.1))
+        d_ax.set_ylabel("Execution Time (s)")
+        # d_ax.set_ylim((0,max_y*1.1))
         print("Plot saved: " + filename)
+        if do_imp_plot:
+            plt.title(plot_name_prefix + suffix + "_" + args.host + "_" +
+                    s + "_" + str(args.num_tries) + "_imp")
+        else:
+            plt.title(plot_name_prefix + suffix + "_" + args.host + "_" +
+                    s + "_" + str(args.num_tries))
         plt.savefig(filename)
         plt.close()

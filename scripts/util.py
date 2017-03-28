@@ -4,7 +4,7 @@ from collections import namedtuple
 
 ws_sizes = {}
 
-VersionType = namedtuple("VersionType", "execname abbrev flags color marker")
+VersionType = namedtuple("VersionType", "execname abbrev flags color marker linestyle")
 
 def get_name(v, l, s, t):
     return v.execname + "." + v.abbrev + "." + l + "." + s + ".try" + str(t)

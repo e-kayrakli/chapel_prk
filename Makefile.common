@@ -43,14 +43,31 @@ clean:
 	rm -rf $(BINDIR)/$(MAIN)* c_code/
 
 cleanout:
-	rm -rf out/*.out
+	rm -rf out/*.out err/*.err
 
 runlocal:
-	PYTHONPATH=../scripts python scripts/run.py RUN $(SIZE) $(NUMTRIES)
+	PYTHONPATH=../scripts python scripts/run.py RUN LOCAL $(SIZE) $(NUMTRIES)
 plotlocal:
-	PYTHONPATH=../scripts python scripts/run.py PLOT $(SIZE) $(NUMTRIES)
+	PYTHONPATH=../scripts python scripts/run.py PLOT LOCAL $(SIZE) $(NUMTRIES)
 
-runslurm:
-	PYTHONPATH=../scripts python scripts/run.py --slurm RUN $(SIZE) $(NUMTRIES)
-plotslurm:
-	PYTHONPATH=../scripts python scripts/run.py --slurm PLOT $(SIZE) $(NUMTRIES)
+pyramid: fetchpyramid plotpyramid cleanout
+runpyramid:
+	PYTHONPATH=../common/scripts python scripts/run.py $(PYFLAGS) --slurm RUN PYRAMID $(SIZE) $(NUMTRIES)
+fetchpyramid:
+	scp server2:~/datapack_$(MAIN)_pyramid_$(SIZE)_$(NUMTRIES).tar.gz ./out
+	cd out && tar xzf datapack_$(MAIN)_pyramid_$(SIZE)_$(NUMTRIES).tar.gz . && cd ..
+plotpyramid:
+	PYTHONPATH=../common/scripts python scripts/run.py $(PYFLAGS) --slurm PLOT PYRAMID $(SIZE) $(NUMTRIES)
+preppyramid:
+	cd out && tar czvf ~/datapack_$(MAIN)_pyramid_$(SIZE)_$(NUMTRIES).tar.gz ./*out && cd ..
+
+george: fetchgeorge plotgeorge cleanout
+rungeorge:
+	PYTHONPATH=../common/scripts python scripts/run.py $(PYFLAGS) --slurm RUN GEORGE $(SIZE) $(NUMTRIES)
+fetchgeorge:
+	scp server2:~/datapack_$(MAIN)_george_$(SIZE)_$(NUMTRIES).tar.gz ./out
+	cd out && tar xzf datapack_$(MAIN)_george_$(SIZE)_$(NUMTRIES).tar.gz . && cd ..
+plotgeorge:
+	PYTHONPATH=../common/scripts python scripts/run.py $(PYFLAGS) --slurm PLOT GEORGE $(SIZE) $(NUMTRIES)
+prepgeorge:
+	cd out && tar czvf ~/datapack_$(MAIN)_george_$(SIZE)_$(NUMTRIES).tar.gz ./*out && cd ..
