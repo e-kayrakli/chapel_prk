@@ -21,7 +21,7 @@ locales_int = [2]
 
 radii_range = range(1,3)
 if use_slurm:
-    radii_range = range(10, 500, 10)
+    radii_range = range(100,2000,100)
 
 radii = [str(r) for r in radii_range]
 # radii = ['01', '10']

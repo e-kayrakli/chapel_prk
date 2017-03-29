@@ -24,17 +24,31 @@ def parse(versions):
             ss_stddevs[v.abbrev].append(np.std(ss_try_list))
     return ss_means
 
+def num_rem_access(n,r):
+    i_range = range(min(r-1, n/2-r-1)+1)
+    # i_range = range(r+1)
+    # ysum = sum([min(i,(n-2*r)/2-1) for i in i_range])
+    ysum = sum([r-i for i in i_range])
+    num = (n-2*r)*ysum
+    print("Remote : " +str(n) + ", " + str(r) + " = " + str(num))
+    return float(num)
+
+def num_total_access(n,r):
+    num = (n-2*r)**2*(4*r+1)/2
+    print("Total : " + str(n) + ", " + str(r) + " = " + str(num))
+    return float(num)
+
 def create_plots(versions, plot_name_prefix):
     import matplotlib.pyplot as plt
     datasets = parse(versions)
 
     rect = 0.1,0.1,0.8,0.8
 
-    # for r in radii:
-        # print(datasets["R"+r+"nopref"])
-    # print
-    # for r in radii:
-        # print(datasets["R"+r+"pref"])
+    for r in radii:
+        print(datasets["R"+r+"nopref"])
+    print
+    for r in radii:
+        print(datasets["R"+r+"pref"])
 
     improv = []
     for r in radii:
@@ -53,7 +67,11 @@ def create_plots(versions, plot_name_prefix):
 
     flt_radii = [float(r) for r in radii]
     # ratios = [sum(range(max(1,2*int(r)-int(s)/2+1),int(r)+1))/((4*float(s)*r+float(s)-8*r**2-2*r)/2) for r in flt_radii]
-    ratios = [(int(s)-2*r)*((6*r-float(s)+2)/8)/((4*float(s)*r+float(s)-8*r**2-2*r)/2) for r in flt_radii]
+    # ratios = [(int(s)-2*r)*((6*r-float(s)+2)/8)/((4*float(s)*r+float(s)-8*r**2-2*r)/2) for r in flt_radii]
+    # ratios = [((6*r-float(s)+2)/8)/((4*float(s)*r+float(s)-8*r**2-2*r)/2) for r in flt_radii]
+    # ratios = [(r**2+r)/((float(s)-2*r)*(4*r+1)) for r in flt_radii]
+    # ratios = [num_rem_access(int(s), int(r))/(((float(s)-2*r)*(4*r+1))/2) for r in flt_radii]
+    ratios = [num_rem_access(int(s), int(r))/num_total_access(int(s), int(r)) for r in flt_radii]
     print(ratios)
 
     filename = (plot_path + "/" +
@@ -78,8 +96,8 @@ def create_plots(versions, plot_name_prefix):
     # d_ax.set_xlim((0,510))
     # y axis settings
     d_ax.set_ylabel("Ratio")
-    d_ax.set_ylim((0,max_y*1.1))
-    # d_ax_right.set_ylim((-0.05,0.3))
+    # d_ax.set_ylim((0,max_y*1.1))
+    d_ax_right.set_ylim((0.0,0.3))
     print("Plot saved: " + filename)
     plt.savefig(filename)
     plt.close()
