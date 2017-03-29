@@ -42,7 +42,7 @@ def create_plots(versions, plot_name_prefix):
 
 def do_create_plots(versions, plot_name_prefix, do_imp_plot):
     import matplotlib.pyplot as plt
-    from plot_cosmetic import *
+    from plot_cosmetic import prep_plot
     datasets = parse(versions)
 
     rect = 0.1,0.1,0.8,0.8
