@@ -98,7 +98,6 @@ else {
               B._value.updatePrefetch();
             }
           }
-          if !consistent then b.barrier(); //avoid second barrier
 
           if l.id==0 && tid==0 && (iterations==1 || niter==1) then t.start();
 
