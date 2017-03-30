@@ -26,8 +26,8 @@ locales_int = [1,2,4]
 
 if use_slurm:
     if square_locales:
-        locales=["01", "04", "16", "25", "36", "49"]
-        locales_int = [1,4,16,25,36,49]
+        locales=["01", "04", "16", "25", "36"]
+        locales_int = [1,4,16,25,36]
     else:
         locales=["01", "02" , "04", "08", "16", "32"]
         locales_int = [1,2,4,8,16,32]
