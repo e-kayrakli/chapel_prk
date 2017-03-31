@@ -180,7 +180,7 @@ if abs(vectorSum-referenceSum) > epsilon then
 writeln("Validation successful");
 const nflop = 2.0*matrixDom.numIndices;
 const avgTime = t.elapsed()/iterations;
-writeln("Rate (MFlops/s): ", 1e-6*nflop/avgTime, " Avg time (s): ",
+writeln("Rate (MFlops/s): ", 1e-6*nflop/avgTime, " Average (s): ",
     avgTime);
 
 inline proc LIN(i, j) {

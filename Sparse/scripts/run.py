@@ -9,16 +9,18 @@ commonflags = " --iterations=2 "
 if use_slurm:
     commonflags = " --iterations=10 "
 
+sdflags = commonflags + " --staticDomain "
+
 versions = [
     VersionType("sparse_base", "0", commonflags, "b", "o", "solid"),
     VersionType("sparse_pref_cons", "3cons", commonflags, "r", "^", "solid"),
     VersionType("sparse_pref_incons", "3incons", commonflags, "c", "8", "solid"),
     VersionType("sparse_pref_cons_u", "3cons_u", commonflags, "m", "s", "solid"),
     VersionType("sparse_pref_incons", "3incons_u", commonflags, "y", "x", "solid"),
-    VersionType("sparse_pref_cons", "3cons_sd", commonflags, "r", "^", "dashed"),
-    VersionType("sparse_pref_incons", "3incons_sd", commonflags, "c", "8", "dashed"),
-    VersionType("sparse_pref_cons_u", "3cons_u_sd", commonflags, "m", "s", "dashed"),
-    VersionType("sparse_pref_incons", "3incons_u_sd", commonflags, "y", "x", "dashed")]
+    VersionType("sparse_pref_cons", "3cons_sd", sdflags, "r", "^", "dashed"),
+    VersionType("sparse_pref_incons", "3incons_sd", sdflags, "c", "8", "dashed"),
+    VersionType("sparse_pref_cons_u", "3cons_u_sd", sdflags, "m", "s", "dashed"),
+    VersionType("sparse_pref_incons", "3incons_u_sd", sdflags, "y", "x", "dashed")]
 
 # create weak scaling data size lookup table
 for l in locales:
