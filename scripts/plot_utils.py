@@ -79,7 +79,8 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
                 max_y = max(d[v.abbrev])
 
         #legend
-        d_ax.legend(loc=0, fontsize=12)
+        if do_legend:
+            d_ax.legend(loc=0, fontsize=12)
         #grid
         d_ax.grid(b=True, axis='x')
         # x axis settings
