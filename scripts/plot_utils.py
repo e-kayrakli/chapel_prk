@@ -53,7 +53,6 @@ def create_plots(versions, plot_name_prefix):
 
 def do_create_plots(versions, plot_name_prefix, do_imp_plot):
     import matplotlib.pyplot as plt
-    from plot_cosmetic import prep_plot
     datasets = parse(versions)
 
     rect = 0.1,0.1,0.8,0.8
@@ -65,7 +64,6 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
             filename = filename+"_imp"
         d_fig = plt.figure(figsize=(10,10))
         d_ax = d_fig.add_axes(rect)
-        # d_ax.linewidth(2)
         max_y = 0
         for v in versions:
             if do_imp_plot:
@@ -80,9 +78,10 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
             if max(d[v.abbrev]) > max_y:
                 max_y = max(d[v.abbrev])
 
-
-        prep_plot(d_ax)
-
+        #legend
+        d_ax.legend(loc=0, fontsize=12)
+        #grid
+        d_ax.grid(b=True, axis='x')
         # x axis settings
         d_ax.set_xlabel("Number of Locales")
         d_ax.set_xticks(locales_int)
