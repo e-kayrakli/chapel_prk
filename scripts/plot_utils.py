@@ -73,7 +73,7 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
                     linestyle=v.linestyle)
             else:
                 d_ax.plot(locales_int, d[v.abbrev],
-                        label=v.abbrev, color=v.color, marker=v.marker,
+                        label=nice_labels[v.abbrev], color=v.color, marker=v.marker,
                         linestyle=v.linestyle)
             if max(d[v.abbrev]) > max_y:
                 max_y = max(d[v.abbrev])
