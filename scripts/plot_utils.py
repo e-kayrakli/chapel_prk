@@ -5,6 +5,17 @@ from collections import defaultdict
 from global_config import *
 from util import *
 
+nice_labels = { '0'     : 'Base',
+                '2'     : 'HandOpt',
+                '3cons'     : 'AC-Serial',
+                '3cons_u'     : 'AC-Deserial',
+                '3cons_u_sd'     : 'AC-Deserial-SD',
+                '3cons_sd'     : 'AC-Serial-SD',
+                '3incons'     : 'MC-Serial',
+                '3incons_u'     : 'MC-Deserial',
+                '3incons_u_sd'     : 'MC-Deserial-SD',
+                '3incons_sd'     : 'MC-Serial-SD'}
+
 def parse(versions):
     ss_means = defaultdict(list)
     ss_stddevs = defaultdict(list)
@@ -60,7 +71,7 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
             if do_imp_plot:
                 d_ax.plot(locales_int,
                     [base/self for (self,base) in zip(d[v.abbrev], d["0"])],
-                    label=v.abbrev, color=v.color, marker=v.marker,
+                    label=nice_labels[v.abbrev], color=v.color, marker=v.marker,
                     linestyle=v.linestyle)
             else:
                 d_ax.plot(locales_int, d[v.abbrev],
@@ -81,13 +92,8 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
             d_ax.set_xlim((0,35))
         # y axis settings
         d_ax.set_ylabel("Execution Time (s)")
-        # d_ax.set_ylim((0,max_y*1.1))
+        if log_scale:
+            d_ax.set_yscale('log')
         print("Plot saved: " + filename)
-        if do_imp_plot:
-            plt.title(plot_name_prefix + suffix + "_" + args.host + "_" +
-                    s + "_" + str(args.num_tries) + "_imp")
-        else:
-            plt.title(plot_name_prefix + suffix + "_" + args.host + "_" +
-                    s + "_" + str(args.num_tries))
         plt.savefig(filename)
         plt.close()
