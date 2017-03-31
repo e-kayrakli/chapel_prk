@@ -5,9 +5,9 @@ from global_config import *
 from util import *
 from plot_utils import *
 
-commonflags = " --iterations=2 "
+commonflags = " --iterations=2 --radius=2"
 if use_slurm:
-    commonflags = " --iterations=10 "
+    commonflags = " --iterations=10 --radius=12"
 
 sdflags = commonflags + " --staticDomain "
 

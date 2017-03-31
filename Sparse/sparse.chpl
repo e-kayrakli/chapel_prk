@@ -158,10 +158,10 @@ for niter in 0..iterations {
   if !consistent then vector._value.updatePrefetch();
 
   // no privatization in sparse domains -> no local statement :(
-  forall i in matrix.domain.dim(1) {
+  forall i in vectorDom {
     // the following call to dimiter should'nt be too horrible if
     // rowDistributeMatrix==true
-    for j in matrix.domain.dimIter(2, i) {
+    for j in matrixDom.dimIter(2, i) {
       result[i] += matrix[i,j] * vector[j];
     }
   }
