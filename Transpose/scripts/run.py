@@ -15,12 +15,12 @@ versions = [
     VersionType("transpose_base", "0", commonflags, "b", "o", "solid"),
     VersionType("transpose_pref_cons", "3cons", commonflags, "r", "^", "solid"),
     VersionType("transpose_pref_incons", "3incons", commonflags, "c", "8", "solid"),
-    VersionType("transpose_pref_cons_u", "3cons_u", commonflags, "m", "s", "solid"),
-    VersionType("transpose_pref_incons", "3incons_u", commonflags, "y", "x", "solid"),
+    # VersionType("transpose_pref_cons_u", "3cons_u", commonflags, "m", "s", "solid"),
+    # VersionType("transpose_pref_incons", "3incons_u", commonflags, "y", "x", "solid"),
     VersionType("transpose_pref_cons", "3cons_sd", sdflags, "r", "^", "dashed"),
-    VersionType("transpose_pref_incons", "3incons_sd", sdflags, "c", "8", "dashed"),
-    VersionType("transpose_pref_cons_u", "3cons_u_sd", sdflags, "m", "s", "dashed"),
-    VersionType("transpose_pref_incons", "3incons_u_sd", sdflags, "y", "x", "dashed")]
+    VersionType("transpose_pref_incons", "3incons_sd", sdflags, "c", "8", "dashed")]
+    # VersionType("transpose_pref_cons_u", "3cons_u_sd", sdflags, "m", "s", "dashed"),
+    # VersionType("transpose_pref_incons", "3incons_u_sd", sdflags, "y", "x", "dashed")]
 
 # create weak scaling data size lookup table
 for l in locales:

@@ -53,10 +53,13 @@ def create_plots(versions, plot_name_prefix):
 
 def do_create_plots(versions, plot_name_prefix, do_imp_plot):
     import matplotlib.pyplot as plt
+    import matplotlib.lines as ll
     datasets = parse(versions)
 
     rect = 0.1,0.1,0.8,0.8
     for d,suffix in zip(datasets, ["_ss", "_ws"]):
+    # d = datasets[0]
+    # suffix = "_ss"
         filename = (plot_path + plot_name_prefix + "/" +
             plot_name_prefix + suffix + "_" + args.host + "_" +
             s + "_" + str(args.num_tries))
@@ -65,29 +68,40 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
         d_fig = plt.figure(figsize=(10,10))
         d_ax = d_fig.add_axes(rect)
         max_y = 0
+         # fake white line for legend adjustment
+        l = ll.Line2D([0],[0],color="w")
+
+        lines = []
+        labels = []
+        fake_line_added = False
         for v in versions:
             if do_imp_plot:
-                d_ax.plot(locales_int,
+                lines.append(d_ax.plot(locales_int,
                     [base/self for (self,base) in zip(d[v.abbrev], d["0"])],
                     label=nice_labels[v.abbrev], color=v.color, marker=v.marker,
-                    linestyle=v.linestyle)
+                    linestyle=v.linestyle)[0])
             else:
-                d_ax.plot(locales_int, d[v.abbrev],
+                lines.append(d_ax.plot(locales_int, d[v.abbrev],
                         label=nice_labels[v.abbrev], color=v.color, marker=v.marker,
-                        linestyle=v.linestyle)
+                        linestyle=v.linestyle)[0])
             if max(d[v.abbrev]) > max_y:
                 max_y = max(d[v.abbrev])
+            labels.append(nice_labels[v.abbrev])
+            if not fake_line_added:
+                lines.append(l)
+                labels.append("")
+                fake_line_added = True
 
         #legend
         if do_legend:
-            d_ax.legend(loc=0, fontsize=12)
+            d_ax.legend(tuple(lines), labels, loc=0, fontsize=30, ncol=3)
         #grid
         d_ax.grid(b=True, axis='x')
         # x axis settings
         d_ax.set_xlabel("Number of Locales")
         d_ax.set_xticks(locales_int)
         if square_locales:
-            d_ax.set_xlim((0,50))
+            d_ax.set_xlim((0,38))
         else:
             d_ax.set_xlim((0,35))
         # y axis settings

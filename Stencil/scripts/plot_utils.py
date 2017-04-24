@@ -82,22 +82,26 @@ def create_plots(versions, plot_name_prefix):
 
     max_y = max(max(improv), max(improv_incons))
 
-    d_ax.plot([int(r) for r in radii], improv, label='Improvement')
-    d_ax.plot([int(r) for r in radii], improv_incons, label='Incons Improvement')
-    d_ax_right.plot([int(r) for r in radii], ratios, label='Ratios')
+    d_ax.plot([int(r) for r in radii], improv, label='Auto-consistent')
+    d_ax.plot([int(r) for r in radii], improv_incons,
+            label='Manually-consistent')
+    d_ax_right.plot([int(r) for r in radii], ratios, label='Ratio',
+            color='black', linestyle='dashed')
 
     #legend
-    d_ax.legend(loc=0, fontsize=12)
+    d_ax.legend(loc=2, fontsize=26)
+    d_ax_right.legend(loc=4, fontsize=26)
     #grid
     d_ax.grid(b=True, axis='x')
     # x axis settings
     d_ax.set_xlabel("Stencil Radius")
-    d_ax.set_xticks([int(r) for r in radii])
+    d_ax.set_xticks([int(r) for r in radii[::6]])
     # d_ax.set_xlim((0,510))
     # y axis settings
-    d_ax.set_ylabel("Ratio")
+    d_ax.set_ylabel("Performance Improvement")
+    d_ax_right.set_ylabel("Remote Access Ratio")
     # d_ax.set_ylim((0,max_y*1.1))
-    d_ax_right.set_ylim((0.0,0.3))
+    # d_ax_right.set_ylim((0.0,0.3))
     print("Plot saved: " + filename)
     plt.savefig(filename)
     plt.close()
