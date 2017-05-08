@@ -1,5 +1,4 @@
-CHPLFLAGS=--fast  --replace-array-accesses-with-ref-temps
-
+CHPLFLAGS=--no-denormalize
 MISCFLAGS=
 
 $(MAIN): $(SRC)

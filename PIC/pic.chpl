@@ -1,5 +1,6 @@
 use Time;
 use BlockDist;
+use DistributedUList;
 
 extern proc LCG_init();
 extern proc random_draw(x: c_double): uint(64);
@@ -103,7 +104,10 @@ var particles =
 finishDistribution();
 
 writeln("Number of particles placed : ", particles.size);
-
+if debug && useList {
+  writeln("Initial list");
+  particles.print();
+}
 var t = new Timer();
 
 for niter in 0..iterations {
@@ -123,6 +127,13 @@ for niter in 0..iterations {
     p.v_x += ax * DT;
     p.v_y += ay * DT;
   }
+  if useList {
+    particles.redistribute();
+    if debug {
+      writeln("Post redist:");
+      particles.print();
+    }
+  }
 }
 t.stop();
 
@@ -139,8 +150,7 @@ writeln("Rate (Mparticles_moved/s): ", 1.0e-6*(n/avgTime));
 
 proc initializeGrid(L) {
   const gridSpace = {0..#(L+1), 0..#(L+1)};
-  const gridDom = gridSpace dmapped if useBlockDist then new dmap(new Block(gridSpace))
-                                            else defaultDist;
+  const gridDom = gridSpace dmapped Block(gridSpace);
   var grid: [gridDom] real;
 
   for (x,y) in grid.domain {
@@ -157,6 +167,26 @@ inline proc getParticleDomain(size) {
   return dom;
 }
 
+record Locator {
+  var dist;
+
+  proc getLocaleID(elt: particle) {
+    return dist._value.targetLocales(dist._value.targetLocsIdx((elt.x:int,elt.y:int))).id;
+  }
+}
+
+inline proc getParticleContainer(size) {
+  if useList {
+    var particles = new DistributedUnorderedList(eltType=particle,
+                              locator = new Locator(Qgrid.domain.dist));
+    return particles;
+  }
+  else {
+    var particles: [getParticleDomain(size)] particle;
+    return particles;
+  }
+}
+
 proc initializeGeometric() {
 
   const A = n * ((1.0-rho) / (1.0-(rho**L))) / L:real;
@@ -167,8 +197,10 @@ proc initializeGeometric() {
   for (x,y) in {0..#L, 0..#L} do
     nPlaced += random_draw(getSeed(x)):int;
 
-  const particleDom = getParticleDomain(nPlaced);
-  var particles: [particleDom] particle;
+  /*const particleDom = getParticleDomain(nPlaced);*/
+  /*var particles: [particleDom] particle;*/
+  
+  var particles = getParticleContainer(nPlaced);
 
   LCG_init();
 
@@ -198,8 +230,10 @@ proc initializeSinusoidal() {
   for (x,y) in {0..#L, 0..#L} do
     nPlaced += random_draw(getSeed(x)):int;
 
-  const particleDom = getParticleDomain(nPlaced);
-  var particles: [particleDom] particle;
+  /*const particleDom = getParticleDomain(nPlaced);*/
+  /*var particles: [particleDom] particle;*/
+
+  var particles = getParticleContainer(nPlaced);
 
   LCG_init();
 
@@ -231,8 +265,10 @@ proc initializeLinear() {
   for (x,y) in {0..#L, 0..#L} do
     nPlaced += random_draw(getSeed(x)):int;
 
-  const particleDom = getParticleDomain(nPlaced);
-  var particles: [particleDom] particle;
+  /*const particleDom = getParticleDomain(nPlaced);*/
+  /*var particles: [particleDom] particle;*/
+
+  var particles = getParticleContainer(nPlaced);
 
   LCG_init();
 
@@ -269,8 +305,10 @@ proc initializePatch() {
       nPlaced += actual_particles;
   }
 
-  const particleDom = getParticleDomain(nPlaced);
-  var particles: [particleDom] particle;
+  /*const particleDom = getParticleDomain(nPlaced);*/
+  /*var particles: [particleDom] particle;*/
+
+  var particles = getParticleContainer(nPlaced);
 
   LCG_init();
 
@@ -397,10 +435,16 @@ proc verifyParticle(p) {
 
 inline proc placeParticles(particles, ref pIdx, n, x, y) {
   for p in 0..#n {
-    particles[pIdx].x = x + REL_X;
-    particles[pIdx].y = y + REL_Y;
-    particles[pIdx].k = k;
-    particles[pIdx].m = m;
+    if useList {
+      var newP = new particle(x=x+REL_X, y=y+REL_Y, k=k, m=m);
+      particles.add(newP);
+    }
+    else {
+      particles[pIdx].x = x + REL_X;
+      particles[pIdx].y = y + REL_Y;
+      particles[pIdx].k = k;
+      particles[pIdx].m = m;
+    }
     pIdx += 1;
   }
 }
