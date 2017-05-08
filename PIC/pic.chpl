@@ -86,46 +86,34 @@ writeln("Vertical velocity              = ", m);
 
 var Qgrid = initializeGrid(L);
 
-var particleDom = {1..0};
-var particles: [particleDom] particle;
-
-select particleMode {
-  when "GEOMETRIC" do initializeGeometric();
-  when "SINUSOIDAL" do initializeSinusoidal();
-  when "LINEAR" do initializeLinear();
-  when "PATCH" do initializePatch();
-  otherwise do halt("Unknown particle mode: ", particleMode);
-}
+var particles =
+  if particleMode=="GEOMETRIC" then   initializeGeometric() else
+  if particleMode=="SINUSOIDAL" then  initializeSinusoidal() else
+  if particleMode=="LINEAR" then      initializeLinear() else
+                                      initializePatch();
 
 finishDistribution();
 
 writeln("Number of particles placed : ", particles.size);
 
-const t = new Timer();
+var t = new Timer();
 
 for niter in 0..iterations {
 
   if niter == 1 then t.start();
 
-  forall i in 0..#n {
+  forall p in particles {
 
-    const (fx, fy) = computeTotalForce(particles[i]);
-    if debug then writeln("Force acting on particle " , i, " ", (fx,fy));
+    const (fx, fy) = computeTotalForce(p);
     const ax = fx * MASS_INV;
     const ay = fy * MASS_INV;
 
-    if debug then write("Particle ", i, " moved from ",
-        (particles[i].x,particles[i].y));
 
-    particles[i].x = mod(particles[i].x + particles[i].v_x*DT +
-        0.5*ax*DT*DT + L, L);
-    particles[i].y = mod(particles[i].y + particles[i].v_y*DT +
-        0.5*ay*DT*DT + L, L);
+    p.x = mod(p.x + p.v_x*DT + 0.5*ax*DT*DT + L, L);
+    p.y = mod(p.y + p.v_y*DT + 0.5*ay*DT*DT + L, L);
 
-    if debug then writeln(" to ", (particles[i].x,particles[i].y));
-
-    particles[i].v_x += ax * DT;
-    particles[i].v_y += ay * DT;
+    p.v_x += ax * DT;
+    p.v_y += ay * DT;
   }
 }
 t.stop();
@@ -161,7 +149,8 @@ proc initializeGeometric() {
   for (x,y) in {0..#L, 0..#L} do
     nPlaced += random_draw(getSeed(x)):int;
 
-  particleDom = {0..#nPlaced};
+  const particleDom = {0..#nPlaced};
+  var particles: [particleDom] particle;
 
   LCG_init();
 
@@ -170,8 +159,10 @@ proc initializeGeometric() {
     // TODO without cast this creates a seg fault and overflow
     // warning with no --fast. Investigate for possible bug. Engin
     const actual_particles = random_draw(getSeed(x)):int;
-    placeParticles(pIdx, actual_particles, x, y);
+    placeParticles(particles, pIdx, actual_particles, x, y);
   }
+  
+  return particles;
 
   inline proc getSeed(x) {
     return A * (rho**x);
@@ -189,7 +180,8 @@ proc initializeSinusoidal() {
   for (x,y) in {0..#L, 0..#L} do
     nPlaced += random_draw(getSeed(x)):int;
 
-  particleDom = {0..#nPlaced};
+  const particleDom = {0..#nPlaced};
+  var particles: [particleDom] particle;
 
   LCG_init();
 
@@ -199,8 +191,10 @@ proc initializeSinusoidal() {
     // TODO without cast this creates a seg fault and overflow
     // warning with no --fast. Investigate for possible bug. Engin
     const actual_particles = random_draw(getSeed(x)):int;
-    placeParticles(pIdx, actual_particles, x, y);
+    placeParticles(particles, pIdx, actual_particles, x, y);
   }
+  
+  return particles;
 
   inline proc getSeed(x) {
     return 2.0*(cos(x*step)**2)*n/(L**2);
@@ -219,7 +213,8 @@ proc initializeLinear() {
   for (x,y) in {0..#L, 0..#L} do
     nPlaced += random_draw(getSeed(x)):int;
 
-  particleDom = {0..#nPlaced};
+  const particleDom = {0..#nPlaced};
+  var particles: [particleDom] particle;
 
   LCG_init();
 
@@ -228,8 +223,10 @@ proc initializeLinear() {
     // TODO without cast this creates a seg fault and overflow
     // warning with no --fast. Investigate for possible bug. Engin
     const actual_particles = random_draw(getSeed(x)):int;
-    placeParticles(pIdx, actual_particles, x, y);
+    placeParticles(particles, pIdx, actual_particles, x, y);
   }
+
+  return particles;
 
   inline proc getSeed(x) {
     return n * ((beta - alpha * step * x:real)/total_weight)/L;
@@ -254,7 +251,8 @@ proc initializePatch() {
       nPlaced += actual_particles;
   }
 
-  particleDom = {0..#nPlaced};
+  const particleDom = {0..#nPlaced};
+  var particles: [particleDom] particle;
 
   LCG_init();
 
@@ -264,9 +262,11 @@ proc initializePatch() {
     // warning with no --fast. Investigate for possible bug. Engin
     const actual_particles = random_draw(particles_per_cell):int;
     if !outsidePatch(x, y) {
-      placeParticles(pIdx, actual_particles, x, y);
+      placeParticles(particles, pIdx, actual_particles, x, y);
     }
   }
+  
+  return particles;
 
   inline proc outsidePatch(x, y) {
     return x<patch.left   || x>patch.right ||
@@ -377,7 +377,7 @@ proc verifyParticle(p) {
   return true;
 }
 
-inline proc placeParticles(ref pIdx, n, x, y) {
+inline proc placeParticles(particles, ref pIdx, n, x, y) {
   for p in 0..#n {
     particles[pIdx].x = x + REL_X;
     particles[pIdx].y = y + REL_Y;
