@@ -1,4 +1,5 @@
 use Time;
+use BlockDist;
 
 extern proc LCG_init();
 extern proc random_draw(x: c_double): uint(64);
@@ -10,6 +11,13 @@ param DT = 1.0;
 param Q = 1.0;
 param MASS_INV = 1.0;
 param epsilon = 0.000001;
+
+
+config param useBlockDist = false;
+config param useList = false;
+
+if useBlockDist && useList then
+  halt("At most one of useBlockDist and useList can be set");
 
 config const L = 10; // grid size
 config var n = 10; // particles requested
@@ -119,9 +127,9 @@ for niter in 0..iterations {
 t.stop();
 
 
-for i in 0..#n {
-  if !verifyParticle(particles[i]) then
-    halt("Verification failed");
+for p in particles {
+  if !verifyParticle(p) then
+    writeln("Verification failed");
 }
 
 writeln("Verification succesful");
@@ -130,13 +138,23 @@ const avgTime = t.elapsed()/iterations;
 writeln("Rate (Mparticles_moved/s): ", 1.0e-6*(n/avgTime));
 
 proc initializeGrid(L) {
-  const gridDom = {0..#(L+1), 0..#(L+1)};
+  const gridSpace = {0..#(L+1), 0..#(L+1)};
+  const gridDom = gridSpace dmapped if useBlockDist then new dmap(new Block(gridSpace))
+                                            else defaultDist;
   var grid: [gridDom] real;
 
   for (x,y) in grid.domain {
     grid[y,x] = if x%2==0 then Q else -Q;
   }
   return grid;
+}
+
+inline proc getParticleDomain(size) {
+  const space = {0..#size};
+  const dom = space dmapped if useBlockDist then new dmap(new Block(space))
+                                            else defaultDist;
+
+  return dom;
 }
 
 proc initializeGeometric() {
@@ -149,7 +167,7 @@ proc initializeGeometric() {
   for (x,y) in {0..#L, 0..#L} do
     nPlaced += random_draw(getSeed(x)):int;
 
-  const particleDom = {0..#nPlaced};
+  const particleDom = getParticleDomain(nPlaced);
   var particles: [particleDom] particle;
 
   LCG_init();
@@ -180,7 +198,7 @@ proc initializeSinusoidal() {
   for (x,y) in {0..#L, 0..#L} do
     nPlaced += random_draw(getSeed(x)):int;
 
-  const particleDom = {0..#nPlaced};
+  const particleDom = getParticleDomain(nPlaced);
   var particles: [particleDom] particle;
 
   LCG_init();
@@ -213,7 +231,7 @@ proc initializeLinear() {
   for (x,y) in {0..#L, 0..#L} do
     nPlaced += random_draw(getSeed(x)):int;
 
-  const particleDom = {0..#nPlaced};
+  const particleDom = getParticleDomain(nPlaced);
   var particles: [particleDom] particle;
 
   LCG_init();
@@ -251,7 +269,7 @@ proc initializePatch() {
       nPlaced += actual_particles;
   }
 
-  const particleDom = {0..#nPlaced};
+  const particleDom = getParticleDomain(nPlaced);
   var particles: [particleDom] particle;
 
   LCG_init();

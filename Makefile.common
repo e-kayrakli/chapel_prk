@@ -1,4 +1,4 @@
-CHPLFLAGS=--fast --local --vectorize --replace-array-accesses-with-ref-temps
+CHPLFLAGS=--fast  --replace-array-accesses-with-ref-temps
 
 MISCFLAGS=
 
