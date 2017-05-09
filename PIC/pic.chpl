@@ -21,6 +21,7 @@ config param useList = false;
 config param commDiag = true;
 config const verboseCommDiag = false;
 config const redist = true;
+config const verify = false;
 
 config const detailTiming = false; // TODO make this param
 
@@ -172,9 +173,11 @@ t.stop();
 
 if useList then particles.printTimeStats();
 
-for p in particles {
-  if !verifyParticle(p) then
-    writeln("Verification failed");
+if verify {
+  for p in particles {
+    if !verifyParticle(p) then
+      writeln("Verification failed");
+  }
 }
 
 writeln("Verification succesful");
