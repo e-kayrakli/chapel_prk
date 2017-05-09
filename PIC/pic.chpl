@@ -53,13 +53,13 @@ record bbox {
 
 config const initPatchLeft = 1;
 config const initPatchRight = 2;
-config const initPatchTop= 1;
-config const initPatchBottom = 2;
+config const initPatchBottom = 1;
+config const initPatchTop= 2;
 
 const patch = new bbox(initPatchLeft,
                            initPatchRight,
-                           initPatchTop,
-                           initPatchBottom);
+                           initPatchBottom,
+                           initPatchTop);
 
 const gridPatch = new bbox(0, (L+1), 0, (L+1));
 
@@ -94,8 +94,8 @@ select particleMode {
   when "PATCH" {
     writeln("\tBounding box                 = ", (patch.left,
                                                   patch.right,
-                                                  patch.top,
-                                                  patch.bottom));
+                                                  patch.bottom,
+                                                  patch.top));
   }
 }
 writeln("Particle charge semi-increment = ", k);
