@@ -432,10 +432,10 @@ proc computeTotalForce(p) {
   var tmp_fy = 0.0;
 
   /*writeln(here, " ", (x,y), " ",*/
-      /*Qgrid[y,x].locale, " ",*/
-      /*Qgrid[y+1,x].locale, " ",*/
-      /*Qgrid[y,x+1].locale, " ",*/
-      /*Qgrid[y+1,x+1].locale);*/
+      /*Qgrid[x,y].locale, " ",*/
+      /*Qgrid[x+1,y].locale, " ",*/
+      /*Qgrid[x,y+1].locale, " ",*/
+      /*Qgrid[x+1,y+1].locale);*/
   /*(tmp_fx, tmp_fy) = computeCoulomb(rel_x, rel_y, p.q, Qgrid[y,x]);*/
   (tmp_fx, tmp_fy) = computeCoulomb(rel_x, rel_y, p.q, Qgrid[x,y]);
   var tmp_res_x = tmp_fx;
