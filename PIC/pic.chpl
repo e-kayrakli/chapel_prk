@@ -1,6 +1,8 @@
 use Time;
 use BlockDist;
+use StencilDist;
 use DistributedUList;
+use CommDiagnostics;
 
 extern proc LCG_init();
 extern proc random_draw(x: c_double): uint(64);
@@ -16,6 +18,9 @@ param epsilon = 0.000001;
 
 config param useBlockDist = false;
 config param useList = false;
+config param commDiag = true;
+config const verboseCommDiag = false;
+config const redist = true;
 
 if useBlockDist && useList then
   halt("At most one of useBlockDist and useList can be set");
@@ -101,15 +106,20 @@ var particles =
   if particleMode=="LINEAR" then      initializeLinear() else
                                       initializePatch();
 
+if useList then particles.finishAdd();
 finishDistribution();
 
 writeln("Number of particles placed : ", particles.size);
-if debug && useList {
-  writeln("Initial list");
-  particles.print();
-}
+/*if debug && useList {*/
+  /*writeln("Initial list");*/
+  /*particles.print();*/
+/*}*/
 var t = new Timer();
 
+if commDiag {
+  startCommDiagnostics();
+  if verboseCommDiag then startVerboseComm();
+}
 for niter in 0..iterations {
 
   if niter == 1 then t.start();
@@ -127,13 +137,21 @@ for niter in 0..iterations {
     p.v_x += ax * DT;
     p.v_y += ay * DT;
   }
+  /*if commDiag {*/
+    /*writeln(getCommDiagnostics());*/
+  /*}*/
   if useList {
-    particles.redistribute();
+    if redist then particles.redistribute();
     if debug {
       writeln("Post redist:");
       particles.print();
     }
   }
+}
+if commDiag {
+  if verboseCommDiag then stopVerboseComm();
+  stopCommDiagnostics();
+  writeln(getCommDiagnostics());
 }
 t.stop();
 
@@ -150,12 +168,22 @@ writeln("Rate (Mparticles_moved/s): ", 1.0e-6*(n/avgTime));
 
 proc initializeGrid(L) {
   const gridSpace = {0..#(L+1), 0..#(L+1)};
-  const gridDom = gridSpace dmapped Block(gridSpace);
+  /*const gridDom = gridSpace dmapped Block(gridSpace);*/
+  const gridDom = gridSpace dmapped Stencil(gridSpace, fluff=(1,1));
   var grid: [gridDom] real;
 
   for (x,y) in grid.domain {
-    grid[y,x] = if x%2==0 then Q else -Q;
+    /*grid[y,x] = if x%2==0 then Q else -Q;*/
+    grid[x,y] = if y%2==0 then Q else -Q;
   }
+
+  /*for x in grid.domain.dim(1) {*/
+    /*for y in grid.domain.dim(2) {*/
+      /*write(grid[x,y].locale.id, " ");*/
+    /*}*/
+    /*writeln();*/
+  /*}*/
+  grid.updateFluff();
   return grid;
 }
 
@@ -169,9 +197,22 @@ inline proc getParticleDomain(size) {
 
 record Locator {
   var dist;
+  var locIdCache: [dist.targetLocales().domain] here.id.type;
 
-  proc getLocaleID(elt: particle) {
-    return dist._value.targetLocales(dist._value.targetLocsIdx((elt.x:int,elt.y:int))).id;
+  proc Locator(dist) {
+    for (l,c) in zip(dist.targetLocales(), locIdCache) do
+      c=l.id;
+  }
+
+  inline proc getLocaleID(elt: particle) {
+    /*return dist._value.targetLocales(*/
+          /*dist._value.targetLocsIdx((elt.x:int+1,elt.y:int+1))).id;*/
+    return locIdCache[
+          dist._value.targetLocsIdx((elt.x:int+1,elt.y:int+1))];
+  }
+
+  proc clone() {
+    return new Locator(dist.clone());
   }
 }
 
@@ -390,19 +431,28 @@ proc computeTotalForce(p) {
   var tmp_fx = 0.0;
   var tmp_fy = 0.0;
 
-  (tmp_fx, tmp_fy) = computeCoulomb(rel_x, rel_y, p.q, Qgrid[y,x]);
+  /*writeln(here, " ", (x,y), " ",*/
+      /*Qgrid[y,x].locale, " ",*/
+      /*Qgrid[y+1,x].locale, " ",*/
+      /*Qgrid[y,x+1].locale, " ",*/
+      /*Qgrid[y+1,x+1].locale);*/
+  /*(tmp_fx, tmp_fy) = computeCoulomb(rel_x, rel_y, p.q, Qgrid[y,x]);*/
+  (tmp_fx, tmp_fy) = computeCoulomb(rel_x, rel_y, p.q, Qgrid[x,y]);
   var tmp_res_x = tmp_fx;
   var tmp_res_y = tmp_fy;
 
-  (tmp_fx, tmp_fy) = computeCoulomb(rel_x, 1.0-rel_y, p.q, Qgrid[y+1,x]);
+  /*(tmp_fx, tmp_fy) = computeCoulomb(rel_x, 1.0-rel_y, p.q, Qgrid[y+1,x]);*/
+  (tmp_fx, tmp_fy) = computeCoulomb(rel_x, 1.0-rel_y, p.q, Qgrid[x+1,y]);
   tmp_res_x += tmp_fx;
   tmp_res_y -= tmp_fy;
 
-  (tmp_fx, tmp_fy) = computeCoulomb(1.0-rel_x, rel_y, p.q, Qgrid[y,x+1]);
+  /*(tmp_fx, tmp_fy) = computeCoulomb(1.0-rel_x, rel_y, p.q, Qgrid[y,x+1]);*/
+  (tmp_fx, tmp_fy) = computeCoulomb(1.0-rel_x, rel_y, p.q, Qgrid[x,y+1]);
   tmp_res_x -= tmp_fx;
   tmp_res_y += tmp_fy;
 
-  (tmp_fx, tmp_fy) = computeCoulomb(1.0-rel_x, 1.0-rel_y, p.q, Qgrid[y+1,x+1]);
+  /*(tmp_fx, tmp_fy) = computeCoulomb(1.0-rel_x, 1.0-rel_y, p.q, Qgrid[y+1,x+1]);*/
+  (tmp_fx, tmp_fy) = computeCoulomb(1.0-rel_x, 1.0-rel_y, p.q, Qgrid[x+1,y+1]);
   tmp_res_x -= tmp_fx;
   tmp_res_y -= tmp_fy;
 
@@ -418,7 +468,7 @@ proc verifyParticle(p) {
   const x = p.x0:int;
 
   const disp = (iterations+1):real*(2*p.k+1);
-  const x_final = if (p.q * Qgrid[y,x])>0 then p.x0+disp else p.x0-disp;
+  const x_final = if (p.q * Qgrid[x,y])>0 then p.x0+disp else p.x0-disp;
   const y_final = p.y0 + p.m * (iterations+1):real;
 
   const x_periodic = mod(x_final+(iterations+1):real *(2*p.k+1)*L, L);

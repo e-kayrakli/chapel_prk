@@ -1,4 +1,4 @@
-CHPLFLAGS=--no-denormalize
+CHPLFLAGS=--no-denormalize --fast
 MISCFLAGS=
 
 $(MAIN): $(SRC)
