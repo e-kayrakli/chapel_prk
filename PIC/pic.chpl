@@ -22,6 +22,8 @@ config param commDiag = true;
 config const verboseCommDiag = false;
 config const redist = true;
 
+config const detailTiming = false; // TODO make this param
+
 if useBlockDist && useList then
   halt("At most one of useBlockDist and useList can be set");
 
@@ -115,6 +117,8 @@ writeln("Number of particles placed : ", particles.size);
   /*particles.print();*/
 /*}*/
 var t = new Timer();
+var compTimer = new Timer();
+var redistTimer = new Timer();
 
 if commDiag {
   startCommDiagnostics();
@@ -124,6 +128,7 @@ for niter in 0..iterations {
 
   if niter == 1 then t.start();
 
+  if detailTiming then compTimer.start();
   forall p in particles {
 
     const (fx, fy) = computeTotalForce(p);
@@ -137,11 +142,11 @@ for niter in 0..iterations {
     p.v_x += ax * DT;
     p.v_y += ay * DT;
   }
-  /*if commDiag {*/
-    /*writeln(getCommDiagnostics());*/
-  /*}*/
+  if detailTiming then compTimer.stop();
   if useList {
+    if detailTiming then redistTimer.start();
     if redist then particles.redistribute();
+    if detailTiming then redistTimer.stop();
     if debug {
       writeln("Post redist:");
       particles.print();
@@ -162,6 +167,10 @@ for p in particles {
 }
 
 writeln("Verification succesful");
+
+if detailTiming then
+  writeln("Computation time : " , compTimer.elapsed(),
+        "\nRedistribution time : " , redistTimer.elapsed());
 
 const avgTime = t.elapsed()/iterations;
 writeln("Rate (Mparticles_moved/s): ", 1.0e-6*(n/avgTime));
