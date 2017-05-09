@@ -160,6 +160,7 @@ if commDiag {
 }
 t.stop();
 
+if useList then particles.printTimeStats();
 
 for p in particles {
   if !verifyParticle(p) then
