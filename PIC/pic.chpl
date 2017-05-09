@@ -102,6 +102,9 @@ writeln("Vertical velocity              = ", m);
 
 var Qgrid = initializeGrid(L);
 
+var initTimer = new Timer();
+var finishDistTimer = new Timer();
+initTimer.start();
 var particles =
   if particleMode=="GEOMETRIC" then   initializeGeometric() else
   if particleMode=="SINUSOIDAL" then  initializeSinusoidal() else
@@ -109,9 +112,16 @@ var particles =
                                       initializePatch();
 
 if useList then particles.finishAdd();
+initTimer.stop();
+finishDistTimer.start();
 finishDistribution();
+finishDistTimer.stop();
+
+
 
 writeln("Number of particles placed : ", particles.size);
+writeln("\t\tInit time                : ", initTimer.elapsed(), "\n",
+        "\t\tFinish distribution time : ", finishDistTimer.elapsed());
 /*if debug && useList {*/
   /*writeln("Initial list");*/
   /*particles.print();*/
