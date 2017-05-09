@@ -404,7 +404,7 @@ proc initializePatch() {
 }
 
 proc finishDistribution() {
-  for p in particles {
+  forall p in particles {
     var x_coord = p.x;
     var y_coord = p.y;
     var rel_x = mod(x_coord, 1.0);
