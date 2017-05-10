@@ -227,7 +227,7 @@ record Locator {
       c=l.id;
   }
 
-  inline proc getLocaleID(elt: particle) {
+  inline proc getLocaleID(ref elt: particle) {
     /*return dist._value.targetLocales(*/
           /*dist._value.targetLocsIdx((elt.x:int+1,elt.y:int+1))).id;*/
     return locIdCache[
