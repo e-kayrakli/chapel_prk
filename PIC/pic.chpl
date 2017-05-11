@@ -22,6 +22,7 @@ config param commDiag = true;
 config const verboseCommDiag = false;
 config const redist = true;
 config const verify = false;
+config const localAdd = true;
 
 config const detailTiming = false; // TODO make this param
 
@@ -231,7 +232,7 @@ record Locator {
       c=l.id;
   }
 
-  inline proc getLocaleID(ref elt: particle) {
+  inline proc getLocaleID(const ref elt: particle) {
     /*return dist._value.targetLocales(*/
           /*dist._value.targetLocsIdx((elt.x:int+1,elt.y:int+1))).id;*/
     return locIdCache[
@@ -377,13 +378,31 @@ proc initializePatch() {
 
   LCG_init();
 
+  const particleCreateDom = {0..#L, 0..#L};
+
   var pIdx = 0;
-  for (x,y) in {0..#L, 0..#L} {
-    // TODO without cast this creates a seg fault and overflow
-    // warning with no --fast. Investigate for possible bug. Engin
-    const actual_particles = random_draw(particles_per_cell):int;
-    if !outsidePatch(x, y) {
-      placeParticles(particles, pIdx, actual_particles, x, y);
+  if useList && localAdd {
+    for l in Locales do on l {
+      for (x,y) in Qgrid.localSubdomain()[particleCreateDom] {
+        // TODO without cast this creates a seg fault and overflow
+        // warning with no --fast. Investigate for possible bug. Engin
+        const actual_particles = random_draw(particles_per_cell):int;
+        if !outsidePatch(x, y) {
+          placeParticles(particles, pIdx, actual_particles, x, y,
+              useAddHere=true);
+        }
+      }
+    }
+    particles.redistribute();
+  }
+  else {
+    for (x,y) in {0..#L, 0..#L} {
+      // TODO without cast this creates a seg fault and overflow
+      // warning with no --fast. Investigate for possible bug. Engin
+      const actual_particles = random_draw(particles_per_cell):int;
+      if !outsidePatch(x, y) {
+        placeParticles(particles, pIdx, actual_particles, x, y);
+      }
     }
   }
   
@@ -507,11 +526,15 @@ proc verifyParticle(p) {
   return true;
 }
 
-inline proc placeParticles(particles, ref pIdx, n, x, y) {
+inline proc placeParticles(particles, ref pIdx, n, x, y,
+    param useAddHere = false) {
   for p in 0..#n {
     if useList {
       var newP = new particle(x=x+REL_X, y=y+REL_Y, k=k, m=m);
-      particles.add(newP);
+      if useAddHere then
+        particles.addHere(newP);
+      else
+        particles.add(newP);
     }
     else {
       particles[pIdx].x = x + REL_X;
