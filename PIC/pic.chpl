@@ -171,6 +171,7 @@ for niter in 0..iterations {
   }
 }
 if commDiag {
+  particles.printCommMatrix();
   if verboseCommDiag then stopVerboseComm();
   stopCommDiagnostics();
   writeln(getCommDiagnostics());
