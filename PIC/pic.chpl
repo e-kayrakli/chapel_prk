@@ -36,6 +36,8 @@ config const iterations = 10;
 config const debug = false;
 config const particleMode = "SINUSOIDAL";
 
+const gridSpace = {0..#(L+1), 0..#(L+1)};
+
 // for geomteric initialization
 config const rho = 1.0;
 
@@ -51,15 +53,18 @@ record bbox {
       top: int;
 }
 
-config const initPatchLeft = 1;
-config const initPatchRight = 2;
-config const initPatchBottom = 1;
-config const initPatchTop= 2;
+// default patch is the full grid. This will guarantee that if
+// particleMode == PATCH we'll get a uniform random distribution by
+// default
+config const initPatchLeft = gridSpace.dim(2).low;
+config const initPatchRight = gridSpace.dim(2).high;
+config const initPatchBottom = gridSpace.dim(1).low;
+config const initPatchTop= gridSpace.dim(1).high;
 
 const patch = new bbox(initPatchLeft,
-                           initPatchRight,
-                           initPatchBottom,
-                           initPatchTop);
+                       initPatchRight,
+                       initPatchBottom,
+                       initPatchTop);
 
 const gridPatch = new bbox(0, (L+1), 0, (L+1));
 
@@ -190,7 +195,6 @@ const avgTime = t.elapsed()/iterations;
 writeln("Rate (Mparticles_moved/s): ", 1.0e-6*(n/avgTime));
 
 proc initializeGrid(L) {
-  const gridSpace = {0..#(L+1), 0..#(L+1)};
   /*const gridDom = gridSpace dmapped Block(gridSpace);*/
   const gridDom = gridSpace dmapped Stencil(gridSpace, fluff=(1,1));
   var grid: [gridDom] real;
@@ -358,7 +362,7 @@ proc initializePatch() {
 
   const total_cells  = (patch.right - patch.left+1)*(patch.top -
       patch.bottom+1);
-  const particles_per_cell = (n/total_cells):real;
+  const particles_per_cell = (1.0*n/total_cells);
 
   var nPlaced = 0;
   LCG_init();
@@ -368,9 +372,6 @@ proc initializePatch() {
     if !outsidePatch(x, y) then
       nPlaced += actual_particles;
   }
-
-  /*const particleDom = getParticleDomain(nPlaced);*/
-  /*var particles: [particleDom] particle;*/
 
   var particles = getParticleContainer(nPlaced);
 
