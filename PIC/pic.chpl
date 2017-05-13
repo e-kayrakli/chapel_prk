@@ -148,16 +148,17 @@ for niter in 0..iterations {
   if detailTiming then compTimer.start();
   forall p in particles {
 
-    const (fx, fy) = computeTotalForce(p);
-    const ax = fx * MASS_INV;
-    const ay = fy * MASS_INV;
+    local {
+      const (fx, fy) = computeTotalForce(p);
+      const ax = fx * MASS_INV;
+      const ay = fy * MASS_INV;
 
+      p.x = mod(p.x + p.v_x*DT + 0.5*ax*DT*DT + L, L);
+      p.y = mod(p.y + p.v_y*DT + 0.5*ay*DT*DT + L, L);
 
-    p.x = mod(p.x + p.v_x*DT + 0.5*ax*DT*DT + L, L);
-    p.y = mod(p.y + p.v_y*DT + 0.5*ay*DT*DT + L, L);
-
-    p.v_x += ax * DT;
-    p.v_y += ay * DT;
+      p.v_x += ax * DT;
+      p.v_y += ay * DT;
+    }
   }
   if detailTiming then compTimer.stop();
   if useList {
