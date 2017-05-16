@@ -20,7 +20,7 @@ config param useBlockDist = false;
 config param useList = false;
 config param commDiag = true;
 config const verboseCommDiag = false;
-config const redist = true;
+config const redist = false;
 config const verify = false;
 config const localAdd = true;
 
@@ -146,7 +146,7 @@ for niter in 0..iterations {
   if niter == 1 then t.start();
 
   if detailTiming then compTimer.start();
-  forall p in particles {
+  forall p in particles.redistIter() {
 
     local {
       const (fx, fy) = computeTotalForce(p);
