@@ -228,10 +228,46 @@ inline proc getParticleDomain(size) {
 record Locator {
   var dist;
   var locIdCache: [dist.targetLocales().domain] here.id.type;
+  var locIdCacheR: [Locales.domain] 2*int;
+  var neighborIDs: [dist.targetLocales().domain] 8*here.id.type;
 
   proc Locator(dist) {
-    for (l,c) in zip(dist.targetLocales(), locIdCache) do
-      c=l.id;
+    // rank must be 2
+    // also targetLocales must *probably* be all locales for now
+
+    locIdCacheR = (-1,-1);
+    for (lIdx,c) in zip(dist.targetLocales().domain, locIdCache) {
+      c = dist.targetLocales()[lIdx].id;
+      locIdCacheR[c] = lIdx;
+      
+    }
+
+    const targetLocSize = dist.targetLocales().domain.shape;
+
+    for idIdx in neighborIDs.domain {
+      ref curTuple = neighborIDs[idIdx];
+      curTuple = (-1, -1, -1, -1, -1, -1, -1, -1);
+      var nIdx = 1;
+      for (i,j) in {-1..1, -1..1} {
+        if (i,j) == (0,0) then continue;
+        
+        const neighborID = locIdCache[(targetLocSize+idIdx+(i,j))%
+                                                  targetLocSize];
+        if tupleContains(curTuple, neighborID) then
+          curTuple[nIdx] = here.id;
+        else
+          curTuple[nIdx] = neighborID;
+        nIdx += 1;
+      }
+    }
+    /*writeln(here, " created Locator with neighborIDs ", neighborIDs);*/
+
+    inline proc tupleContains(tup, val) {
+      for param i in 1..8 do
+        if tup[i] == val then return true;
+
+      return false;
+    }
   }
 
   inline proc getLocaleID(const ref elt: particle) {
@@ -243,6 +279,13 @@ record Locator {
 
   proc clone() {
     return new Locator(dist.clone());
+  }
+
+  iter neighbors() {
+    const myLIdx = locIdCacheR[here.id];
+    const ref myNeighbors = neighborIDs[myLIdx];
+    for param i in 1..8 do
+      if myNeighbors[i] != here.id then yield myNeighbors[i];
   }
 }
 
