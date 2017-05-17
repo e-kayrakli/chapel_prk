@@ -231,6 +231,7 @@ record Locator {
   var locIdCacheR: [Locales.domain] 2*int;
   var neighborIDs: [dist.targetLocales().domain] 8*here.id.type;
 
+  var _instance = dist._value;
   proc Locator(dist) {
     // rank must be 2
     // also targetLocales must *probably* be all locales for now
@@ -274,7 +275,7 @@ record Locator {
     /*return dist._value.targetLocales(*/
           /*dist._value.targetLocsIdx((elt.x:int+1,elt.y:int+1))).id;*/
     return locIdCache[
-          dist._value.targetLocsIdx((elt.x:int+1,elt.y:int+1))];
+          _instance.targetLocsIdx((elt.x:int+1,elt.y:int+1))];
   }
 
   proc clone() {
