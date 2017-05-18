@@ -141,33 +141,22 @@ if commDiag {
   startCommDiagnostics();
   if verboseCommDiag then startVerboseComm();
 }
-for niter in 0..iterations {
 
-  if niter == 1 then t.start();
+for followThis in particles.redistIter(tag=iterKind.leader) {
+  for niter in 0..iterations {
+    if niter == 1 && followThis[2] == 0 then t.start();
+    for p in particles.redistIter(tag=iterKind.follower, followThis) {
+      local {
+        const (fx, fy) = computeTotalForce(p);
+        const ax = fx * MASS_INV;
+        const ay = fy * MASS_INV;
 
-  if detailTiming then compTimer.start();
-  forall p in particles.redistIter() {
+        p.x = mod(p.x + p.v_x*DT + 0.5*ax*DT*DT + L, L);
+        p.y = mod(p.y + p.v_y*DT + 0.5*ay*DT*DT + L, L);
 
-    local {
-      const (fx, fy) = computeTotalForce(p);
-      const ax = fx * MASS_INV;
-      const ay = fy * MASS_INV;
-
-      p.x = mod(p.x + p.v_x*DT + 0.5*ax*DT*DT + L, L);
-      p.y = mod(p.y + p.v_y*DT + 0.5*ay*DT*DT + L, L);
-
-      p.v_x += ax * DT;
-      p.v_y += ay * DT;
-    }
-  }
-  if detailTiming then compTimer.stop();
-  if useList {
-    if detailTiming then redistTimer.start();
-    if redist then particles.redistribute();
-    if detailTiming then redistTimer.stop();
-    if debug {
-      writeln("Post redist:");
-      particles.print();
+        p.v_x += ax * DT;
+        p.v_y += ay * DT;
+      }
     }
   }
 }
