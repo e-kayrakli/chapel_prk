@@ -1,6 +1,6 @@
 import argparse
 
-plot_path = '/home/ngnk/papers/prefetch_v2/plots_new/'
+plot_path = '/home/ngnk/papers/prefetch_v3/plots_new/'
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--slurm", action="store_true")

@@ -52,8 +52,12 @@ def create_plots(versions, plot_name_prefix):
     do_create_plots(versions, plot_name_prefix, False)
 
 def do_create_plots(versions, plot_name_prefix, do_imp_plot):
+    import matplotlib as mpl
     import matplotlib.pyplot as plt
     import matplotlib.lines as ll
+
+    mpl.rcParams['lines.markersize'] = 14
+    mpl.rcParams['lines.linewidth'] = 3
     datasets = parse(versions)
 
     rect = 0.1,0.1,0.8,0.8
@@ -65,7 +69,7 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
             s + "_" + str(args.num_tries))
         if do_imp_plot:
             filename = filename+"_imp"
-        d_fig = plt.figure(figsize=(10,10))
+        d_fig = plt.figure(figsize=(10,6))
         d_ax = d_fig.add_axes(rect)
         max_y = 0
          # fake white line for legend adjustment
@@ -83,7 +87,8 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
             else:
                 lines.append(d_ax.plot(locales_int, d[v.abbrev],
                         label=nice_labels[v.abbrev], color=v.color, marker=v.marker,
-                        linestyle=v.linestyle)[0])
+                        linestyle=v.linestyle, markerfacecolor='none',
+                        markeredgewidth=3)[0])
             if max(d[v.abbrev]) > max_y:
                 max_y = max(d[v.abbrev])
             labels.append(nice_labels[v.abbrev])
@@ -94,9 +99,18 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
 
         #legend
         if do_legend:
-            d_ax.legend(tuple(lines), labels, loc=0, fontsize=30, ncol=3)
+            d_ax.legend(tuple(lines), labels, loc='best', fontsize=22,
+                    fancybox=False, ncol=3, bbox_to_anchor=(0.5,1.05))
         #grid
         d_ax.grid(b=True, axis='x')
+        d_ax.grid(b=True, axis='y', linestyle='dashed')
+
+        #adjust borders
+        d_ax.spines['top'].set_linewidth(1)
+        d_ax.spines['bottom'].set_linewidth(1)
+        d_ax.spines['left'].set_linewidth(1)
+        d_ax.spines['right'].set_linewidth(1)
+
         # x axis settings
         d_ax.set_xlabel("Number of Locales")
         d_ax.set_xticks(locales_int)

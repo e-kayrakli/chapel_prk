@@ -1,4 +1,4 @@
-#! /home/ngnk/builds/env_python2/python
+#! /usr/bin/env python
 import math
 
 from global_config import *
@@ -12,13 +12,13 @@ if use_slurm:
 sdflags = commonflags + " --staticDomain "
 
 versions = [
-    VersionType("dgemm_base", "0", commonflags, "b", "o", "solid"),
-    VersionType("dgemm_pref_cons", "3cons", commonflags, "r", "^", "solid"),
-    VersionType("dgemm_pref_incons", "3incons", commonflags, "c", "8", "solid"),
+    VersionType("dgemm_base", "0", commonflags, "k", "o", "solid"),
+    VersionType("dgemm_pref_cons", "3cons", commonflags, "k", "s", "dashed"),
+    VersionType("dgemm_pref_incons", "3incons", commonflags, "k", "x", "dashed"),
     # VersionType("dgemm_pref_cons_u", "3cons_u", commonflags, "m", "s", "solid"),
     # VersionType("dgemm_pref_incons", "3incons_u", commonflags, "y", "x", "solid"),
-    VersionType("dgemm_pref_cons", "3cons_sd", sdflags, "r", "^", "dashed"),
-    VersionType("dgemm_pref_incons", "3incons_sd", sdflags, "c", "8", "dashed")]
+    VersionType("dgemm_pref_cons", "3cons_sd", sdflags, "k", "s", "dotted"),
+    VersionType("dgemm_pref_incons", "3incons_sd", sdflags, "k", "x", "dotted")]
     # VersionType("dgemm_pref_cons_u", "3cons_u_sd", sdflags, "m", "s", "dashed"),
     # VersionType("dgemm_pref_incons", "3incons_u_sd", sdflags, "y", "x", "dashed")]
 
