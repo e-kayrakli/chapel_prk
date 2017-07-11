@@ -13,37 +13,37 @@ $(MAIN)_def: $(SRC)
 $(MAIN)_base: $(SRC)
 	echo Building $@
 	chpl $(CHPLFLAGS)\
-	  -sprefetch=false -sconsistent=true -sallowPrefetchUnpacking=false\
+	  -sprefetch=false -sconsistent=true -sallowPrefetchUnpacking=false \
 	$(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 
 $(MAIN)_handopt: $(SRC)
 	echo Building $@
 	chpl $(CHPLFLAGS)\
-	  -shandPrefetch=true -sprefetch=false -sconsistent=true -sallowPrefetchUnpacking=false\
+	  -shandPrefetch=true -sprefetch=false -sconsistent=true -sallowPrefetchUnpacking=false \
 	$(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 
 $(MAIN)_pref_cons: $(SRC)
 	echo Building $@
 	chpl $(CHPLFLAGS)\
-	  -sprefetch=true -sconsistent=true -sallowPrefetchUnpacking=false\
+	  -sprefetch=true -sconsistent=true -sallowPrefetchUnpacking=false \
 	  $(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 
 $(MAIN)_pref_cons_u: $(SRC)
 	echo Building $@
 	chpl $(CHPLFLAGS)\
-	  -sprefetch=true -sconsistent=true -sallowPrefetchUnpacking=true\
+	  -sprefetch=true -sconsistent=true -sallowPrefetchUnpacking=true \
 	  $(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 
 $(MAIN)_pref_incons: $(SRC)
 	echo Building $@
 	chpl $(CHPLFLAGS)\
-	  -sprefetch=true -sconsistent=false -sallowPrefetchUnpacking=false\
+	  -sprefetch=true -sconsistent=false -sallowPrefetchUnpacking=false \
 	  $(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 
 $(MAIN)_pref_incons_u: $(SRC)
 	echo Building $@
 	chpl $(CHPLFLAGS)\
-	  -sprefetch=true -sconsistent=false -sallowPrefetchUnpacking=true\
+	  -sprefetch=true -sconsistent=false -sallowPrefetchUnpacking=true \
 	  $(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 clean:
 	rm -rf $(BINDIR)/$(MAIN)* c_code/

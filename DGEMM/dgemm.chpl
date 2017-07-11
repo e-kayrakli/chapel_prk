@@ -20,6 +20,7 @@ config const order = 10,
              iterations = 100,
              blockSize = 0,
              debug = false,
+             commDiag = false,
              validate = true,
              correctness = false; // being run in start_test
 
@@ -29,6 +30,8 @@ config param handPrefetch = false,
              prefetch = false,
              consistent = true;
 
+if prefetch && handPrefetch then
+  halt("Wrong configuration");
 
 // TODO current logic assumes order is divisible by blockSize. add that
 // check
@@ -72,6 +75,8 @@ if prefetch {
 
 var t = new Timer();
 
+if commDiag then startCommDiagnostics();
+
 if blockSize == 0 {
   for niter in 0..iterations {
     if niter==1 then t.start();
@@ -98,22 +103,28 @@ else {
         const blockDom = {bVecRange, bVecRange};
         const localDom = matrixDom.localSubdomain();
 
+        var localADom: domain(2);
+        var localBDom: domain(2);
 
-        var localA = if handPrefetch then
-                        A[localDom.dim(1), matrixDom.dim(2)]
-                     else 0;
-        var localB = if handPrefetch then
-                        B[matrixDom.dim(1), localDom.dim(2)]
-                     else 0;
+        var localA: [localADom] real;
+        var localB: [localBDom] real;
+
+        if handPrefetch {
+          localADom = {localDom.dim(1),matrixDom.dim(2)};
+          localBDom = {matrixDom.dim(1),localDom.dim(2)};
+
+          localA = A[localADom];
+          localB = B[localBDom];
+        }
 
         inline proc accessA(i,j) ref {
-          if handPrefetch then return localA[i,j];
-                          else return A[i,j];
+          if handPrefetch then local { return localA[i,j]; }
+                          else { return A[i,j]; }
         }
 
         inline proc accessB(i,j) ref {
-          if handPrefetch then return localB[i,j];
-                          else return B[i,j];
+          if handPrefetch then local { return localB[i,j]; }
+                          else { return B[i,j]; }
         }
 
         coforall tid in 0..#nTasksPerLocale with (ref t) {
@@ -125,7 +136,7 @@ else {
           var BB = c_calloc(real, blockDom.size);
           var CC = c_calloc(real, blockDom.size);
 
-          if l.id==0 && tid==0 && (iterations==1 || niter==1) then t.start();
+          if l.id==0 && tid==0 && niter==1 then t.start();
 
           for (jj,kk) in tileIterDom {
             // two parts are identical
@@ -176,17 +187,19 @@ else {
               const jRange = 0..jMax-jj;
               const kRange = 0..kMax-kk;
 
+              /*writeln(here, " to proxy B ", jj..jMax,",", kk..kMax);*/
               for (jB, j) in zip(jj..jMax, bVecRange) do
                 for (kB, k) in zip(kk..kMax, bVecRange) do
-                  BB[j*blockSize+k] = B[kB,jB];
+                  BB[j*blockSize+k] = accessB[kB,jB];
 
               for ii in localDom.dim(1) by blockSize {
                 const iMax = min(ii+blockSize-1, localDom.dim(1).high);
                 const iRange = 0..iMax-ii;
 
+                  /*writeln(here, " to proxy A ", ii..iMax,",", kk..kMax);*/
                 for (iB, i) in zip(ii..iMax, bVecRange) do
                   for (kB, k) in zip(kk..kMax, bVecRange) do
-                    AA[i*blockSize+k] = A[iB, kB];
+                    AA[i*blockSize+k] = accessA[iB, kB];
 
                 local {
                   c_memset(CC, 0:int(32), blockDom.size*8);
@@ -215,6 +228,11 @@ else {
     }
   }
   t.stop();
+}
+
+if commDiag {
+  stopCommDiagnostics();
+  writeln(getCommDiagnostics());
 }
 
 if validate {
