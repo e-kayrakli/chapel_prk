@@ -112,7 +112,7 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
         d_ax.spines['right'].set_linewidth(1)
 
         # x axis settings
-        d_ax.set_xlabel("Number of Locales")
+        d_ax.set_xlabel("Locales")
         d_ax.set_xticks(locales_int)
         if square_locales:
             d_ax.set_xlim((0,38))
@@ -122,7 +122,7 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
         if do_imp_plot:
             d_ax.set_ylabel("Speedup Over Base")
         else:
-            d_ax.set_ylabel("Execution Time (s)")
+            d_ax.set_ylabel("Time (s)")
         if log_scale:
             d_ax.set_yscale('log')
         print("Plot saved: " + filename)
