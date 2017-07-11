@@ -1,19 +1,32 @@
-use Barrier;
+/*
+   Chapel's parallel DGEMM implementation
+
+   Contributed by Engin Kayraklioglu (GWU)
+*/
 use Time;
 use BlockDist;
 use RangeChunk;
-use commMethods;
+use PrefetchPatterns;
+
+param PRKVERSION = "2.17";
+
+config type dtype = real;
+
+config param useBlockDist = true;
+
 
 config const order = 10,
              epsilon = 1e-8,
              iterations = 100,
              blockSize = 0,
              debug = false,
-             validate = true;
+             validate = true,
+             correctness = false; // being run in start_test
 
 config const staticDomain = false;
 
-config param  prefetch = false,
+config param handPrefetch = false,
+             prefetch = false,
              consistent = true;
 
 
@@ -23,10 +36,13 @@ config param  prefetch = false,
 const vecRange = 0..#order;
 
 const matrixSpace = {vecRange, vecRange};
-const matrixDom = matrixSpace dmapped Block(matrixSpace);
-var A: [matrixDom] real,
-    B: [matrixDom] real,
-    C: [matrixDom] real;
+const matrixDom = matrixSpace dmapped if useBlockDist then
+                      new dmap(new Block(boundingBox=matrixSpace)) else
+                      defaultDist;
+
+var A: [matrixDom] dtype,
+    B: [matrixDom] dtype,
+    C: [matrixDom] dtype;
 
 forall (i,j) in matrixDom {
   A[i,j] = j;
@@ -35,15 +51,18 @@ forall (i,j) in matrixDom {
 }
 
 const nTasksPerLocale = here.maxTaskPar;
-writeln("Chapel Dense matrix-matrix multiplication");
-writeln("Max parallelism      =   ", nTasksPerLocale);
-writeln("Matrix order         =   ", order);
-writeln("Blocking factor      =   ", if blockSize>0 then blockSize+""
-    else "N/A");
-writeln("Number of iterations =   ", iterations);
-writeln();
 
-const refChecksum = (iterations) *
+if !correctness {
+  writeln("Chapel Dense matrix-matrix multiplication");
+  writeln("Max parallelism      =   ", nTasksPerLocale);
+  writeln("Matrix order         =   ", order);
+  writeln("Blocking factor      =   ", if blockSize>0 then blockSize+""
+      else "N/A");
+  writeln("Number of iterations =   ", iterations);
+  writeln();
+}
+
+const refChecksum = (iterations+1) *
     (0.25*order*order*order*(order-1.0)*(order-1.0));
 
 if prefetch {
@@ -54,22 +73,19 @@ if prefetch {
 var t = new Timer();
 
 if blockSize == 0 {
-  for niter in 0..#iterations {
-    if iterations==1 || niter==1 then t.start();
+  for niter in 0..iterations {
+    if niter==1 then t.start();
 
-    //TODO OpenMP version uses jik loops and parallelizes j loop, I
-    //haven't seen any benefit of my laptop in Chapel, but it requires
-    //further study. Engin
-    forall (j,k,i) in {vecRange, vecRange, vecRange} {
-      C[i,j] += A[i,k] * B[k,j];
-    }
+    forall (i,j) in matrixSpace do
+      for k in vecRange do
+        C[i,j] += A[i,k] * B[k,j];
+
   }
   t.stop();
 }
 else {
-
-  for niter in 0..#iterations {
-    if !consistent {
+  for niter in 0..iterations {
+    if prefetch && !consistent {
       A._value.updatePrefetch();
       B._value.updatePrefetch();
     }
@@ -81,6 +97,24 @@ else {
         const bVecRange = 0..#blockSize;
         const blockDom = {bVecRange, bVecRange};
         const localDom = matrixDom.localSubdomain();
+
+
+        var localA = if handPrefetch then
+                        A[localDom.dim(1), matrixDom.dim(2)]
+                     else 0;
+        var localB = if handPrefetch then
+                        B[matrixDom.dim(1), localDom.dim(2)]
+                     else 0;
+
+        inline proc accessA(i,j) ref {
+          if handPrefetch then return localA[i,j];
+                          else return A[i,j];
+        }
+
+        inline proc accessB(i,j) ref {
+          if handPrefetch then return localB[i,j];
+                          else return B[i,j];
+        }
 
         coforall tid in 0..#nTasksPerLocale with (ref t) {
           const myChunk = chunk(localDom.dim(2), nTasksPerLocale, tid);
@@ -104,7 +138,7 @@ else {
 
                 for (jB, j) in zip(jj..jMax, bVecRange) do
                   for (kB, k) in zip(kk..kMax, bVecRange) do
-                    BB[j*blockSize+k] = B[kB,jB];
+                    BB[j*blockSize+k] = accessB[kB,jB];
 
                 for ii in localDom.dim(1) by blockSize {
                   const iMax = min(ii+blockSize-1, localDom.dim(1).high);
@@ -112,7 +146,7 @@ else {
 
                   for (iB, i) in zip(ii..iMax, bVecRange) do
                     for (kB, k) in zip(kk..kMax, bVecRange) do
-                      AA[i*blockSize+k] = A[iB, kB];
+                      AA[i*blockSize+k] = accessA[iB, kB];
 
                   local {
                     c_memset(CC, 0:int(32), blockDom.size*8);
@@ -186,18 +220,19 @@ else {
 if validate {
   const checksum = + reduce C;
   if abs(checksum-refChecksum)/refChecksum > epsilon then
-    halt("VALIDATION FAILED!\n \
-        Reference checksum = ", refChecksum, " Checksum = ",
-        checksum);
+    halt("VALIDATION FAILED! Reference checksum = ", refChecksum,
+                           " Checksum = ", checksum);
+  else
+    writeln("Validation successful");
 }
-
-const nflops = 2.0*(order**3);
-const avgTime = t.elapsed()/iterations;
-writeln("Validation succesful.");
-writeln("Rate(MFlop/s) = ", 1e-6*nflops/avgTime, " Time : ", avgTime);
 
 inline proc c_memset(dest :c_ptr, val: int(32), n: integral) {
   extern proc memset(dest: c_void_ptr, val: c_int, n: size_t):
     c_void_ptr;
   return memset(dest, val, n.safeCast(size_t));
+}
+if !correctness {
+  const nflops = 2.0*(order**3);
+  const avgTime = t.elapsed()/iterations;
+  writeln("Rate(MFlop/s) = ", 1e-6*nflops/avgTime, " Time : ", avgTime);
 }

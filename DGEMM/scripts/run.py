@@ -13,6 +13,7 @@ sdflags = commonflags + " --staticDomain "
 
 versions = [
     VersionType("dgemm_base", "0", commonflags, "k", "o", "solid"),
+    VersionType("dgemm_handopt", "2", commonflags, "k", "x", "solid"),
     VersionType("dgemm_pref_cons", "3cons", commonflags, "k", "s", "dashed"),
     VersionType("dgemm_pref_incons", "3incons", commonflags, "k", "x", "dashed"),
     # VersionType("dgemm_pref_cons_u", "3cons_u", commonflags, "m", "s", "solid"),

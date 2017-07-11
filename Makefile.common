@@ -1,9 +1,9 @@
-CHPLFLAGS=--fast --cache-remote -M$(CHPL_HOME)/test/users/engin/collective_communications/
+CHPLFLAGS=--fast --cache-remote -suseBlockDist
 BINDIR=./bin
 
 MISCFLAGS=
 
-all: $(MAIN)_base $(MAIN)_pref_cons $(MAIN)_pref_cons_u $(MAIN)_pref_incons $(MAIN)_pref_incons_u
+all: $(MAIN)_base $(MAIN)_handopt $(MAIN)_pref_cons $(MAIN)_pref_cons_u $(MAIN)_pref_incons $(MAIN)_pref_incons_u
 
 $(MAIN)_def: $(SRC)
 	echo Building $@
@@ -14,6 +14,12 @@ $(MAIN)_base: $(SRC)
 	echo Building $@
 	chpl $(CHPLFLAGS)\
 	  -sprefetch=false -sconsistent=true -sallowPrefetchUnpacking=false\
+	$(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
+
+$(MAIN)_handopt: $(SRC)
+	echo Building $@
+	chpl $(CHPLFLAGS)\
+	  -shandPrefetch=true -sprefetch=false -sconsistent=true -sallowPrefetchUnpacking=false\
 	$(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 
 $(MAIN)_pref_cons: $(SRC)

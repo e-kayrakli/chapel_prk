@@ -1,0 +1,11 @@
+Parallel Research Kernels Version 2.17
+Sparse matrix-dense vector multiplication
+Max parallelism      = 16
+Row distribution     = true
+Matrix order         = 16384
+Stencil diameter     = 25
+Sparsity             = 0.00299072
+Number of iterations = 10
+Indexes are scrambled
+Validation successful
+Rate (MFlops/s): 26.5997 Average (s): 0.0603628
