@@ -140,7 +140,7 @@ else {
 
           for (jj,kk) in tileIterDom {
             // two parts are identical
-            if prefetch && !consistent {
+            if handPrefetch || (prefetch && !consistent) {
               local { //comment this if !prefetch
                 const jMax = min(jj+blockSize-1, myChunk.high);
                 const kMax = min(kk+blockSize-1, vecRange.high);
