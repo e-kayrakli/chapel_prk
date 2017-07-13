@@ -2,7 +2,7 @@
 //    test/studies/prk
 // Last sha was bd9303f6cd002f7070a450d94d3cbdc16b074b46
 use Time;
-use commMethods;
+use PrefetchPattern;
 
 param PRKVERSION = "2.17";
 
