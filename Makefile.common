@@ -63,7 +63,7 @@ runpyramid:
 fetchpyramid:
 	scp server2:~/datapack_$(MAIN)_pyramid_$(SIZE)_$(NUMTRIES).tar.gz ./out
 plotpyramid:
-	cd out && tar xzf datapack_$(MAIN)_pyramid_$(SIZE)_$(NUMTRIES).tar.gz . && cd ..
+	cd out && tar xzf datapack_$(MAIN)_pyramid_$(SIZE)_$(NUMTRIES).tar.gz  && cd ..
 	PYTHONPATH=../scripts:$PYTHONPATH python scripts/run.py $(PYFLAGS) --slurm PLOT PYRAMID $(SIZE) $(NUMTRIES)
 preppyramid:
 	cd out && tar czvf ~/datapack_$(MAIN)_pyramid_$(SIZE)_$(NUMTRIES).tar.gz ./*out && cd ..

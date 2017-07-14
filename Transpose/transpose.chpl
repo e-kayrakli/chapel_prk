@@ -2,11 +2,12 @@
 //    test/studies/prk
 // Last sha was bd9303f6cd002f7070a450d94d3cbdc16b074b46
 use Time;
-use PrefetchPattern;
+use PrefetchPatterns;
 
 param PRKVERSION = "2.17";
 
 config param useBlockDist = false;
+config param use1DDist = true;
 
 config const iterations = 100,
              order = 100,
@@ -42,7 +43,13 @@ var tiledLocalDom = if tiled then
   {0..5 by 1, 0..5 by 1}; //junk domain
 
 
-const blockDist = new dmap(new Block(localDom));
+const targetLocales1DDom = {Locales.domain.dim(1), 0..0};
+var targetLocales1D: [targetLocales1DDom] locale;
+targetLocales1D[..,0] = Locales;
+
+const blockDist = new dmap(new Block(localDom,
+                      targetLocales = if use1DDist then targetLocales1D
+                                                   else Locales));
 const Dist =  if useBlockDist then blockDist
                               else defaultDist;
 
