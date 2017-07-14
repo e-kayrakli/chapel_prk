@@ -12,14 +12,14 @@ if use_slurm:
 sdflags = commonflags + " --staticDomain "
 
 versions = [
-    VersionType("dgemm_base", "0", commonflags, "k", "o", "solid"),
-    VersionType("dgemm_handopt", "2", commonflags, "k", "x", "solid"),
-    VersionType("dgemm_pref_cons", "3cons", commonflags, "k", "s", "dashed"),
-    VersionType("dgemm_pref_incons", "3incons", commonflags, "k", "x", "dashed"),
+    VersionType("dgemm_base", "0", commonflags, "#ca0020", "o", "solid"),
+    VersionType("dgemm_handopt", "2", commonflags, "#f4a582", "x", "solid"),
+    VersionType("dgemm_pref_cons", "3cons", commonflags, "#92c5de", "s", "dashed"),
+    VersionType("dgemm_pref_incons", "3incons", commonflags, "#0571b0", "x", "dashed"),
     # VersionType("dgemm_pref_cons_u", "3cons_u", commonflags, "m", "s", "solid"),
     # VersionType("dgemm_pref_incons", "3incons_u", commonflags, "y", "x", "solid"),
-    VersionType("dgemm_pref_cons", "3cons_sd", sdflags, "k", "s", "dotted"),
-    VersionType("dgemm_pref_incons", "3incons_sd", sdflags, "k", "x", "dotted")]
+    VersionType("dgemm_pref_cons", "3cons_sd", sdflags, "#92c5de", "s", "dotted"),
+    VersionType("dgemm_pref_incons", "3incons_sd", sdflags, "#0571b0", "x", "dotted")]
     # VersionType("dgemm_pref_cons_u", "3cons_u_sd", sdflags, "m", "s", "dashed"),
     # VersionType("dgemm_pref_incons", "3incons_u_sd", sdflags, "y", "x", "dashed")]
 
