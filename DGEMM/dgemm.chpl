@@ -89,53 +89,53 @@ if blockSize == 0 {
   t.stop();
 }
 else {
-  for niter in 0..iterations {
-    if prefetch && !consistent {
-      A._value.updatePrefetch();
-      B._value.updatePrefetch();
-    }
-    // we need task-local arrays for blocked matrix multiplication. It
-    // seems that in intent for arrays is not working currently, so I am
-    // falling back to writing my own coforall. Engin
-    coforall l in Locales with (ref t) {
-      on l {
-        const bVecRange = 0..#blockSize;
-        const blockDom = {bVecRange, bVecRange};
-        const localDom = matrixDom.localSubdomain();
+  // we need task-local arrays for blocked matrix multiplication. It
+  // seems that in intent for arrays is not working currently, so I am
+  // falling back to writing my own coforall. Engin
+  coforall l in Locales with (ref t) {
+    on l {
+      const bVecRange = 0..#blockSize;
+      const blockDom = {bVecRange, bVecRange};
+      const localDom = matrixDom.localSubdomain();
 
-        var localADom: domain(2);
-        var localBDom: domain(2);
+      var localADom: domain(2);
+      var localBDom: domain(2);
 
-        var localA: [localADom] real;
-        var localB: [localBDom] real;
+      var localA: [localADom] real;
+      var localB: [localBDom] real;
 
-        if handPrefetch {
-          localADom = {localDom.dim(1),matrixDom.dim(2)};
-          localBDom = {matrixDom.dim(1),localDom.dim(2)};
+      if handPrefetch {
+        localADom = {localDom.dim(1),matrixDom.dim(2)};
+        localBDom = {matrixDom.dim(1),localDom.dim(2)};
 
-          localA = A[localADom];
-          localB = B[localBDom];
-        }
+        localA = A[localADom];
+        localB = B[localBDom];
+      }
 
-        inline proc accessA(i,j) ref {
-          if handPrefetch then local { return localA[i,j]; }
-                          else { return A[i,j]; }
-        }
+      inline proc accessA(i,j) ref {
+        if handPrefetch then local { return localA[i,j]; }
+        else { return A[i,j]; }
+      }
 
-        inline proc accessB(i,j) ref {
-          if handPrefetch then local { return localB[i,j]; }
-                          else { return B[i,j]; }
-        }
+      inline proc accessB(i,j) ref {
+        if handPrefetch then local { return localB[i,j]; }
+        else { return B[i,j]; }
+      }
 
-        coforall tid in 0..#nTasksPerLocale with (ref t) {
-          const myChunk = chunk(localDom.dim(2), nTasksPerLocale, tid);
-          const tileIterDom =
-          {myChunk by blockSize, vecRange by blockSize};
+      coforall tid in 0..#nTasksPerLocale with (ref t) {
+        const myChunk = chunk(localDom.dim(2), nTasksPerLocale, tid);
+        const tileIterDom =
+        {myChunk by blockSize, vecRange by blockSize};
 
-          var AA = c_calloc(real, blockDom.size);
-          var BB = c_calloc(real, blockDom.size);
-          var CC = c_calloc(real, blockDom.size);
+        var AA = c_calloc(real, blockDom.size);
+        var BB = c_calloc(real, blockDom.size);
+        var CC = c_calloc(real, blockDom.size);
 
+        for niter in 0..iterations {
+          if prefetch && !consistent {
+            A._value.updatePrefetchHere();
+            B._value.updatePrefetchHere();
+          }
           if l.id==0 && tid==0 && niter==1 then t.start();
 
           for (jj,kk) in tileIterDom {
@@ -239,7 +239,7 @@ if validate {
   const checksum = + reduce C;
   if abs(checksum-refChecksum)/refChecksum > epsilon then
     halt("VALIDATION FAILED! Reference checksum = ", refChecksum,
-                           " Checksum = ", checksum);
+        " Checksum = ", checksum);
   else
     writeln("Validation successful");
 }
