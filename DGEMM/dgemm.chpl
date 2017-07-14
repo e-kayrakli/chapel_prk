@@ -6,6 +6,7 @@
 use Time;
 use BlockDist;
 use RangeChunk;
+use Barrier;
 use PrefetchPatterns;
 
 param PRKVERSION = "2.17";
@@ -122,6 +123,7 @@ else {
         else { return B[i,j]; }
       }
 
+      var b = new Barrier(nTasksPerLocale);
       coforall tid in 0..#nTasksPerLocale with (ref t) {
         const myChunk = chunk(localDom.dim(2), nTasksPerLocale, tid);
         const tileIterDom =
@@ -133,12 +135,18 @@ else {
 
         for niter in 0..iterations {
           if handPrefetch {
-            localA = A[localADom];
-            localB = B[localBDom];
+            if tid == 0 {
+              localA = A[localADom];
+              localB = B[localBDom];
+            }
+            b.barrier();
           }
           else if prefetch && !consistent {
-            A._value.updatePrefetchHere();
-            B._value.updatePrefetchHere();
+            if tid == 0 {
+              A._value.updatePrefetchHere();
+              B._value.updatePrefetchHere();
+            }
+            b.barrier();
           }
           if l.id==0 && tid==0 && niter==1 then t.start();
 
