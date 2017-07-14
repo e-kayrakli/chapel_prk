@@ -132,7 +132,11 @@ else {
         var CC = c_calloc(real, blockDom.size);
 
         for niter in 0..iterations {
-          if prefetch && !consistent {
+          if handPrefetch {
+            localA = A[localADom];
+            localB = B[localBDom];
+          }
+          else if prefetch && !consistent {
             A._value.updatePrefetchHere();
             B._value.updatePrefetchHere();
           }
