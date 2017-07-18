@@ -56,7 +56,7 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
     import matplotlib.pyplot as plt
     import matplotlib.lines as ll
 
-    mpl.rcParams['lines.markersize'] = 14
+    mpl.rcParams['lines.markersize'] = 12
     mpl.rcParams['lines.linewidth'] = 3
     datasets = parse(versions)
 
@@ -88,7 +88,7 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
                 lines.append(d_ax.plot(locales_int, d[v.abbrev],
                         label=nice_labels[v.abbrev], color=v.color, marker=v.marker,
                         linestyle=v.linestyle, markerfacecolor='none',
-                        markeredgewidth=3)[0])
+                        markeredgewidth=2)[0])
             if max(d[v.abbrev]) > max_y:
                 max_y = max(d[v.abbrev])
             labels.append(nice_labels[v.abbrev])
