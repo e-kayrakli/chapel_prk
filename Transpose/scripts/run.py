@@ -13,7 +13,7 @@ sdflags = commonflags + " --staticDomain "
 
 versions = [
     VersionType("transpose_base", "0", commonflags, "#ca0020", "o", "solid"),
-    # VersionType("transpose_handopt", "2", commonflags, "#f4a582", "x", "solid"),
+    VersionType("transpose_handopt", "2", commonflags, "#f4a582", "x", "solid"),
     VersionType("transpose_pref_cons", "3cons", commonflags, "#92c5de", "s", "dashed"),
     VersionType("transpose_pref_incons", "3incons", commonflags, "#0571b0", "x", "dashed"),
     # VersionType("transpose_pref_cons_u", "3cons_u", commonflags, "m", "s", "solid"),
