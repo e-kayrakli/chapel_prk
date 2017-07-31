@@ -17,6 +17,7 @@ config const iterations = 100,
 config param prefetch = false;
 config param consistent = true;
 config const staticDomain = false;
+config param handPrefetch = false; // to conform to the Makefile
 
 //
 // Process and test input configs
@@ -30,8 +31,14 @@ if order < 0 then
 if tileSize > order then
   halt("ERROR: Tile size cannot be larger than order");
 
-if order % (sqrt(numLocales):int * tileSize) then
-  halt("ERROR: Size is indivisible");
+if !use1DDist {
+  if order % (here.maxTaskPar * sqrt(numLocales):int * tileSize) != 0 then
+     halt("ERROR: Size is indivisible");
+}
+else {
+  if order % (numLocales * tileSize) != 0 then
+     halt("ERROR: Size is indivisible");
+}
 
 // Determine tiling
 const tiled = tileSize > 0;
