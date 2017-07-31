@@ -96,7 +96,26 @@ for iteration in 0..iterations {
   if !consistent then A._value.updatePrefetch();
 
   if tiled {
-    if !consistent {
+    if handPrefetch {
+      coforall l in Locales do on l {
+        const localTiledDom = tiledDom.localSubdomain();
+        const localAccessDomB = B.localSubdomain();
+        const localAccessDomT = {localAccessDomB.dim(2),
+                                localAccessDomB.dim(1)};
+        var localA: [localAccessDomT] real;
+        localA = A[localAccessDomT];
+        local {
+          forall (i,j) in localTiledDom {
+            for it in i..#min(order-i, tileSize) {
+              for jt in j..#min(order-j, tileSize) {
+                B[it,jt] += localA[jt,it];
+              }
+            }
+          }
+        }
+      }
+    }
+    else if !consistent {
       forall (i,j) in tiledDom {
         local { // if !consistent
           for it in i..#min(order-i, tileSize) {
