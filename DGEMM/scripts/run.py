@@ -25,7 +25,7 @@ versions = [
 
 # create weak scaling data size lookup table
 for l in locales:
-    ws_sizes[l] = str(int(math.sqrt(int(s)**2*int(l)/float(max(locales_int)))))
+    ws_sizes[l] = str(int((int(s)**3*int(l)/float(max(locales_int)))**(1./3.)))
 
 
 if args.mode == 'PLOT':
