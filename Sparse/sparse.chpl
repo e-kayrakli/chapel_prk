@@ -1,10 +1,11 @@
 use BlockDist;
 use Time;
 use LayoutCSR;
-use commMethods;
+use PrefetchPatterns;
 
 param PRKVERSION = "2.17";
 
+config param useBlockDist = true; //just to keep the build system happy
 config param rowDistributeMatrix = true;
 
 // for bulkAdd improvement purposes - can be removed
@@ -15,6 +16,7 @@ config const order = 5, //formerly known as lsize
              scramble = true;
 
 // const for now TODO make param after correctness tests
+config param handPrefetch = false;
 config const prefetch = false,
              consistent = true;
 config const staticDomain = false;

@@ -59,6 +59,7 @@ def run_test(versions):
                 # strong scaling
                 runcommand(get_cmd(v,s,l,t))
                 # weak scaling
-                runcommand(get_cmd(v,get_ws_size(s,l),l,t))
+                if not no_ws:
+                    runcommand(get_cmd(v,get_ws_size(s,l),l,t))
     runcommand("make cleanslurm")
 
