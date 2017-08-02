@@ -157,14 +157,33 @@ for niter in 0..iterations {
 
   if niter == 1 then t.start();
   [i in vectorDom] vector[i] += i+1;
-  if !consistent then vector._value.updatePrefetch();
 
-  // no privatization in sparse domains -> no local statement :(
-  forall i in vectorDom {
-    // the following call to dimiter should'nt be too horrible if
-    // rowDistributeMatrix==true
-    for j in matrixDom.dimIter(2, i) {
-      result[i] += matrix[i,j] * vector[j];
+  if !handPrefetch {
+    if !consistent then vector._value.updatePrefetch();
+    // no privatization in sparse domains -> no local statement :(
+    forall i in vectorDom {
+      // the following call to dimiter should'nt be too horrible if
+      // rowDistributeMatrix==true
+      for j in matrixDom.dimIter(2, i) {
+        result[i] += matrix[i,j] * vector[j];
+      }
+    }
+  }
+  else {
+    coforall l in Locales do on l {
+      const localSubDom = vectorDom.localSubdomain();
+
+      var localVector: [vectorSpace] real;
+      localVector = vector;
+      forall i in localSubDom {
+        for j in matrixDom.dimIter(2, i) {
+          var tmp: real;
+          local {
+            tmp = localVector[j];
+          }
+          result[i] += matrix[i,j] * tmp;
+        }
+      }
     }
   }
 }

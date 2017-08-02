@@ -12,13 +12,14 @@ if use_slurm:
 sdflags = commonflags + " --staticDomain "
 
 versions = [
-    VersionType("sparse_base", "0", commonflags, "b", "o", "solid"),
-    VersionType("sparse_pref_cons", "3cons", commonflags, "r", "^", "solid"),
-    VersionType("sparse_pref_incons", "3incons", commonflags, "c", "8", "solid"),
+    VersionType("sparse_base", "0", commonflags, "#ca0020", "o", "solid"),
+    VersionType("sparse_handopt", "2", commonflags, "#f4a582", "x", "solid"),
+    VersionType("sparse_pref_cons", "3cons", commonflags, "#92c5de", "s", "dashed"),
+    VersionType("sparse_pref_incons", "3incons", commonflags, "#0571b0", "x", "dashed"),
     # VersionType("sparse_pref_cons_u", "3cons_u", commonflags, "m", "s", "solid"),
     # VersionType("sparse_pref_incons", "3incons_u", commonflags, "y", "x", "solid"),
-    VersionType("sparse_pref_cons", "3cons_sd", sdflags, "r", "^", "dashed"),
-    VersionType("sparse_pref_incons", "3incons_sd", sdflags, "c", "8", "dashed")]
+    VersionType("sparse_pref_cons", "3cons_sd", sdflags, "#92c5de", "s", "dotted"),
+    VersionType("sparse_pref_incons", "3incons_sd", sdflags, "#0571b0", "x", "dotted")]
     # VersionType("sparse_pref_cons_u", "3cons_u_sd", sdflags, "m", "s", "dashed"),
     # VersionType("sparse_pref_incons", "3incons_u_sd", sdflags, "y", "x", "dashed")]
 
