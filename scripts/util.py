@@ -43,6 +43,7 @@ def get_slurm_cmd(v,s,l,t):
           "\' > ./scripts/__batch."+get_name(v,l,s,t))
     return ("sbatch"+
                     " -N" + l +
+                    " --time=60" + # 1-hour time limit
                     " --output=./out/" + name + ".out" +
                     " --error=./err/" + name + ".err" +
                     " --partition=" + slurm_part +
