@@ -8,6 +8,7 @@ use BlockDist;
 use RangeChunk;
 use Barrier;
 use PrefetchPatterns;
+use Memory;
 
 param PRKVERSION = "2.17";
 
@@ -266,3 +267,4 @@ if !correctness {
   const avgTime = t.elapsed()/iterations;
   writeln("Rate(MFlop/s) = ", 1e-6*nflops/avgTime, " Time : ", avgTime);
 }
+printMemAllocStats();
