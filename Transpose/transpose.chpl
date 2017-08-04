@@ -32,12 +32,16 @@ if tileSize > order then
   halt("ERROR: Tile size cannot be larger than order");
 
 if !use1DDist {
-  if order % (here.maxTaskPar * sqrt(numLocales):int * tileSize) != 0 then
+  if tileSize > 0 {
+    if order % (here.maxTaskPar * sqrt(numLocales):int * tileSize) != 0 then
      halt("ERROR: Size is indivisible");
+  }
 }
 else {
-  if order % (numLocales * tileSize) != 0 then
-     halt("ERROR: Size is indivisible");
+  if tileSize > 0 { 
+    if order % (numLocales * tileSize) != 0 then
+       halt("ERROR: Size is indivisible");
+  }
 }
 
 // Determine tiling
