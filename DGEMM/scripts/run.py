@@ -9,6 +9,10 @@ commonflags = "--iterations=2 --blockSize=4"
 if use_slurm:
     commonflags = "--iterations=10 --blockSize=32"
 
+mem_track = True
+if mem_track:
+    commonflags = commonflags + " --memTrack"
+
 sdflags = commonflags + " --staticDomain "
 
 versions = [
