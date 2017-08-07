@@ -7,7 +7,7 @@ use PrefetchPatterns;
 param PRKVERSION = "2.17";
 
 config param useBlockDist = false;
-config param use1DDist = true;
+config param use1DDist = false;
 
 config const iterations = 100,
              order = 100,
@@ -33,7 +33,7 @@ if tileSize > order then
 
 if !use1DDist {
   if tileSize > 0 {
-    if order % (here.maxTaskPar * sqrt(numLocales):int * tileSize) != 0 then
+    if order % (sqrt(numLocales):int * tileSize) != 0 then
      halt("ERROR: Size is indivisible");
   }
 }
