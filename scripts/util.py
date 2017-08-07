@@ -55,12 +55,17 @@ def get_ws_size(base_size, num_locales):
 
 def run_test(versions):
     for v in versions:
-        for l in locales:
-            for t in tries:
-                # strong scaling
-                runcommand(get_cmd(v,s,l,t))
-                # weak scaling
-                if not no_ws:
-                    runcommand(get_cmd(v,get_ws_size(s,l),l,t))
+        if mem_track:
+            run_tries(v, locales[-1])
+        else:
+            for l in locales:
+                run_tries(v,l);
     runcommand("make cleanslurm")
 
+def run_tries(v,l):
+    for t in tries:
+        # strong scaling
+        runcommand(get_cmd(v,s,l,t))
+        # weak scaling
+        if not no_ws:
+            runcommand(get_cmd(v,get_ws_size(s,l),l,t))

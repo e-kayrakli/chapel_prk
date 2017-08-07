@@ -268,4 +268,4 @@ if !correctness {
   const avgTime = t.elapsed()/iterations;
   writeln("Rate(MFlop/s) = ", 1e-6*nflops/avgTime, " Time : ", avgTime);
 }
-printMemAllocStats();
+if memTrack then printMemAllocStats();

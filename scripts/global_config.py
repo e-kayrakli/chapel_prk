@@ -8,6 +8,7 @@ parser.add_argument("--sqloc", action="store_true")
 parser.add_argument("--logscale", action="store_true")
 parser.add_argument("--legend", action="store_true")
 parser.add_argument("--no_ws", action="store_true")
+parser.add_argument("--mem_track", action="store_true")
 parser.add_argument("mode", choices=['RUN', 'PLOT'])
 parser.add_argument("host", choices=['LOCAL', 'PYRAMID', 'GEORGE'])
 parser.add_argument("size")
@@ -23,6 +24,7 @@ square_locales = args.sqloc
 log_scale = args.logscale
 do_legend = args.legend
 no_ws = args.no_ws
+mem_track = args.mem_track
 
 slurm_part = "all" # no effect if !use_slurm. george:hpcl, pyramid:all
 if args.host == 'GEORGE':
