@@ -176,14 +176,18 @@ else {
                   local {
                     c_memset(CC, 0:int(32), blockDom.size*8);
 
-                    // we could create domains here, but domain literals
-                    // trigger fences. So iterate over ranges
-                    // explicitly.
-                    for k in kRange {
-                      for j in jRange {
-                        for i in iRange {
-                          CC[i*blockSize+j] += AA[i*blockSize+k] *
-                            BB[j*blockSize+k];
+
+                    // don't do the computation if just memTracking
+                    if !memTrack {
+                      // we could create domains here, but domain
+                      // literals trigger fences. So iterate over ranges
+                      // explicitly.
+                      for k in kRange {
+                        for j in jRange {
+                          for i in iRange {
+                            CC[i*blockSize+j] += AA[i*blockSize+k] *
+                              BB[j*blockSize+k];
+                          }
                         }
                       }
                     }
@@ -218,14 +222,17 @@ else {
                 local {
                   c_memset(CC, 0:int(32), blockDom.size*8);
 
-                  // we could create domains here, but domain literals
-                  // trigger fences. So iterate over ranges
-                  // explicitly.
-                  for k in kRange {
-                    for j in jRange {
-                      for i in iRange {
-                        CC[i*blockSize+j] += AA[i*blockSize+k] *
-                          BB[j*blockSize+k];
+                  // don't do the computation if just memTracking
+                  if !memTrack {
+                    // we could create domains here, but domain literals
+                    // trigger fences. So iterate over ranges
+                    // explicitly.
+                    for k in kRange {
+                      for j in jRange {
+                        for i in iRange {
+                          CC[i*blockSize+j] += AA[i*blockSize+k] *
+                            BB[j*blockSize+k];
+                        }
                       }
                     }
                   }
@@ -249,7 +256,7 @@ if commDiag {
   writeln(getCommDiagnostics());
 }
 
-if validate {
+if !memTrack && validate {
   const checksum = + reduce C;
   if abs(checksum-refChecksum)/refChecksum > epsilon then
     halt("VALIDATION FAILED! Reference checksum = ", refChecksum,
