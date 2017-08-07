@@ -147,7 +147,8 @@ else {
               A._value.updatePrefetchHere();
               B._value.updatePrefetchHere();
             }
-            b.barrier();
+            // the barrier is implied here
+            /*b.barrier();*/
           }
           if l.id==0 && tid==0 && niter==1 then t.start();
 
