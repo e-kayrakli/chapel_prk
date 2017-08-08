@@ -23,8 +23,8 @@ use_slurm = args.slurm
 square_locales = args.sqloc
 log_scale = args.logscale
 do_legend = args.legend
-no_ws = args.no_ws
 mem_track = args.mem_track
+no_ws = args.no_ws or mem_track
 
 slurm_part = "all" # no effect if !use_slurm. george:hpcl, pyramid:all
 if args.host == 'GEORGE':
