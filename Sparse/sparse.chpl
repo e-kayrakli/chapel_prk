@@ -48,7 +48,7 @@ var matrixDenseDom = parentDom dmapped Block(parentDom,
 var matrixDom: sparse subdomain(matrixDenseDom);
 
 //initialize sparse domain
-if !distSpsDomInit || numLocales==1 || !rowDistributeMatrix { // naive ind addition
+if memTrack || !distSpsDomInit || numLocales==1 || !rowDistributeMatrix { // naive ind addition
 
   // temporary index buffer for fast initialization
   const indBufDom = {0..#(size2*stencilSize)};
