@@ -3,6 +3,7 @@
 // Last sha was bd9303f6cd002f7070a450d94d3cbdc16b074b46
 use Time;
 use PrefetchPatterns;
+use Memory;
 
 param PRKVERSION = "2.17";
 
@@ -144,7 +145,6 @@ for iteration in 0..iterations {
         a += 1.0;
       }
     }
-
   }
   else {
     writeln("Ineffective prefetch");
@@ -166,16 +166,20 @@ const transposeTime = timer.elapsed(),
     avgTime = transposeTime / iterations;
 
 // Verify correctness
-const epsilon = 1.e-8;
-const addit = ((iterations+1) * iterations)/2.0;
-const absErr = + reduce [(i,j) in Dom]
+if !memTrack {
+  const epsilon = 1.e-8;
+  const addit = ((iterations+1) * iterations)/2.0;
+  const absErr = + reduce [(i,j) in Dom]
     abs(B[i,j]-((order*i+j)*(iterations+1)+addit));
 
-if absErr > epsilon then
-  halt("ERROR: Aggregate squared error", absErr,
-          " exceeds threshold ", epsilon);
+  if absErr > epsilon then
+    halt("ERROR: Aggregate squared error", absErr,
+        " exceeds threshold ", epsilon);
+  writeln("Solution validates");
+}
 
 // Report performance
-writeln("Solution validates");
 writeln("Rate (MB/s): ", 1.0E-06 * bytes / avgTime,
     " Average (s): ", avgTime);
+
+if memTrack then printMemAllocStats();
