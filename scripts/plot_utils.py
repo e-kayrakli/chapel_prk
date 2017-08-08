@@ -34,12 +34,13 @@ def parse(versions):
                             shell=True)
                 ss_try_list.append(float(output))
                 # weak scaling
-                grep_cmd = get_time_extract_cmd(v, get_ws_size(s,l),l,t)
-                print(grep_cmd)
-                output = subprocess.check_output(
-                            grep_cmd,
-                            shell=True)
-                ws_try_list.append(float(output))
+                if not no_ws:
+                    grep_cmd = get_time_extract_cmd(v, get_ws_size(s,l),l,t)
+                    print(grep_cmd)
+                    output = subprocess.check_output(
+                                grep_cmd,
+                                shell=True)
+                    ws_try_list.append(float(output))
             ss_means[v.abbrev].append(np.mean(ss_try_list))
             ss_stddevs[v.abbrev].append(np.std(ss_try_list))
             ws_means[v.abbrev].append(np.mean(ws_try_list))
@@ -61,7 +62,11 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
     datasets = parse(versions)
 
     rect = 0.1,0.1,0.8,0.8
-    for d,suffix in zip(datasets, ["_ss", "_ws"]):
+    suffixes = ["_ss", "_ws"]
+    if no_ws:
+        datasets = [datasets[0]]
+        suffixes = [suffixes[0]]
+    for d,suffix in zip(datasets, suffixes):
     # d = datasets[0]
     # suffix = "_ss"
         filename = (plot_path + plot_name_prefix + "/" +
