@@ -9,6 +9,9 @@ commonflags = " --iterations=2 --radius=2"
 if use_slurm:
     commonflags = " --iterations=10 --radius=12"
 
+if mem_track:
+    commonflags = commonflags + " --memTrack"
+
 sdflags = commonflags + " --staticDomain "
 
 versions = [

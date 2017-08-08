@@ -2,6 +2,7 @@ use BlockDist;
 use Time;
 use LayoutCSR;
 use PrefetchPatterns;
+use Memory;
 
 param PRKVERSION = "2.17";
 
@@ -190,15 +191,18 @@ for niter in 0..iterations {
 t.stop();
 
 // verify the result
-const epsilon = 1e-8;
-const referenceSum = 0.5 * matrixDom.numIndices * (iterations+1) *
+if !memTrack {
+  const epsilon = 1e-8;
+  const referenceSum = 0.5 * matrixDom.numIndices * (iterations+1) *
     (iterations+2);
-const vectorSum = + reduce result;
-if abs(vectorSum-referenceSum) > epsilon then
-  halt("Validation failed. Reference sum = ", referenceSum,
-      " Vector sum = ", vectorSum);
+  const vectorSum = + reduce result;
+  if abs(vectorSum-referenceSum) > epsilon then
+    halt("Validation failed. Reference sum = ", referenceSum,
+        " Vector sum = ", vectorSum);
 
-writeln("Validation successful");
+  writeln("Validation successful");
+}
+
 const nflop = 2.0*matrixDom.numIndices;
 const avgTime = t.elapsed()/iterations;
 writeln("Rate (MFlops/s): ", 1e-6*nflop/avgTime, " Average (s): ",
@@ -234,3 +238,4 @@ iter SparseBlockDom.dimIter(param dim, idx) {
     }
   }
 }
+if memTrack then printMemAllocStats();
