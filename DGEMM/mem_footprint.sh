@@ -8,7 +8,7 @@ average () {
 
 for v in "${versions[@]}"
 do
-  average out/*.$v.04.32.*out >> tmp_memplot_dump
+  average out/*.$v.*out >> tmp_memplot_dump
 done
 
 cat tmp_memplot_dump

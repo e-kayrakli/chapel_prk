@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 num_versions = 6
-vrange = np.arange(0,4)
+vrange = np.arange(0,6)
 
 rects = []
 ind = 0
