@@ -6,7 +6,7 @@
 use Time;
 use BlockDist;
 use RangeChunk;
-use Barrier;
+use BarrierModule;
 use PrefetchPatterns;
 use Memory;
 
@@ -143,12 +143,8 @@ else {
             b.barrier();
           }
           else if prefetch && !consistent {
-            if tid == 0 {
-              A._value.updatePrefetchHere();
-              B._value.updatePrefetchHere();
-            }
-            // the barrier is implied here
-            /*b.barrier();*/
+            A._value.spmdUpdatePrefetch(tid);
+            B._value.spmdUpdatePrefetch(tid);
           }
           if l.id==0 && tid==0 && niter==1 then t.start();
 
