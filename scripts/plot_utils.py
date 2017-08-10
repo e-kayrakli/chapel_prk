@@ -16,6 +16,26 @@ nice_labels = { '0'     : 'Base',
                 '3incons_u_sd'     : 'MC-Deserial-SD',
                 '3incons_sd'     : 'MC-Serial-SD'}
 
+def mean_wrap(some_list):
+    tmp_l = []
+    for i in some_list:
+        if i != None:
+            tmp_l.append(i)
+    if len(tmp_l) > 0:
+        return np.mean(tmp_l)
+    else:
+        return None
+
+def max_wrap(some_list):
+    tmp_l = []
+    for i in some_list:
+        if i != None:
+            tmp_l.append(i)
+    if len(tmp_l) > 0:
+        return max(tmp_l)
+    else:
+        return None
+
 def parse(versions):
     ss_means = defaultdict(list)
     ss_stddevs = defaultdict(list)
@@ -32,7 +52,10 @@ def parse(versions):
                 output = subprocess.check_output(
                             grep_cmd,
                             shell=True)
-                ss_try_list.append(float(output))
+                if output == b'':
+                    ss_try_list.append(None)
+                else:
+                    ss_try_list.append(float(output))
                 # weak scaling
                 if not no_ws:
                     grep_cmd = get_time_extract_cmd(v, get_ws_size(s,l),l,t)
@@ -40,11 +63,14 @@ def parse(versions):
                     output = subprocess.check_output(
                                 grep_cmd,
                                 shell=True)
-                    ws_try_list.append(float(output))
-            ss_means[v.abbrev].append(np.mean(ss_try_list))
-            ss_stddevs[v.abbrev].append(np.std(ss_try_list))
-            ws_means[v.abbrev].append(np.mean(ws_try_list))
-            ws_stddevs[v.abbrev].append(np.std(ws_try_list))
+                    if output == b'':
+                        ws_try_list.append(None)
+                    else:
+                        ws_try_list.append(float(output))
+            ss_means[v.abbrev].append(mean_wrap(ss_try_list))
+            # ss_stddevs[v.abbrev].append(np.std(ss_try_list))
+            ws_means[v.abbrev].append(mean_wrap(ws_try_list))
+            # ws_stddevs[v.abbrev].append(np.std(ws_try_list))
     # return(ss_means, ss_stddevs, ws_means, ws_stddevs)
     return(ss_means, ws_means)
 
@@ -85,8 +111,14 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
         fake_line_added = False
         for v in versions:
             if do_imp_plot:
+                imp_data = []
+                for (self,base) in zip(d[v.abbrev], d["0"]):
+                    if self != None and base != None:
+                        imp_data.append(base/self)
+                    else:
+                        imp_data.append(None)
                 lines.append(d_ax.plot(locales_int,
-                    [base/self for (self,base) in zip(d[v.abbrev], d["0"])],
+                    imp_data,
                     label=nice_labels[v.abbrev], color=v.color, marker=v.marker,
                     linestyle=v.linestyle)[0])
             else:
@@ -94,8 +126,11 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
                         label=nice_labels[v.abbrev], color=v.color, marker=v.marker,
                         linestyle=v.linestyle, markerfacecolor='none',
                         markeredgewidth=2)[0])
-            if max(d[v.abbrev]) > max_y:
-                max_y = max(d[v.abbrev])
+
+            if max_wrap(d[v.abbrev]) != None:
+                if max_wrap(d[v.abbrev]) > max_y:
+                    max_y = max_wrap(d[v.abbrev])
+
             labels.append(nice_labels[v.abbrev])
             if not fake_line_added:
                 lines.append(l)
