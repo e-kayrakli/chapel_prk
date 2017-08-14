@@ -5,7 +5,7 @@ use LayoutCSR;
 param PRKVERSION = "2.17";
 
 config param directAccess = false;
-config param rowDistributeMatrix = false;
+config param rowDistributeMatrix = true;
 
 // for bulkAdd improvement purposes - can be removed
 config const timeBulkAdd = false;
