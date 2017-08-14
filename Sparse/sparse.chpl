@@ -57,7 +57,7 @@ for row in 0..#size2 {
     bufIdx += 4;
   }
 }
-const initTimer = new Timer();
+var initTimer = new Timer();
 if timeBulkAdd {
   initTimer.start();
 }
@@ -93,39 +93,26 @@ writeln("Direct access ", if directAccess then "enabled" else
     "disabled");
 writeln("Indexes are ", if !scramble then "not " else "", "scrambled");
 
-const t = new Timer();
+var t = new Timer();
 for niter in 0..iterations {
 
   if niter == 1 then t.start();
   [i in vectorDom] vector[i] += i+1;
 
-  // In OpenMP version, the way CSR domain is accessed depends heavily
-  // on the fact that there will be 5 indices per row. This allows them
-  // to avoid doing index searching in the CSR arrays.
-  //
-  // When directAccess==true, what we do is to use the "guts" of the CSR
-  // domain to have that kind of access to the spare array and the dense
-  // vector.
-  if !directAccess {
+  const ref sparseArr = matrix._instance;
 
-    //FIXME for this loop to work without race condition, we must ensure
-    //that no row is divided between two separate tasks. So far, power
-    //of two size logic and fixed nnz per row  guarantees that this
-    //would work.
-    forall (i,j) in matrix.domain do
-      result[i] += matrix[i,j] * vector[j];
-  }
-  else {
-    if numLocales != 1 then
-      halt("Not ready for direct access on multilocale runs yet");
-    const ref sparseDom = matrixDom._instance;
-    const ref sparseArr = matrix._instance;
+  coforall l in Locales do on l {
+    const localParentSubDom = matrixDenseDom.localSubdomain();
+    const ref locSparseArrInst = sparseArr.myLocArr.myElems._instance;
+    const ref locSparseDomInst = sparseArr.myLocArr.locDom.mySparseBlock._instance;
 
-    forall i in parentDom.dim(1) {
-      const first = i*stencilSize+1; //internal arrays are 1-based
+    const localOffset = localParentSubDom.dim(1).low;
+    forall i in localParentSubDom.dim(1) {
+      const first = (i-localOffset)*stencilSize+1; //internal arrays are 1-based
       const last = first+stencilSize-1;
       for j in first..last do
-        result[i] += sparseArr.data[j] * vector[sparseDom.colIdx[j]];
+        result[i] += locSparseArrInst.data[j] *
+          vector[locSparseDomInst.colIdx[j]];
     }
   }
 }
