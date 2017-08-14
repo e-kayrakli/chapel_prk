@@ -73,4 +73,5 @@ ax.set_xticks([i+(width*len(versions))/2-width/2+pad/2 for i in ind])
 ax.set_xticklabels(tuple(benchmarks))
 
 
-plt.show()
+plt.savefig('/home/ngnk/papers/prefetch_v3/plots_new/mem_footprint')
+# plt.show()
