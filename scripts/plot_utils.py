@@ -7,14 +7,14 @@ from util import *
 
 nice_labels = { '0'     : 'Base',
                 '2'     : 'HandOpt',
-                '3cons'     : 'AC-Serial',
+                '3cons'     : 'AC',
                 '3cons_u'     : 'AC-Deserial',
                 '3cons_u_sd'     : 'AC-Deserial-SD',
-                '3cons_sd'     : 'AC-Serial-SD',
-                '3incons'     : 'MC-Serial',
+                '3cons_sd'     : 'AC-SD',
+                '3incons'     : 'MC',
                 '3incons_u'     : 'MC-Deserial',
                 '3incons_u_sd'     : 'MC-Deserial-SD',
-                '3incons_sd'     : 'MC-Serial-SD'}
+                '3incons_sd'     : 'MC-SD'}
 
 def mean_wrap(some_list):
     tmp_l = []
@@ -104,7 +104,7 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
         d_ax = d_fig.add_axes(rect)
         max_y = 0
          # fake white line for legend adjustment
-        l = ll.Line2D([0],[0],color="w")
+        # l = ll.Line2D([0],[0],color="w")
 
         lines = []
         labels = []
@@ -133,14 +133,14 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
 
             labels.append(nice_labels[v.abbrev])
             if not fake_line_added:
-                lines.append(l)
-                labels.append("")
+                # lines.append(l)
+                # labels.append("")
                 fake_line_added = True
 
         #legend
         if do_legend:
             d_ax.legend(tuple(lines), labels, loc='best', fontsize=22,
-                    fancybox=False, ncol=3, bbox_to_anchor=(0.5,1.05))
+                    fancybox=False, ncol=1, bbox_to_anchor=(0.5,1.05))
         #grid
         d_ax.grid(b=True, axis='x')
         d_ax.grid(b=True, axis='y', linestyle='dashed')
