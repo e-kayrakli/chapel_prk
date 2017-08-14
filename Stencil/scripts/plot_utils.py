@@ -25,7 +25,7 @@ def parse(versions):
     return ss_means
 
 def num_rem_access(n,r):
-    i_range = range(min(r-1, n/2-r-1)+1)
+    i_range = range(int(min(r-1, n/2-r-1))+1)
     # i_range = range(r+1)
     # ysum = sum([min(i,(n-2*r)/2-1) for i in i_range])
     ysum = sum([r-i for i in i_range])
@@ -39,9 +39,12 @@ def num_total_access(n,r):
     return float(num)
 
 def create_plots(versions, plot_name_prefix):
+    import matplotlib as mpl
     import matplotlib.pyplot as plt
     datasets = parse(versions)
 
+    mpl.rcParams['lines.markersize'] = 12
+    mpl.rcParams['lines.linewidth'] = 3
     rect = 0.1,0.1,0.8,0.8
 
     for r in radii:
@@ -76,21 +79,24 @@ def create_plots(versions, plot_name_prefix):
 
     filename = (plot_path + "/" +
             plot_name_prefix)
-    d_fig = plt.figure(figsize=(10,10))
+    d_fig = plt.figure(figsize=(10,6))
     d_ax = d_fig.add_axes(rect)
     d_ax_right = d_ax.twinx()
 
     max_y = max(max(improv), max(improv_incons))
 
-    d_ax.plot([int(r) for r in radii], improv, label='Auto-consistent')
-    d_ax.plot([int(r) for r in radii], improv_incons,
-            label='Manually-consistent')
+    d_ax.plot([int(r) for r in radii], improv, label='AC',
+            color="#92c5de", marker="s",
+            markerfacecolor='none', markeredgewidth=2)
+    d_ax.plot([int(r) for r in radii], improv_incons, label='MC',
+            color="#0571b0", marker="x",
+            markerfacecolor='none', markeredgewidth=2)
     d_ax_right.plot([int(r) for r in radii], ratios, label='Ratio',
             color='black', linestyle='dashed')
 
     #legend
-    d_ax.legend(loc=2, fontsize=26)
-    d_ax_right.legend(loc=4, fontsize=26)
+    d_ax.legend(loc=2, fontsize=22)
+    d_ax_right.legend(loc=4, fontsize=22)
     #grid
     d_ax.grid(b=True, axis='x')
     # x axis settings
