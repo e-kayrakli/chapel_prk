@@ -1,10 +1,14 @@
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import os
 
 from collections import namedtuple
 from collections import defaultdict
 
+# mpl.rcParams['hatch.linewidth'] = 3.0
+
+os.system("rm -f tmp_memplot_dump")
 benchmarks = [ "DGEMM" , "Transpose", "Sparse", "DGEMM", "Transpose" ]
 for b in benchmarks:
     os.system("./mem_footprint_glob.sh " + b)
@@ -26,9 +30,9 @@ versions = [
     VersionType("Base", "#ca0020", ""),
     VersionType("HandOpt", "#f4a582", ""),
     VersionType("AC", "#92c5de", ""),
-    VersionType("AC-SD", "#92c5de", "......"),
+    VersionType("AC-SD", "#92c5de", "xxxxx+++++"),
     VersionType("MC", "#0571b0", ""),
-    VersionType("MC-SD", "#0571b0", "......")]
+    VersionType("MC-SD", "#0571b0", "xxxxx+++++")]
 
 with open("tmp_memplot_dump") as f:
   for b in benchmarks:
@@ -73,5 +77,6 @@ ax.set_xticks([i+(width*len(versions))/2-width/2+pad/2 for i in ind])
 ax.set_xticklabels(tuple(benchmarks))
 
 
-plt.savefig('/home/ngnk/papers/prefetch_v3/plots_new/mem_footprint')
-# plt.show()
+filename='/home/ngnk/papers/prefetch_v3/plots_new/mem_footprint'
+plt.savefig(filename)  # just as an alternative
+plt.savefig(filename+".eps", format='eps', dpi=1000) 

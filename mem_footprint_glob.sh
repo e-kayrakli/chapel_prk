@@ -6,6 +6,12 @@ average () {
   rm __tmp
 }
 
+cd $1
+make cleanout
+cd out
+tar xzvf *mt*.tar.gz
+cd ../../
+
 for v in "${versions[@]}"
 do
   average $1/out/*.$v.*out >> tmp_memplot_dump
