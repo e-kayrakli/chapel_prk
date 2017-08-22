@@ -11,4 +11,5 @@ do
   cd ..
   python scripts/run.py --slurm PLOT 4096 1
   cp radius_analysis.png ~/papers/prefetch_v3/plots_new/synth/radius_analysis_$h.png
+  cp radius_analysis.eps ~/papers/prefetch_v3/plots_new/synth/radius_analysis_$h.eps
 done

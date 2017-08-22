@@ -66,15 +66,16 @@ for v in versions:
     if count == 2:
         pad_cur = pad
 
-
+adj_fontsize=17
 ax.set_ylim((0, max_mem*1.45))
-ax.legend(framealpha=1, fontsize=18, ncol=3, loc='upper center')
+ax.legend(framealpha=1, fontsize=adj_fontsize, ncol=3, loc='upper center')
 ax.grid(b=True, axis='y', linestyle='dashed')
 ax.set_axisbelow(True)
-ax.set_ylabel("Normalized\nMemory Footprint")
+ax.set_ylabel("Normalized Memory Footprint", fontsize=adj_fontsize)
+ax.set_yticklabels((0,2,4,6), fontsize=adj_fontsize)
 
 ax.set_xticks([i+(width*len(versions))/2-width/2+pad/2 for i in ind])
-ax.set_xticklabels(tuple(benchmarks))
+ax.set_xticklabels(tuple(benchmarks), fontsize=adj_fontsize)
 
 
 filename='/home/ngnk/papers/prefetch_v3/plots_new/mem_footprint'
