@@ -3,7 +3,10 @@
 // Last sha was bd9303f6cd002f7070a450d94d3cbdc16b074b46
 use Time;
 use PrefetchPatterns;
+use BlockDist;
 use Memory;
+use CommDiagnostics;
+
 
 param PRKVERSION = "2.17";
 
@@ -13,6 +16,7 @@ config param use1DDist = false;
 config const iterations = 100,
              order = 100,
              tileSize = 0,
+             commDiag = false,
              debug = false;
 
 config param prefetch = false;
@@ -94,6 +98,7 @@ if prefetch then
 //
 // Main loop
 //
+if commDiag then startCommDiagnostics();
 for iteration in 0..iterations {
   // Start timer after a warmup lap
   if iteration == 1 then timer.start();
@@ -131,7 +136,7 @@ for iteration in 0..iterations {
         }
       }
     }
-    else {
+    else { // both Base and non SD
       forall (i,j) in tiledDom {
         for it in i..#min(order-i, tileSize) {
           for jt in j..#min(order-j, tileSize) {
@@ -157,6 +162,10 @@ for iteration in 0..iterations {
 
 timer.stop();
 
+if commDiag {
+  stopCommDiagnostics();
+  writeln("Number of Nonblocking GETs:", getCommDiagnosticsHere().get_nb);
+}
 //
 // Analyze and output results
 //
