@@ -100,7 +100,7 @@ def do_create_plots(versions, plot_name_prefix, do_imp_plot):
             s + "_" + str(args.num_tries))
         if do_imp_plot:
             filename = filename+"_imp"
-        d_fig = plt.figure(figsize=(8,6))
+        d_fig = plt.figure(figsize=(8,5))
         d_ax = d_fig.add_axes(rect)
         max_y = 0
          # fake white line for legend adjustment
