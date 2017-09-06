@@ -19,7 +19,7 @@ $(MAIN)_base: $(SRC)
 $(MAIN)_handopt: $(SRC)
 	echo Building $@
 	chpl $(CHPLFLAGS)\
-	  -shandPrefetch=true -sprefetch=false -sconsistent=true -sallowPrefetchUnpacking=false \
+	  -suseBulkTransferDist=true -shandPrefetch=true -sprefetch=false -sconsistent=true -sallowPrefetchUnpacking=false \
 	$(MISCFLAGS) -o $(BINDIR)/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 
 $(MAIN)_pref_cons: $(SRC)
