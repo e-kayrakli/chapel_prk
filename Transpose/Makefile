@@ -1,7 +1,7 @@
 SRC=transpose.chpl
 MAIN=transpose
 
-PYFLAGS=--sqloc
+PYFLAGS=
 USERFLAGS=-suseBlockDist -suse1DDist
 
 include ../Makefile.common
