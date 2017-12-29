@@ -79,7 +79,7 @@ def create_plots(versions, plot_name_prefix):
 
     filename = (plot_path + "/" +
             plot_name_prefix)
-    d_fig = plt.figure(figsize=(10,6))
+    d_fig = plt.figure(figsize=(10,4))
     d_ax = d_fig.add_axes(rect)
     d_ax_right = d_ax.twinx()
 
