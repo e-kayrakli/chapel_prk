@@ -57,7 +57,7 @@ for row in 0..#size2 {
     bufIdx += 4;
   }
 }
-const initTimer = new Timer();
+var initTimer = new Timer();
 if timeBulkAdd {
   initTimer.start();
 }
@@ -93,7 +93,7 @@ writeln("Direct access ", if directAccess then "enabled" else
     "disabled");
 writeln("Indexes are ", if !scramble then "not " else "", "scrambled");
 
-const t = new Timer();
+var t = new Timer();
 for niter in 0..iterations {
 
   if niter == 1 then t.start();
