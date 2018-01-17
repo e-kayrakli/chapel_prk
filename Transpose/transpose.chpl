@@ -2,10 +2,11 @@
 //    test/studies/prk
 // Last sha was bd9303f6cd002f7070a450d94d3cbdc16b074b46
 use Time;
+use BlockDist;
 
 param PRKVERSION = "2.17";
 
-config param useBlockDist = false;
+config param useBlockDist = true;
 
 config const iterations = 100,
              order = 100,
@@ -62,6 +63,8 @@ writeln("Number of iterations = ", iterations);
 // Initialize B for clarity
 B = 0.0;
 
+A.enableAccessLogging("A");
+B.enableAccessLogging("B");
 //
 // Main loop
 //
@@ -98,16 +101,16 @@ const transposeTime = timer.elapsed(),
     avgTime = transposeTime / iterations;
 
 // Verify correctness
-const epsilon = 1.e-8;
-const addit = ((iterations+1) * iterations)/2.0;
-const absErr = + reduce [(i,j) in Dom]
-    abs(B[i,j]-((order*i+j)*(iterations+1)+addit));
+/*const epsilon = 1.e-8;*/
+/*const addit = ((iterations+1) * iterations)/2.0;*/
+/*const absErr = + reduce [(i,j) in Dom]*/
+    /*abs(B[i,j]-((order*i+j)*(iterations+1)+addit));*/
 
-if absErr > epsilon then
-  halt("ERROR: Aggregate squared error", absErr,
-          " exceeds threshold ", epsilon);
+/*if absErr > epsilon then*/
+  /*halt("ERROR: Aggregate squared error", absErr,*/
+          /*" exceeds threshold ", epsilon);*/
 
-// Report performance
-writeln("Solution validates");
+/*// Report performance*/
+/*writeln("Solution validates");*/
 writeln("Rate (MB/s): ", 1.0E-06 * bytes / avgTime,
     " Avg time (s): ", avgTime);

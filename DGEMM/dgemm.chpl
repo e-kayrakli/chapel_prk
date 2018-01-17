@@ -11,7 +11,7 @@ param PRKVERSION = "2.17";
 
 config type dtype = real;
 
-config param useBlockDist = false;
+config param useBlockDist = true;
 
 config param handPrefetch = false;
 
@@ -56,6 +56,9 @@ if !correctness {
   writeln();
 }
 
+A.enableAccessLogging("A");
+B.enableAccessLogging("B");
+
 const refChecksum = (iterations+1) *
     (0.25*order*order*order*(order-1.0)*(order-1.0));
 
@@ -65,7 +68,7 @@ if blockSize == 0 {
   for niter in 0..iterations {
     if niter==1 then t.start();
 
-    forall (i,j) in matrixSpace do
+    forall (i,j) in matrixDom do
       for k in vecRange do
         C[i,j] += A[i,k] * B[k,j];
 
