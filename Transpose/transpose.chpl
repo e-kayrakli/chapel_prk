@@ -10,9 +10,10 @@ config param useBlockDist = true;
 
 config const iterations = 100,
              order = 100,
-             tileSize = 0,
+             tileSize = 8,
              debug = false;
 
+config const samplingRate = 1.0;
 //
 // Process and test input configs
 //
@@ -63,7 +64,7 @@ writeln("Number of iterations = ", iterations);
 // Initialize B for clarity
 B = 0.0;
 
-B.enableAccessLogging("B");
+B.enableAccessLogging("B", samplingRate=samplingRate);
 //
 // Main loop
 //
