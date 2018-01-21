@@ -8,7 +8,7 @@ param PRKVERSION = "2.17";
 
 config param useBlockDist = true;
 
-config const iterations = 100,
+config const iterations = 1,
              order = 100,
              tileSize = 8,
              debug = false;
