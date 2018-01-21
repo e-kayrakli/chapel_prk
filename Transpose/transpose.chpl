@@ -63,7 +63,6 @@ writeln("Number of iterations = ", iterations);
 // Initialize B for clarity
 B = 0.0;
 
-A.enableAccessLogging("A");
 B.enableAccessLogging("B");
 //
 // Main loop
@@ -89,7 +88,7 @@ for iteration in 0..iterations {
     }
   }
 } // end of main loop
-
+B.finishAccessLogging();
 timer.stop();
 
 //
