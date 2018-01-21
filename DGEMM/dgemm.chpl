@@ -17,7 +17,7 @@ config param handPrefetch = false;
 
 config const order = 10,
              epsilon = 1e-8,
-             iterations = 100,
+             iterations = 1,
              blockSize = 0,
              debug = false,
              validate = true,
@@ -56,8 +56,9 @@ if !correctness {
   writeln();
 }
 
-A.enableAccessLogging("A");
-B.enableAccessLogging("B");
+config const samplingRate = 1.0;
+A.enableAccessLogging("A", samplingRate=samplingRate);
+B.enableAccessLogging("B", samplingRate=samplingRate);
 
 const refChecksum = (iterations+1) *
     (0.25*order*order*order*(order-1.0)*(order-1.0));
@@ -148,6 +149,10 @@ else {
   }
   t.stop();
 }
+
+A.finishAccessLogging();
+B.finishAccessLogging();
+
 
 if validate {
   const checksum = + reduce C;
