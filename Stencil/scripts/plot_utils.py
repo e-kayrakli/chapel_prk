@@ -81,31 +81,38 @@ def create_plots(versions, plot_name_prefix):
             plot_name_prefix)
     d_fig = plt.figure(figsize=(10,4))
     d_ax = d_fig.add_axes(rect)
-    d_ax_right = d_ax.twinx()
+    # d_ax_right = d_ax.twinx()
 
     max_y = max(max(improv), max(improv_incons))
 
-    d_ax.plot([int(r) for r in radii], improv, label='Automatic Consistency',
+    # d_ax.plot([int(r) for r in radii], improv, label='Automatic Consistency',
+            # color="#92c5de", marker="s",
+            # markerfacecolor='none', markeredgewidth=2)
+    # d_ax.plot([int(r) for r in radii], improv_incons, label='Manual Consistency',
+            # color="#0571b0", marker="x",
+            # markerfacecolor='none', markeredgewidth=2)
+    d_ax.plot(ratios, improv, label='Automatic Consistency',
             color="#92c5de", marker="s",
             markerfacecolor='none', markeredgewidth=2)
-    d_ax.plot([int(r) for r in radii], improv_incons, label='Manual Consistency',
+    d_ax.plot(ratios, improv_incons, label='Manual Consistency',
             color="#0571b0", marker="x",
             markerfacecolor='none', markeredgewidth=2)
-    d_ax_right.plot([int(r) for r in radii], ratios, label='Ratio',
-            color='black', linestyle='dashed')
+    # d_ax_right.plot([int(r) for r in radii], ratios, label='Ratio',
+            # color='black', linestyle='dashed')
 
     #legend
     d_ax.legend(loc=2, fontsize=22)
-    d_ax_right.legend(loc=4, fontsize=22)
+    # d_ax_right.legend(loc=4, fontsize=22)
     #grid
     d_ax.grid(b=True, axis='x')
     # x axis settings
-    d_ax.set_xlabel("Stencil Radius")
-    d_ax.set_xticks([int(r) for r in radii[::6]])
+    d_ax.set_xlabel("Remote Access Ratio")
+    d_ax.set_xticks(ratios[::5])
+    d_ax.set_xticks([b/100. for b in range(0,26,5)])
     # d_ax.set_xlim((0,510))
     # y axis settings
-    d_ax.set_ylabel("Performance Improvement")
-    d_ax_right.set_ylabel("Remote Access Ratio")
+    d_ax.set_ylabel("Improvement")
+    # d_ax_right.set_ylabel("Remote Access Ratio")
     # d_ax.set_ylim((0,max_y*1.1))
     # d_ax_right.set_ylim((0.0,0.3))
     print("Plot saved: " + filename)
