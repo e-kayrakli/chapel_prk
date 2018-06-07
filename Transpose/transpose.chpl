@@ -12,6 +12,12 @@ config const iterations = 100,
              tileSize = 0,
              debug = false;
 
+config const accessLog = false;
+
+config param handPrefetch = false; // to conform to the Makefile
+config param lappsPrefetch = false; 
+config param autoPrefetch = false; 
+
 //
 // Process and test input configs
 //
@@ -62,9 +68,22 @@ writeln("Number of iterations = ", iterations);
 // Initialize B for clarity
 B = 0.0;
 
+if accessLogging then
+  A.enableAccessLogging("A");
+
+if lappsPrefetch then
+  A._value.transposePrefetch(consistent, staticDomain=staticDomain);
+if autoPrefetch then
+  A._value.autoPrefetch();
+
 //
 // Main loop
 //
+if commDiag {
+  startCommDiagnostics();
+  startVerboseComm();
+}
+
 for iteration in 0..iterations {
   // Start timer after a warmup lap
   if iteration == 1 then timer.start();
@@ -89,6 +108,11 @@ for iteration in 0..iterations {
 
 timer.stop();
 
+if commDiag {
+  stopCommDiagnostics();
+  stopVerboseComm();
+  writeln(getCommDiagnosticsHere());
+}
 //
 // Analyze and output results
 //
