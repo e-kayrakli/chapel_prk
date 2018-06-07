@@ -2,21 +2,23 @@
 //    test/studies/prk
 // Last sha was bd9303f6cd002f7070a450d94d3cbdc16b074b46
 use Time;
+use BlockDist;
 
 param PRKVERSION = "2.17";
 
-config param useBlockDist = false;
+config param useBlockDist = true;
 
 config const iterations = 100,
              order = 100,
              tileSize = 0,
              debug = false;
 
-config const accessLog = false;
+config const accessLogging = false;
+config const commDiag = false;
 
-config param handPrefetch = false; // to conform to the Makefile
-config param lappsPrefetch = false; 
-config param autoPrefetch = false; 
+config const handPrefetch = false; // to conform to the Makefile
+config param lappsPrefetch = false;  // this needs to use correct chpl
+config param autoPrefetch = false; // this needs to use correct chpl
 
 //
 // Process and test input configs
@@ -69,12 +71,12 @@ writeln("Number of iterations = ", iterations);
 B = 0.0;
 
 if accessLogging then
-  A.enableAccessLogging("A");
+  B.enableAccessLogging("B");
 
 if lappsPrefetch then
-  A._value.transposePrefetch(consistent, staticDomain=staticDomain);
+  B._value.transposePrefetch();
 if autoPrefetch then
-  A._value.autoPrefetch();
+  B._value.autoPrefetch();
 
 //
 // Main loop
@@ -113,6 +115,9 @@ if commDiag {
   stopVerboseComm();
   writeln(getCommDiagnosticsHere());
 }
+
+if accessLogging then
+  B.finishAccessLogging();
 //
 // Analyze and output results
 //
