@@ -3,6 +3,7 @@
 // Last sha was bd9303f6cd002f7070a450d94d3cbdc16b074b46
 use Time;
 use BlockDist;
+use PrefetchPatterns;
 
 param PRKVERSION = "2.17";
 
@@ -13,7 +14,7 @@ config const iterations = 100,
              tileSize = 0,
              debug = false;
 
-config const accessLogging = false;
+config param accessLogging = false;
 config const commDiag = false;
 
 config const handPrefetch = false; // to conform to the Makefile
@@ -71,12 +72,12 @@ writeln("Number of iterations = ", iterations);
 B = 0.0;
 
 if accessLogging then
-  B.enableAccessLogging("B");
+  A.enableAccessLogging("A");
 
 if lappsPrefetch then
-  B._value.transposePrefetch();
+  A._value.transposePrefetch();
 if autoPrefetch then
-  B._value.autoPrefetch();
+  A._value.autoPrefetch();
 
 //
 // Main loop
@@ -94,18 +95,19 @@ for iteration in 0..iterations {
     forall (i,j) in tiledDom {
       for it in i..#min(order-i, tileSize) {
         for jt in j..#min(order-j, tileSize) {
-          B[jt,it] += A[it,jt];
-          A[it,jt] += 1.0;
+          B[it,jt] += A[jt,it];
         }
       }
     }
   }
   else {
     forall (i,j) in Dom {
-      B[j,i] += A[i,j];
-      A[i,j] += 1.0;
+      B[i,j] += A[j,i];
     }
   }
+  forall a in A do
+    a += 1.0;
+
 } // end of main loop
 
 timer.stop();
