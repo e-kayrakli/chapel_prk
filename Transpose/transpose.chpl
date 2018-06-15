@@ -74,11 +74,6 @@ B = 0.0;
 if accessLogging then
   A.enableAccessLogging("A");
 
-if lappsPrefetch then
-  A._value.transposePrefetch();
-if autoPrefetch then
-  A._value.autoPrefetch();
-
 //
 // Main loop
 //
@@ -86,6 +81,11 @@ if commDiag {
   startCommDiagnostics();
   startVerboseComm();
 }
+if lappsPrefetch then
+  A._value.transposePrefetch();
+if autoPrefetch then
+  A._value.autoPrefetch();
+
 
 for iteration in 0..iterations {
   // Start timer after a warmup lap
