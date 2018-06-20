@@ -11,9 +11,14 @@ param PRKVERSION = "2.17";
 
 config type dtype = real;
 
-config param useBlockDist = false;
+config param useBlockDist = true;
 
-config param handPrefetch = false;
+config param accessLogging = false;
+config const commDiag = false;
+
+config param handPrefetch = false; // to conform to the Makefile
+config param lappsPrefetch = false;  // this needs to use correct chpl
+config param autoPrefetch = false; // this needs to use correct chpl
 
 config const order = 10,
              epsilon = 1e-8,
@@ -59,7 +64,24 @@ if !correctness {
 const refChecksum = (iterations+1) *
     (0.25*order*order*order*(order-1.0)*(order-1.0));
 
+if accessLogging {
+  A.enableAccessLogging("A");
+  B.enableAccessLogging("B");
+}
+
 var t = new Timer();
+
+var initTimer = new Timer();
+initTimer.start();
+if lappsPrefetch {
+  A._value.rowwisePrefetch();
+  B._value.colwisePrefetch();
+}
+if autoPrefetch {
+  A._value.autoPrefetch("A");
+  B._value.autoPrefetch("B");
+}
+initTimer.stop();
 
 if blockSize == 0 {
   for niter in 0..iterations {
@@ -75,7 +97,7 @@ if blockSize == 0 {
 else {
   // task-local arrays are necessary for blocked implementation, so
   // using explicit coforalls
-  coforall l in Locales with (ref t) {
+  coforall  in Locales with (ref t) {
     on l {
       const bVecRange = 0..#blockSize;
       const blockDom = {bVecRange, bVecRange};
@@ -156,6 +178,7 @@ if validate {
 }
 
 if !correctness {
+  writeln("Prefetch Initialization Time: ", initTimer.elapsed());
   const nflops = 2.0*(order**3);
   const avgTime = t.elapsed()/iterations;
   writeln("Rate(MFlop/s) = ", 1e-6*nflops/avgTime, " Time : ", avgTime);
