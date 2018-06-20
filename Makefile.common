@@ -1,4 +1,4 @@
-CHPLFLAGS=--fast --vectorize --replace-array-accesses-with-ref-temps
+CHPLFLAGS=--fast --cache-remote --vectorize --replace-array-accesses-with-ref-temps
 
 MISCFLAGS=
 
@@ -6,10 +6,18 @@ $(MAIN): $(SRC)
 	echo Building $@
 	chpl $(CHPLFLAGS) $(MISCFLAGS) -o ./bin/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 
+$(MAIN)_lapps: $(SRC)
+	echo Building $@
+	chpl -slappsPrefetch $(CHPLFLAGS) $(MISCFLAGS) -o ./bin/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
+
+$(MAIN)_auto: $(SRC)
+	echo Building $@
+	chpl -sautoPrefetch $(CHPLFLAGS) $(MISCFLAGS) -o ./bin/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
+
 $(MAIN)_log: $(SRC)
 	
 	echo Building $@
-	chpl -senableAccessLogs=true $(CHPLFLAGS) $(MISCFLAGS) -o ./bin/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
+	chpl -saccessLogging=true -senableAccessLogs=true $(CHPLFLAGS) $(MISCFLAGS) -o ./bin/$@ $(SRC) --main-module=$(MAIN) $(USERFLAGS)
 
 clean:
 	rm -rf $(MAIN) c_code/
