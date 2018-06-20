@@ -81,10 +81,14 @@ if commDiag {
   startCommDiagnostics();
   startVerboseComm();
 }
+
+var initTimer = new Timer();
+initTimer.start();
 if lappsPrefetch then
   A._value.transposePrefetch();
 if autoPrefetch then
   A._value.autoPrefetch();
+initTimer.stop();
 
 
 for iteration in 0..iterations {
@@ -139,6 +143,7 @@ if absErr > epsilon then
           " exceeds threshold ", epsilon);
 
 // Report performance
+writeln("Prefetch Initialization Time: ", initTimer.elapsed());
 writeln("Solution validates");
 writeln("Rate (MB/s): ", 1.0E-06 * bytes / avgTime,
     " Avg time (s): ", avgTime);
