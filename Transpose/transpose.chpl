@@ -123,7 +123,7 @@ if commDiag {
 }
 
 if accessLogging then
-  B.finishAccessLogging();
+  A.finishAccessLogging();
 //
 // Analyze and output results
 //
