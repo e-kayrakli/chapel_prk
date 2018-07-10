@@ -82,6 +82,20 @@ if commDiag {
   startVerboseComm();
 }
 
+
+if debug {
+  for l in Locales do on l {
+    writeln(here);
+    for i in A.domain.dims()[1] {
+      for j in A.domain.dims()[2] {
+        write(A[i,j], " ");
+      }
+      writeln();
+    }
+    writeln();
+  }
+}
+
 var initTimer = new Timer();
 initTimer.start();
 if lappsPrefetch then
@@ -90,6 +104,18 @@ if autoPrefetch then
   A._value.autoPrefetch();
 initTimer.stop();
 
+if debug {
+  for l in Locales do on l {
+    writeln(here);
+    for i in A.domain.dims()[1] {
+      for j in A.domain.dims()[2] {
+        write(A[i,j], " ");
+      }
+      writeln();
+    }
+    writeln();
+  }
+}
 
 for iteration in 0..iterations {
   // Start timer after a warmup lap
@@ -115,7 +141,6 @@ for iteration in 0..iterations {
 } // end of main loop
 
 timer.stop();
-
 if commDiag {
   stopCommDiagnostics();
   stopVerboseComm();
