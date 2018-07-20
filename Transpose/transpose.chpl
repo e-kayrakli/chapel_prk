@@ -4,6 +4,7 @@
 use Time;
 use BlockDist;
 use PrefetchPatterns;
+use Memory;
 
 param PRKVERSION = "2.17";
 
@@ -167,6 +168,7 @@ if absErr > epsilon then
   halt("ERROR: Aggregate squared error", absErr,
           " exceeds threshold ", epsilon);
 
+if memTrack then for l in Locales do on l do printMemAllocStats();
 // Report performance
 writeln("Prefetch Initialization Time: ", initTimer.elapsed());
 writeln("Solution validates");
