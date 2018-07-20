@@ -2,3 +2,7 @@
 *.err
 *.pyc
 *.tar.gz
+
+INFO
+*.eps
+*.png
