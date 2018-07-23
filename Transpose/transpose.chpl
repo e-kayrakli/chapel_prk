@@ -9,6 +9,7 @@ use Memory;
 param PRKVERSION = "2.17";
 
 config param useBlockDist = true;
+config param use1DDist = false;
 
 config const iterations = 100,
              order = 100,
@@ -43,8 +44,13 @@ var tiledLocalDom = if tiled then
   {0..#order by tileSize, 0..#order by tileSize} else
   {0..5 by 1, 0..5 by 1}; //junk domain
 
+const targetLocales1DDom = {Locales.domain.dim(1), 0..0};
+var targetLocales1D: [targetLocales1DDom] locale;
+targetLocales1D[..,0] = Locales;
 
-const blockDist = new dmap(new Block(localDom));
+const blockDist = new dmap(new Block(localDom,
+                      targetLocales = if use1DDist then targetLocales1D
+                                                   else Locales));
 const Dist =  if useBlockDist then blockDist
                               else defaultDist;
 
