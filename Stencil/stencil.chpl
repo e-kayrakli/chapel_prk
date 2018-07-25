@@ -23,7 +23,7 @@ config param R = 2,
              /* Map domains to Stencil Distribution */
              useStencilDist = false,
              /* Map domains to Block Distribution */
-             useBlockDist = false;
+             useBlockDist = true;
              /* No domain mapping, if neither is selected (shared) */
 
 /* Number of iterations to execute (0th iteration is untimed) */
