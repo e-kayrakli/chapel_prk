@@ -35,6 +35,13 @@ config const iterations: int = 10,
              /* Only print result of validation - used in correctness tests*/
              validate: bool = false;
 
+config param accessLogging = false;
+config const commDiag = false;
+
+config const handPrefetch = false; // to conform to the Makefile
+config param lappsPrefetch = false;  // this needs to use correct chpl
+config param autoPrefetch = false; // this needs to use correct chpl
+
 /* Size of stride for tiling; disables tiling if set to 0 */
 config var tileSize: int = 0;
 
@@ -170,6 +177,10 @@ proc main() {
   // Main loop of Stencil
   //
   if debug then startVdebug("stencil-fast-vis");
+
+  if accessLogging then
+    input.enableAccessLogging("input");
+
   for iteration in 0..iterations {
 
     /* Start timer after warmup iteration */
@@ -230,6 +241,8 @@ proc main() {
   } /* end of main loop */
 
   timer.stop();
+  if accessLogging then
+    input.finishAccessLogging();
   if debug then stopVdebug();
 
   //
