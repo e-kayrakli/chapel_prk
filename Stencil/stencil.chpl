@@ -5,6 +5,7 @@
 /* Standard Library */
 use Time;
 use BlockDist;
+use PrefetchPatterns;
 use VisualDebug;
 
 /* Included from miniMD benchmark */
@@ -173,6 +174,14 @@ proc main() {
     else                        writeln("Distribution         = None");
   }
 
+  var initTimer = new Timer();
+  initTimer.start();
+  if lappsPrefetch then
+    input._value.transposePrefetch();
+  if autoPrefetch then
+    input._value.autoPrefetch();
+  initTimer.stop();
+
   //
   // Main loop of Stencil
   //
@@ -278,6 +287,7 @@ proc main() {
               avgTime);
     }
   }
+  if memTrack then for l in Locales do on l do printMemAllocStats();
 }
 
 
