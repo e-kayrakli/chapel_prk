@@ -7,6 +7,7 @@ use Time;
 use BlockDist;
 use PrefetchPatterns;
 use VisualDebug;
+use Memory;
 
 /* Included from miniMD benchmark */
 use StencilDist;
@@ -174,6 +175,11 @@ proc main() {
     else                        writeln("Distribution         = None");
   }
 
+  if commDiag {
+    startCommDiagnostics();
+    startVerboseComm();
+  }
+
   var initTimer = new Timer();
   initTimer.start();
   if lappsPrefetch then
@@ -252,6 +258,11 @@ proc main() {
   timer.stop();
   if accessLogging then
     input.finishAccessLogging();
+  if commDiag {
+    stopCommDiagnostics();
+    stopVerboseComm();
+    writeln(getCommDiagnosticsHere());
+  }
   if debug then stopVdebug();
 
   //
