@@ -185,7 +185,7 @@ proc main() {
   if lappsPrefetch then
     input._value.transposePrefetch();
   if autoPrefetch then
-    input._value.autoPrefetch();
+    input._value.autoPrefetch("input");
   initTimer.stop();
 
   //

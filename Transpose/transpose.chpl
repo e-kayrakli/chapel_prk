@@ -108,7 +108,7 @@ initTimer.start();
 if lappsPrefetch then
   A._value.transposePrefetch();
 if autoPrefetch then
-  A._value.autoPrefetch();
+  A._value.autoPrefetch("A");
 initTimer.stop();
 
 if debug {
