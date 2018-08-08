@@ -7,6 +7,7 @@ use Time;
 use BlockDist;
 use RangeChunk;
 use PrefetchPatterns;
+use Memory;
 
 param PRKVERSION = "2.17";
 
@@ -196,6 +197,8 @@ if validate {
   else
     writeln("Validation successful");
 }
+
+if memTrack then for l in Locales do on l do printMemAllocStats();
 
 if !correctness {
   writeln("Prefetch Initialization Time: ", initTimer.elapsed());
