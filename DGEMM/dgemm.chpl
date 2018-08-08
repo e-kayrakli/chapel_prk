@@ -6,6 +6,7 @@
 use Time;
 use BlockDist;
 use RangeChunk;
+use PrefetchPatterns;
 
 param PRKVERSION = "2.17";
 
@@ -74,8 +75,8 @@ var t = new Timer();
 var initTimer = new Timer();
 initTimer.start();
 if lappsPrefetch {
-  A._value.rowwisePrefetch();
-  B._value.colwisePrefetch();
+  A._value.rowWiseAllGather();
+  B._value.colWiseAllGather();
 }
 if autoPrefetch {
   A._value.autoPrefetch("A");
@@ -87,9 +88,12 @@ if blockSize == 0 {
   for niter in 0..iterations {
     if niter==1 then t.start();
 
-    forall (i,j) in matrixSpace do
-      for k in vecRange do
+    forall (i,j) in matrixDom {
+      for k in vecRange {
+        /*writeln(here, " ", i, " ", j, " ", k);*/
         C[i,j] += A[i,k] * B[k,j];
+      }
+    }
 
   }
   t.stop();
