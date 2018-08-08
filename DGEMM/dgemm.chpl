@@ -97,7 +97,7 @@ if blockSize == 0 {
 else {
   // task-local arrays are necessary for blocked implementation, so
   // using explicit coforalls
-  coforall  in Locales with (ref t) {
+  coforall l in Locales with (ref t) {
     on l {
       const bVecRange = 0..#blockSize;
       const blockDom = {bVecRange, bVecRange};
@@ -166,6 +166,11 @@ else {
     }
   }
   t.stop();
+}
+
+if accessLogging {
+  A.finishAccessLogging();
+  B.finishAccessLogging();
 }
 
 if validate {
