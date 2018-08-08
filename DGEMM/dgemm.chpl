@@ -70,6 +70,10 @@ if accessLogging {
   B.enableAccessLogging("B");
 }
 
+if commDiag {
+  startCommDiagnostics();
+  startVerboseComm();
+}
 var t = new Timer();
 
 var initTimer = new Timer();
@@ -172,10 +176,17 @@ else {
   t.stop();
 }
 
+if commDiag {
+  stopCommDiagnostics();
+  stopVerboseComm();
+  writeln(getCommDiagnosticsHere());
+}
+
 if accessLogging {
   A.finishAccessLogging();
   B.finishAccessLogging();
 }
+
 
 if validate {
   const checksum = + reduce C;
