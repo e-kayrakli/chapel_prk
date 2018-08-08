@@ -204,5 +204,5 @@ if !correctness {
   writeln("Prefetch Initialization Time: ", initTimer.elapsed());
   const nflops = 2.0*(order**3);
   const avgTime = t.elapsed()/iterations;
-  writeln("Rate(MFlop/s) = ", 1e-6*nflops/avgTime, " Avg time (s): ", avgTime);
+  writeln("Rate (MFlop/s): ", 1e-6*nflops/avgTime, " Avg time (s): ", avgTime);
 }
