@@ -6,6 +6,8 @@
 use Time;
 use BlockDist;
 use RangeChunk;
+use PrefetchPatterns;
+use Memory;
 
 param PRKVERSION = "2.17";
 
@@ -69,13 +71,17 @@ if accessLogging {
   B.enableAccessLogging("B");
 }
 
+if commDiag {
+  startCommDiagnostics();
+  startVerboseComm();
+}
 var t = new Timer();
 
 var initTimer = new Timer();
 initTimer.start();
 if lappsPrefetch {
-  A._value.rowwisePrefetch();
-  B._value.colwisePrefetch();
+  A._value.rowWiseAllGather();
+  B._value.colWiseAllGather();
 }
 if autoPrefetch {
   A._value.autoPrefetch("A");
@@ -87,9 +93,12 @@ if blockSize == 0 {
   for niter in 0..iterations {
     if niter==1 then t.start();
 
-    forall (i,j) in matrixSpace do
-      for k in vecRange do
+    forall (i,j) in matrixDom {
+      for k in vecRange {
+        /*writeln(here, " ", i, " ", j, " ", k);*/
         C[i,j] += A[i,k] * B[k,j];
+      }
+    }
 
   }
   t.stop();
@@ -100,7 +109,7 @@ else {
   // falling back to writing my own coforall. Engin
   // task-local arrays are necessary for blocked implementation, so
   // using explicit coforalls
-  coforall  in Locales with (ref t) {
+  coforall l in Locales with (ref t) {
     on l {
       const bVecRange = 0..#blockSize;
       const blockDom = {bVecRange, bVecRange};
@@ -171,6 +180,18 @@ else {
   t.stop();
 }
 
+if commDiag {
+  stopCommDiagnostics();
+  stopVerboseComm();
+  writeln(getCommDiagnosticsHere());
+}
+
+if accessLogging {
+  A.finishAccessLogging();
+  B.finishAccessLogging();
+}
+
+
 if validate {
   const checksum = + reduce C;
   if abs(checksum-refChecksum)/refChecksum > epsilon then
@@ -180,9 +201,11 @@ if validate {
     writeln("Validation successful");
 }
 
+if memTrack then for l in Locales do on l do printMemAllocStats();
+
 if !correctness {
   writeln("Prefetch Initialization Time: ", initTimer.elapsed());
   const nflops = 2.0*(order**3);
   const avgTime = t.elapsed()/iterations;
-  writeln("Rate(MFlop/s) = ", 1e-6*nflops/avgTime, " Time : ", avgTime);
+  writeln("Rate (MFlop/s): ", 1e-6*nflops/avgTime, " Avg time (s): ", avgTime);
 }

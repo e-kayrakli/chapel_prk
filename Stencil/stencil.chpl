@@ -5,7 +5,9 @@
 /* Standard Library */
 use Time;
 use BlockDist;
+use PrefetchPatterns;
 use VisualDebug;
+use Memory;
 
 /* Included from miniMD benchmark */
 use StencilDist;
@@ -23,7 +25,7 @@ config param R = 2,
              /* Map domains to Stencil Distribution */
              useStencilDist = false,
              /* Map domains to Block Distribution */
-             useBlockDist = false;
+             useBlockDist = true;
              /* No domain mapping, if neither is selected (shared) */
 
 /* Number of iterations to execute (0th iteration is untimed) */
@@ -34,6 +36,13 @@ config const iterations: int = 10,
              debug: bool = false,
              /* Only print result of validation - used in correctness tests*/
              validate: bool = false;
+
+config param accessLogging = false;
+config const commDiag = false;
+
+config const handPrefetch = false; // to conform to the Makefile
+config param lappsPrefetch = false;  // this needs to use correct chpl
+config param autoPrefetch = false; // this needs to use correct chpl
 
 /* Size of stride for tiling; disables tiling if set to 0 */
 config var tileSize: int = 0;
@@ -166,10 +175,27 @@ proc main() {
     else                        writeln("Distribution         = None");
   }
 
+  if commDiag {
+    startCommDiagnostics();
+    startVerboseComm();
+  }
+
+  var initTimer = new Timer();
+  initTimer.start();
+  if lappsPrefetch then
+    input._value.transposePrefetch();
+  if autoPrefetch then
+    input._value.autoPrefetch("input");
+  initTimer.stop();
+
   //
   // Main loop of Stencil
   //
   if debug then startVdebug("stencil-fast-vis");
+
+  if accessLogging then
+    input.enableAccessLogging("input");
+
   for iteration in 0..iterations {
 
     /* Start timer after warmup iteration */
@@ -230,6 +256,13 @@ proc main() {
   } /* end of main loop */
 
   timer.stop();
+  if accessLogging then
+    input.finishAccessLogging();
+  if commDiag {
+    stopCommDiagnostics();
+    stopVerboseComm();
+    writeln(getCommDiagnosticsHere());
+  }
   if debug then stopVdebug();
 
   //
@@ -265,6 +298,7 @@ proc main() {
               avgTime);
     }
   }
+  if memTrack then for l in Locales do on l do printMemAllocStats();
 }
 
 
