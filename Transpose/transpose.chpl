@@ -124,10 +124,37 @@ if debug {
   }
 }
 
-for iteration in 0..iterations {
-  // Start timer after a warmup lap
-  if iteration == 1 then timer.start();
+if !memTrack {
+  for iteration in 0..iterations {
+    // Start timer after a warmup lap
+    if iteration == 1 then timer.start();
 
+    if tiled {
+      forall (i,j) in tiledDom {
+        for it in i..#min(order-i, tileSize) {
+          for jt in j..#min(order-j, tileSize) {
+            B[it,jt] += A[jt,it];
+          }
+        }
+      }
+    }
+    else {
+      forall (i,j) in Dom {
+        B[i,j] += A[j,i];
+      }
+    }
+    forall a in A {
+      local {
+        a += 1.0;
+      }
+    }
+
+  } // end of main loop
+
+  timer.stop();
+}
+else {
+  // do just one iteration
   if tiled {
     forall (i,j) in tiledDom {
       for it in i..#min(order-i, tileSize) {
@@ -142,15 +169,7 @@ for iteration in 0..iterations {
       B[i,j] += A[j,i];
     }
   }
-  forall a in A {
-    local {
-      a += 1.0;
-    }
-  }
-
-} // end of main loop
-
-timer.stop();
+}
 if commDiag {
   stopCommDiagnostics();
   stopVerboseComm();
@@ -168,14 +187,16 @@ const transposeTime = timer.elapsed(),
     avgTime = transposeTime / iterations;
 
 // Verify correctness
-const epsilon = 1.e-8;
-const addit = ((iterations+1) * iterations)/2.0;
-const absErr = + reduce [(i,j) in Dom]
-    abs(B[i,j]-((order*i+j)*(iterations+1)+addit));
+if !memTrack {
+  const epsilon = 1.e-8;
+  const addit = ((iterations+1) * iterations)/2.0;
+  const absErr = + reduce [(i,j) in Dom]
+      abs(B[i,j]-((order*i+j)*(iterations+1)+addit));
 
-if absErr > epsilon then
-  halt("ERROR: Aggregate squared error", absErr,
-          " exceeds threshold ", epsilon);
+  if absErr > epsilon then
+    halt("ERROR: Aggregate squared error", absErr,
+            " exceeds threshold ", epsilon);
+}
 
 if memTrack then for l in Locales do on l do printMemAllocStats();
 // Report performance
