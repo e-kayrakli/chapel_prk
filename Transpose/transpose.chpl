@@ -142,8 +142,11 @@ for iteration in 0..iterations {
       B[i,j] += A[j,i];
     }
   }
-  forall a in A do
-    a += 1.0;
+  forall a in A {
+    local {
+      a += 1.0;
+    }
+  }
 
 } // end of main loop
 
