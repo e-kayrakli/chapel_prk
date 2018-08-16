@@ -6,7 +6,7 @@
 use Time;
 use BlockDist;
 use RangeChunk;
-use PrefetchPatterns;
+/*use PrefetchPatterns;*/
 use Memory;
 
 param PRKVERSION = "2.17";

@@ -40,6 +40,7 @@ config const iterations: int = 10,
 config param accessLogging = false;
 config const commDiag = false;
 
+config param staticDomain = true;
 config const handPrefetch = false; // to conform to the Makefile
 config param lappsPrefetch = false;  // this needs to use correct chpl
 config param autoPrefetch = false; // this needs to use correct chpl
@@ -183,9 +184,9 @@ proc main() {
   var initTimer = new Timer();
   initTimer.start();
   if lappsPrefetch then
-    input._value.transposePrefetch();
+    input._value.transposePrefetch(staticDomain=staticDomain);
   if autoPrefetch then
-    input._value.autoPrefetch("input");
+    input._value.autoPrefetch("input", staticDomain=staticDomain);
   initTimer.stop();
 
   //
