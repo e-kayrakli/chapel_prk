@@ -23,6 +23,9 @@ config const handPrefetch = false; // to conform to the Makefile
 config param lappsPrefetch = false;  // this needs to use correct chpl
 config param autoPrefetch = false; // this needs to use correct chpl
 
+config param staticDomain = true;
+config const consistent = false;
+
 //
 // Process and test input configs
 //
@@ -106,9 +109,9 @@ if debug {
 var initTimer = new Timer();
 initTimer.start();
 if lappsPrefetch then
-  A._value.transposePrefetch();
+  A._value.transposePrefetch(consistent=consistent, staticDomain=staticDomain);
 if autoPrefetch then
-  A._value.autoPrefetch("A");
+  A._value.autoPrefetch("A", consistent=consistent, staticDomain=staticDomain);
 initTimer.stop();
 
 if debug {
@@ -128,6 +131,10 @@ if !memTrack {
   for iteration in 0..iterations {
     // Start timer after a warmup lap
     if iteration == 1 then timer.start();
+
+    if !consistent{
+      A._value.updatePrefetch();
+    }
 
     if tiled {
       forall (i,j) in tiledDom {
