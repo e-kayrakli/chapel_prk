@@ -3,7 +3,7 @@
 // Last sha was bd9303f6cd002f7070a450d94d3cbdc16b074b46
 use Time;
 use BlockDist;
-use PrefetchPatterns;
+/*use PrefetchPatterns;*/
 use Memory;
 
 param PRKVERSION = "2.17";
@@ -132,7 +132,7 @@ if !memTrack {
     // Start timer after a warmup lap
     if iteration == 1 then timer.start();
 
-    if !consistent{
+    if lappsPrefetch && !consistent{
       A._value.updatePrefetch();
     }
 
