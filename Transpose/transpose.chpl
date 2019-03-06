@@ -3,7 +3,7 @@
 // Last sha was bd9303f6cd002f7070a450d94d3cbdc16b074b46
 use Time;
 use BlockDist;
-/*use PrefetchPatterns;*/
+use PrefetchPatterns;
 use Memory;
 
 param PRKVERSION = "2.17";
@@ -89,7 +89,7 @@ if accessLogging then
 //
 if commDiag {
   startCommDiagnostics();
-  startVerboseComm();
+  /*startVerboseComm();*/
 }
 
 
@@ -179,7 +179,7 @@ else {
 }
 if commDiag {
   stopCommDiagnostics();
-  stopVerboseComm();
+  /*stopVerboseComm();*/
   writeln(getCommDiagnosticsHere());
 }
 
