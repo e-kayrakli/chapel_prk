@@ -24,7 +24,7 @@ config param lappsPrefetch = false;  // this needs to use correct chpl
 config param autoPrefetch = false; // this needs to use correct chpl
 
 config param staticDomain = true;
-config const consistent = false;
+config const consistent = true;
 
 //
 // Process and test input configs
@@ -87,13 +87,10 @@ if accessLogging then
 //
 // Main loop
 //
-if commDiag {
-  startCommDiagnostics();
-  /*startVerboseComm();*/
-}
 
 
 if debug {
+  writeln("BEFORE");
   for l in Locales do on l {
     writeln(here);
     for i in A.domain.dims()[1] {
@@ -114,25 +111,16 @@ if autoPrefetch then
   A._value.autoPrefetch("A", consistent=consistent, staticDomain=staticDomain);
 initTimer.stop();
 
-if debug {
-  for l in Locales do on l {
-    writeln(here);
-    for i in A.domain.dims()[1] {
-      for j in A.domain.dims()[2] {
-        write(A[i,j], " ");
-      }
-      writeln();
-    }
-    writeln();
-  }
+if commDiag {
+  startCommDiagnostics();
+  /*startVerboseComm();*/
 }
-
 if !memTrack {
   for iteration in 0..iterations {
     // Start timer after a warmup lap
     if iteration == 1 then timer.start();
 
-    if lappsPrefetch && !consistent{
+    if (lappsPrefetch || autoPrefetch) && !consistent{
       A._value.updatePrefetch();
     }
 
@@ -180,7 +168,22 @@ else {
 if commDiag {
   stopCommDiagnostics();
   /*stopVerboseComm();*/
-  writeln(getCommDiagnosticsHere());
+  for l in Locales do on l do
+    writeln(here, ": ", getCommDiagnosticsHere());
+}
+
+if debug {
+  writeln("AFTER");
+  for l in Locales do on l {
+    writeln(here);
+    for i in A.domain.dims()[1] {
+      for j in A.domain.dims()[2] {
+        write(A[i,j], " ");
+      }
+      writeln();
+    }
+    writeln();
+  }
 }
 
 if accessLogging then

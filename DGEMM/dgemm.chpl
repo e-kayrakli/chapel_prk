@@ -28,6 +28,7 @@ config const order = 10,
              correctness = false; // being run in start_test
 
 config param staticDomain = true;
+config const consistent = true;
 
 config param handPrefetch = false; // to conform to the Makefile
 config param lappsPrefetch = false;  // this needs to use correct chpl
@@ -74,12 +75,12 @@ const refChecksum = (iterations+1) *
 var initTimer = new Timer();
 initTimer.start();
 if lappsPrefetch {
-  A._value.rowWiseAllGather(staticDomain=staticDomain);
-  B._value.colWiseAllGather(staticDomain=staticDomain);
+  A._value.rowWiseAllGather(consistent=consistent, staticDomain=staticDomain);
+  B._value.colWiseAllGather(consistent=consistent, staticDomain=staticDomain);
 }
 if autoPrefetch {
-  A._value.autoPrefetch("A", staticDomain=staticDomain);
-  B._value.autoPrefetch("B", staticDomain=staticDomain);
+  A._value.autoPrefetch("e5b156f2292f23f968ad53288683418f", consistent=consistent, staticDomain=staticDomain);
+  B._value.autoPrefetch("7ede56b9ae1100faba63e8b45e3514d1", consistent=consistent, staticDomain=staticDomain);
 }
 initTimer.stop();
 
