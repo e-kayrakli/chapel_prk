@@ -108,7 +108,10 @@ initTimer.start();
 if lappsPrefetch then
   A._value.transposePrefetch(consistent=consistent, staticDomain=staticDomain);
 if autoPrefetch then
-  A._value.autoPrefetch("A", consistent=consistent, staticDomain=staticDomain);
+  if use1DDist then
+      A._value.autoPrefetch("0670acf4e72655e158f9b8c98c45037c", consistent=consistent, staticDomain=staticDomain);
+  else
+      A._value.autoPrefetch("d3a95458b0f2171c6f378c31b44842a2", consistent=consistent, staticDomain=staticDomain);
 initTimer.stop();
 
 if commDiag {
